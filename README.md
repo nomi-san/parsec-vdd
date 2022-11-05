@@ -22,7 +22,8 @@ const GUID PARSEC_VDD_DEVINTERFACE = \
 HANDLE device = OpenDeviceHandle(PARSEC_VDD_DEVINTERFACE);
 ```
 
-- Try this function to create OpenDeviceHandle(GUID): https://github.com/fufesou/RustDeskIddDriver/blob/fc152f4282cc167b0bb32aa12c97c90788f32c3d/RustDeskIddApp/IddController.c#L722
+- Try this function to create `OpenDeviceHandle(GUID)`: https://github.com/fufesou/RustDeskIddDriver/blob/fc152f4282cc167b0bb32aa12c97c90788f32c3d/RustDeskIddApp/IddController.c#L722
+- Or hard code 😀 with this file path `\\?\root#display#%(DISPLAY_INDEX)#{00b41627-04c4-429e-a26e-0265cf50c8fa}`
 
 Let's create a virtual monitor.
 ```cpp
