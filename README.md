@@ -54,9 +54,9 @@ void UpdateMonitor() {
   if (Overlapped.hEvent) CloseHandle(Overlapped.hEvent);
 }
 
-long ticks = getTick(); // milliseconds
+long ticks = 0; // milliseconds
 while (!done) {
-  Sleep(64);
+  Sleep(100);
   if (getTick() - ticks > 200) {
     UpdateMonitor();
     ticks = getTicks();
