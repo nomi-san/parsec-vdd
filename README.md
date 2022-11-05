@@ -43,7 +43,7 @@ void CreateMonitor(HANDLE device) {
 Call this update function to keep up the refresh rate.
 
 ```cpp
-void UpdateMonitor() {
+void UpdateMonitor(HANDLE device) {
   uint8_t InBuffer[32];
   DWORD NumberOfBytesTransferred = 0;
   OVERLAPPED Overlapped{};
@@ -58,7 +58,7 @@ long ticks = 0; // milliseconds
 while (!done) {
   Sleep(100);
   if (getTick() - ticks > 200) {
-    UpdateMonitor();
+    UpdateMonitor(device);
     ticks = getTicks();
   }
 }
@@ -102,12 +102,13 @@ CloseHandle(device);
 |1280 x 800|      HD 16:10
 |1280 x 720|  	HD 16:9
 
-## ParsecVDD
+## ParsecVDD adapter
 
-Name: **Parsec Virtual Display Adapter**<br>
+Name: Parsec Virtual Display Adapter<br>
 Hardware ID: `Root\Parsec\VDA`<br>
 Adapter GUID: `{00b41627-04c4-429e-a26e-0265cf50c8fa}`<br>
 EDID:
+
 ```
 00 FF FF FF FF FF FF 00  42 63 D0 CD ED 5F 84 00
 11 1E 01 04 A5 35 1E 78  3B 57 E0 A5 54 4F 9D 26
