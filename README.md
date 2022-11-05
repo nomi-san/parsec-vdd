@@ -1,2 +1,129 @@
+<img align="left" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxBsVvpMSFpgenJxcoNf9IYCxhAL9EbkFPYMsJV3BMoHFfLKE9ZBJiZDHtcTACUyr2PsA&usqp=CAU" width="240px">
+
 # parsec-vdd
-Standalone ParsecVDD, create virtual display without Parsec, upto 4K 2160p@240hz
+Standalone **ParsecVDD**, create virtual display without Parsec, upto **4K 2160p@240hz**.<br>
+
+<br>
+<br>
+<br>
+
+Notice: this is an exploit, tools used: IDA Pro and API Monitor v2.
+
+## Getting started
+
+Download and install ParsecVDD:
+- https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe
+
+Use this interface GUID to get device handle.
+```cpp
+const GUID PARSEC_VDD_DEVINTERFACE = \
+  { 0x00b41627, 0x04c4, 0x429e, { 0xa2, 0x6e, 0x02, 0x65, 0xcf, 0x50, 0xc8, 0xfa } };
+  
+HANDLE device = OpenDeviceHandle(PARSEC_VDD_DEVINTERFACE);
+```
+
+- Try this function to create OpenDeviceHandle(GUID): https://github.com/fufesou/RustDeskIddDriver/blob/fc152f4282cc167b0bb32aa12c97c90788f32c3d/RustDeskIddApp/IddController.c#L722
+
+Let's create a virtual monitor.
+```cpp
+void CreateMonitor(HANDLE device) {
+  uint8_t InBuffer[32]{};
+  int OutBuffer;
+  DWORD NumberOfBytesTransferred = 0;
+  OVERLAPPED Overlapped{};
+  
+  Overlapped.hEvent = CreateEventW(0, 0, 0, 0);
+  DeviceIoControl(device, 0x22E004, InBuffer, sizeof(InBuffer), &OutBuffer, sizeof(OutBuffer), 0, &Overlapped);
+  GetOverlappedResult(device, &Overlapped, &NumberOfBytesTransferred, 1);
+  if (Overlapped.hEvent) CloseHandle(Overlapped.hEvent);
+}
+```
+
+Call this update function to keep up the refresh rate.
+
+```cpp
+void UpdateMonitor() {
+  uint8_t InBuffer[32];
+  DWORD NumberOfBytesTransferred = 0;
+  OVERLAPPED Overlapped{};
+  
+  Overlapped.hEvent = CreateEventW(0, 0, 0, 0);
+  DeviceIoControl(device, 0x0022A00, InBuffer, sizeof(InBuffer), 0, 0, 0, &Overlapped);
+  GetOverlappedResult(device, &Overlapped, &NumberOfBytesTransferred, 1);
+  if (Overlapped.hEvent) CloseHandle(Overlapped.hEvent);
+}
+
+long ticks = getTick(); // milliseconds
+while (!done) {
+  Sleep(64);
+  if (getTick() - ticks > 200) {
+    UpdateMonitor();
+    ticks = getTicks();
+  }
+}
+```
+
+Finally, close the device handle to destroy monitor:
+
+```cpp
+CloseHandle(device);
+```
+
+## Supported resolutions
+
+|Resolution | Name | Notes
+|-|-|-
+|4096 x 2160|		DCI 4K | some GPUs may not support, e.g GTX 1650
+|3840 x 2160|		4K UHD
+|3840 x 1600|		UltraWide 24:10
+|3840 x 1080|		UltraWide 32:9
+|3440 x 1440|		
+|3240 x 2160|
+|3200 x 1800|		3K 16:9
+|3000 x 2000|
+|2880 x 1800|		2.8K 16:10
+|2880 x 1620|		2.8K 16:9
+|2736 x 1824|
+|2560 x 1600|		2K 16:10
+|2560 x 1440|		2K 16:9
+|2560 x 1080|		UltraWide 21:9
+|2496 x 1664|
+|2256 x 1504|
+|2048 x 1152|		
+|1920 x 1200|		FHD 16:10
+|1920 x 1080|		FHD 16:9
+|1800 x 1200|		FHD 3:2
+|1680 x 1050|		HD+ 16:10
+|1600 x 1200|		HD+ 4:3
+|1600 x 900|		HD+ 16:9
+|1440 x 900|		HD 16:10
+|1366 x 768|
+|1280 x 800|      HD 16:10
+|1280 x 720|  	HD 16:9
+
+## ParsecVDD
+
+Name: **Parsec Virtual Display Adapter**<br>
+Hardware ID: `Root\Parsec\VDA`<br>
+Adapter GUID: `{00b41627-04c4-429e-a26e-0265cf50c8fa}`<br>
+EDID:
+```
+00 FF FF FF FF FF FF 00  42 63 D0 CD ED 5F 84 00
+11 1E 01 04 A5 35 1E 78  3B 57 E0 A5 54 4F 9D 26
+12 50 54 27 CF 00 71 4F  81 80 81 40 81 C0 81 00
+95 00 B3 00 01 01 86 6F  80 A0 70 38 40 40 30 20
+35 00 E0 0E 11 00 00 1A  00 00 00 FD 00 30 A5 C1
+C1 29 01 0A 20 20 20 20  20 20 00 00 00 FC 00 50
+61 72 73 65 63 56 44 41  0A 20 20 20 00 00 00 10
+00 00 00 00 00 00 00 00  00 00 00 00 00 00 01 C6
+02 03 10 00 4B 90 05 04  03 02 01 11 12 13 14 1F
+8A 4D 80 A0 70 38 2C 40  30 20 35 00 E0 0E 11 00
+00 1A FE 5B 80 A0 70 38  35 40 30 20 35 00 E0 0E
+11 00 00 1A FC 7E 80 88  70 38 12 40 18 20 35 00
+E0 0E 11 00 00 1E A4 9C  80 A0 70 38 59 40 30 20
+35 00 E0 0E 11 00 00 1A  02 3A 80 18 71 38 2D 40
+58 2C 45 00 E0 0E 11 00  00 1E 00 00 00 00 00 00
+00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 A6
+```
+
+Visit http://www.edidreader.com/ to check online or use [AW EDID Editor](https://www.analogway.com/apac/products/software-tools/aw-edid-editor/)
