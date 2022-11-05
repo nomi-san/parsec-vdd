@@ -75,8 +75,8 @@ if (device != INVALID_HANDLE_VALUE && device != NULL)
 
 |Resolution | Name | Notes
 |-|-|-
-|4096 x 2160|		DCI 4K | some GPUs may not support, e.g GTX 1650
-|3840 x 2160|		4K UHD
+|4096 x 2160|		DCI 4K | low GPUs may not support, e.g GTX 1650
+|3840 x 2160|		4K UHD | (all) compatible refresh rates: 24/30/60/144/240hz 
 |3840 x 1600|		UltraWide 24:10
 |3840 x 1080|		UltraWide 32:9
 |3440 x 1440|		
