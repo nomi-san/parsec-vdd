@@ -30,8 +30,8 @@ Let's create a virtual monitor.
 void CreateMonitor(HANDLE device) {
   uint8_t InBuffer[32]{};
   int OutBuffer;
-  DWORD NumberOfBytesTransferred = 0;
   OVERLAPPED Overlapped{};
+  DWORD NumberOfBytesTransferred = 0;
   
   Overlapped.hEvent = CreateEventW(0, 0, 0, 0);
   DeviceIoControl(device, 0x22E004, InBuffer, sizeof(InBuffer), &OutBuffer, sizeof(OutBuffer), 0, &Overlapped);
@@ -44,12 +44,12 @@ Call this update function to keep up the refresh rate.
 
 ```cpp
 void UpdateMonitor(HANDLE device) {
-  uint8_t InBuffer[32];
-  DWORD NumberOfBytesTransferred = 0;
+  uint8_t InBuffer[32]{};
   OVERLAPPED Overlapped{};
+  DWORD NumberOfBytesTransferred = 0;
   
   Overlapped.hEvent = CreateEventW(0, 0, 0, 0);
-  DeviceIoControl(device, 0x0022A00, InBuffer, sizeof(InBuffer), 0, 0, 0, &Overlapped);
+  DeviceIoControl(device, 0x22A00, InBuffer, sizeof(InBuffer), 0, 0, 0, &Overlapped);
   GetOverlappedResult(device, &Overlapped, &NumberOfBytesTransferred, 1);
   if (Overlapped.hEvent) CloseHandle(Overlapped.hEvent);
 }
@@ -67,7 +67,8 @@ while (!done) {
 Finally, close the device handle to destroy monitor:
 
 ```cpp
-CloseHandle(device);
+if (device != INVALID_HANDLE_VALUE && device != NULL)
+  CloseHandle(device);
 ```
 
 ## Supported resolutions
