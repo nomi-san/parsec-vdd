@@ -9,10 +9,12 @@ Standalone **ParsecVDD**, create virtual display without Parsec, upto **4K 2160p
 
 Notice: this is an exploit, tools used: IDA Pro and API Monitor v2.
 
+<br>
+
 ## Getting started
 
 Download and install ParsecVDD:
-- https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe
+- https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe
 
 Use this interface GUID to get device handle.
 ```cpp
@@ -25,51 +27,88 @@ HANDLE device = OpenDeviceHandle(PARSEC_VDD_DEVINTERFACE);
 - Try this function to create `OpenDeviceHandle(GUID)`: https://github.com/fufesou/RustDeskIddDriver/blob/fc152f4282cc167b0bb32aa12c97c90788f32c3d/RustDeskIddApp/IddController.c#L722
 - Or hard code 😀 with this file path `\\?\root#display#%(DISPLAY_INDEX)#{00b41627-04c4-429e-a26e-0265cf50c8fa}`
 
-Let's create a virtual monitor.
+<br>
+
+Here's the way to control VDD:
 ```cpp
-void CreateMonitor(HANDLE device) {
-  uint8_t InBuffer[32]{};
-  int OutBuffer;
-  OVERLAPPED Overlapped{};
-  DWORD NumberOfBytesTransferred = 0;
-  
-  Overlapped.hEvent = CreateEventW(0, 0, 0, 0);
-  DeviceIoControl(device, 0x22E004, InBuffer, sizeof(InBuffer), &OutBuffer, sizeof(OutBuffer), 0, &Overlapped);
-  GetOverlappedResult(device, &Overlapped, &NumberOfBytesTransferred, 1);
-  if (Overlapped.hEvent) CloseHandle(Overlapped.hEvent);
+enum VddCtlCode {
+    IOCTL_VDD_CONNECT = 0x22A008,
+    IOCTL_VDD_ADD = 0x22E004,
+    IOCTL_VDD_UPDATE = 0x22A00C,
+};
+
+void VddIoCtl(HANDLE vdd, VddCtlCode code) {
+    BYTE InBuffer[32]{};
+    int OutBuffer = 0;
+    OVERLAPPED Overlapped{};
+    DWORD NumberOfBytesTransferred;
+
+    Overlapped.hEvent = CreateEventW(NULL, NULL, NULL, NULL);
+    DeviceIoControl(vdd, code, InBuffer, _countof(InBuffer), &OutBuffer, sizeof(OutBuffer), NULL, &Overlapped);
+    GetOverlappedResult(vdd, &Overlapped, &NumberOfBytesTransferred, TRUE);
+
+    if (Overlapped.hEvent && Overlapped.hEvent != INVALID_HANDLE_VALUE)
+        CloseHandle(Overlapped.hEvent);
 }
 ```
 
-Call this update function to keep up the refresh rate.
+And these are generic functions to interact with VDD:
 
 ```cpp
-void UpdateMonitor(HANDLE device) {
-  uint8_t InBuffer[32]{};
-  OVERLAPPED Overlapped{};
-  DWORD NumberOfBytesTransferred = 0;
-  
-  Overlapped.hEvent = CreateEventW(0, 0, 0, 0);
-  DeviceIoControl(device, 0x22A00, InBuffer, sizeof(InBuffer), 0, 0, 0, &Overlapped);
-  GetOverlappedResult(device, &Overlapped, &NumberOfBytesTransferred, 1);
-  if (Overlapped.hEvent) CloseHandle(Overlapped.hEvent);
+void VddThread(HANDLE vdd, bool &running) {
+    // Plug in monitor.
+    VddIoCtl(vdd, IOCTL_VDD_CONNECT);
+    VddIoCtl(vdd, IOCTL_VDD_UPDATE);
+    VddIoCtl(vdd, IOCTL_VDD_ADD);
+    VddIoCtl(vdd, IOCTL_VDD_UPDATE);
+    // Keep monitor connection.
+    for (running = true; running; ) {
+        Sleep(100);
+        VddIoCtl(vdd, IOCTL_VDD_UPDATE);
+    }
 }
 
-long ticks = 0; // milliseconds
-while (!done) {
-  Sleep(100);
-  if (getTick() - ticks > 200) {
-    UpdateMonitor(device);
-    ticks = getTicks();
-  }
+bool PlugInMonitor(HANDLE &vdd, HANDLE &vddThread, bool &running) {
+    char devpath[1024];
+    for (int idx = 0; idx < 5; idx++) {
+        // Hardcode device path.
+        sprintf(devpath, "\\\\?\\root#display#000%d#%s", idx, "{00b41627-04c4-429e-a26e-0265cf50c8fa}");    
+        vdd = CreateFileA(devpath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+        if (vdd && vdd != INVALID_HANDLE_VALUE) {
+            vddThread = CreateThread(VddThread);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void PlugOutMonitor(HANDLE vdd, HANDLE vddThread, bool &running) {
+    running = false;
+    WaitForSingleObject(vddThread, INFINITE);
+
+    // Reconnect to unplug monitor.
+    VddIoCtl(vdd, IOCTL_VDD_CONNECT);
+    CloseHandle(vdd);
 }
 ```
 
-Finally, close the device handle to destroy monitor:
-
+A simple usage:
 ```cpp
-if (device != INVALID_HANDLE_VALUE && device != NULL)
-  CloseHandle(device);
+int main()
+{
+    bool running;
+    HANDLE vdd, vddThread;
+
+    if (PlugInMonitor(vdd, vddThread, running)) {
+        Sleep(5000);
+        PlugOutMonitor(vdd, vddThread, running);
+    }
+}
 ```
+
+<br>
 
 ## Supported resolutions
 
@@ -102,6 +141,8 @@ if (device != INVALID_HANDLE_VALUE && device != NULL)
 |1366 x 768|
 |1280 x 800|      HD 16:10
 |1280 x 720|  	HD 16:9
+
+<br>
 
 ## ParsecVDD adapter
 
