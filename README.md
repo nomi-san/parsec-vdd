@@ -4,12 +4,10 @@
 Standalone **ParsecVDD**, create virtual display without Parsec, upto **4K 2160p@240hz**.<br>
 
 <br>
-<br>
-<br>
 
-Notice: this is an exploit, tools used: IDA Pro and API Monitor v2.
+![image](https://user-images.githubusercontent.com/38210249/226080853-2ccd0327-4398-4c58-916f-b002966e7df3.png)
 
-<br>
+> Notice: this is an exploit, tools used: IDA Pro and API Monitor v2.
 
 ## Getting started
 
@@ -108,8 +106,6 @@ int main()
 }
 ```
 
-<br>
-
 ## Supported resolutions
 
 |Resolution | Name | Notes
@@ -141,8 +137,6 @@ int main()
 |1366 x 768|
 |1280 x 800|      HD 16:10
 |1280 x 720|  	HD 16:9
-
-<br>
 
 ## ParsecVDD adapter
 
