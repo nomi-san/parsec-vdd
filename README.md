@@ -1,20 +1,21 @@
 <img align="left" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxBsVvpMSFpgenJxcoNf9IYCxhAL9EbkFPYMsJV3BMoHFfLKE9ZBJiZDHtcTACUyr2PsA&usqp=CAU" width="240px">
 
 # parsec-vdd
-Standalone **ParsecVDD**, create virtual display without Parsec, upto **4K 2160p@240hz**.<br>
+✨ Standalone **ParsecVDD**, create a virtual super display without **Parsec**, upto **4K 2160p@240hz**.<br>
 
 <br>
 
 ![image](https://user-images.githubusercontent.com/38210249/226080853-2ccd0327-4398-4c58-916f-b002966e7df3.png)
 
-> Notice: this is an exploit, tools used: IDA Pro and API Monitor v2.
-
 ## Getting started
 
-Download and install ParsecVDD:
-- https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe
+Download and install **Parsec Virtual Display Driver**, there are two versions, just pick one:
+- [ParsecVDD v0.38](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe) (preferred)
+- [ParsecVDD v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe)
 
-Use this interface GUID to get device handle.
+<br>
+
+Use this GUID interface to get the device handle.
 ```cpp
 const GUID PARSEC_VDD_DEVINTERFACE = \
   { 0x00b41627, 0x04c4, 0x429e, { 0xa2, 0x6e, 0x02, 0x65, 0xcf, 0x50, 0xc8, 0xfa } };
@@ -22,12 +23,12 @@ const GUID PARSEC_VDD_DEVINTERFACE = \
 HANDLE device = OpenDeviceHandle(PARSEC_VDD_DEVINTERFACE);
 ```
 
-- Try this function to create `OpenDeviceHandle(GUID)`: https://github.com/fufesou/RustDeskIddDriver/blob/fc152f4282cc167b0bb32aa12c97c90788f32c3d/RustDeskIddApp/IddController.c#L722
+- Try this function to create your `OpenDeviceHandle(GUID)`: [fc152f42@fufesou/RustDeskIddDriver](https://github.com/fufesou/RustDeskIddDriver/blob/fc152f4282cc167b0bb32aa12c97c90788f32c3d/RustDeskIddApp/IddController.c#L722)
 - Or hard code 😀 with this file path `\\?\root#display#%(DISPLAY_INDEX)#{00b41627-04c4-429e-a26e-0265cf50c8fa}`
 
 <br>
 
-Here's the way to control VDD:
+Here's the way to control the VDD:
 ```cpp
 enum VddCtlCode {
     IOCTL_VDD_CONNECT = 0x22A008,
@@ -50,7 +51,7 @@ void VddIoCtl(HANDLE vdd, VddCtlCode code) {
 }
 ```
 
-And these are generic functions to interact with VDD:
+And here is pseudo code to interface with the VDD:
 
 ```cpp
 void VddThread(HANDLE vdd, bool &running) {
@@ -92,7 +93,8 @@ void PlugOutMonitor(HANDLE vdd, HANDLE vddThread, bool &running) {
 }
 ```
 
-A simple usage:
+A simple usage, see [demo.cc](./demo.cc) to learn more.
+
 ```cpp
 int main()
 {
@@ -108,42 +110,46 @@ int main()
 
 ## Supported resolutions
 
-|Resolution | Name | Notes
-|-|-|-
-|4096 x 2160|		DCI 4K | low GPUs may not support, e.g GTX 1650
-|3840 x 2160|		4K UHD | (all) compatible refresh rates: 24/30/60/144/240hz 
-|3840 x 1600|		UltraWide 24:10
-|3840 x 1080|		UltraWide 32:9
-|3440 x 1440|		
-|3240 x 2160|
-|3200 x 1800|		3K 16:9
-|3000 x 2000|
-|2880 x 1800|		2.8K 16:10
-|2880 x 1620|		2.8K 16:9
-|2736 x 1824|
-|2560 x 1600|		2K 16:10
-|2560 x 1440|		2K 16:9
-|2560 x 1080|		UltraWide 21:9
-|2496 x 1664|
-|2256 x 1504|
-|2048 x 1152|		
-|1920 x 1200|		FHD 16:10
-|1920 x 1080|		FHD 16:9
-|1800 x 1200|		FHD 3:2
-|1680 x 1050|		HD+ 16:10
-|1600 x 1200|		HD+ 4:3
-|1600 x 900|		HD+ 16:9
-|1440 x 900|		HD 16:10
-|1366 x 768|
-|1280 x 800|      HD 16:10
-|1280 x 720|  	HD 16:9
+Notes:
+- Low GPUs, e.g GTX 1650 will not support the highest DCI 4K.
+- All these below resolutions are compatible with all refresh rates 24/30/60/144/240 hz.
+
+| Resolution  | Common name         | Aspect ratio
+| -           | :-:                 | :-:
+| 4096 x 2160 |		DCI 4K      
+| 3840 x 2160 |		4K UHD            | 16:9
+| 3840 x 1600 |		UltraWide         | 24:10   
+| 3840 x 1080 |		UltraWide         | 32:9
+| 3440 x 1440 |		                  | 43:18
+| 3240 x 2160 |                     | 3:2
+| 3200 x 1800 |		3K                | 16:9
+| 3000 x 2000 |                     | 3:2
+| 2880 x 1800 |		2.8K              | 16:10
+| 2880 x 1620 |		2.8K              | 16:9
+| 2736 x 1824 |
+| 2560 x 1600 |		2K                | 16:10
+| 2560 x 1440 |		2K                | 16:9
+| 2560 x 1080 |		UltraWide         | 21:9
+| 2496 x 1664 |
+| 2256 x 1504 |
+| 2048 x 1152 |		
+| 1920 x 1200 |		FHD               | 16:10
+| 1920 x 1080 |		FHD               | 16:9
+| 1800 x 1200 |		FHD               | 3:2
+| 1680 x 1050 |		HD+               | 16:10
+| 1600 x 1200 |		HD+               | 4:3
+|  1600 x 900 |		HD+               | 16:9
+|  1440 x 900 |		HD                | 16:10
+|  1366 x 768 |
+|  1280 x 800 |   HD                | 16:10
+|  1280 x 720 |  	HD                | 16:9
 
 ## ParsecVDD adapter
 
-Name: Parsec Virtual Display Adapter<br>
-Hardware ID: `Root\Parsec\VDA`<br>
-Adapter GUID: `{00b41627-04c4-429e-a26e-0265cf50c8fa}`<br>
-EDID:
+- Name: Parsec Virtual Display Adapter
+- Hardware ID: `Root\Parsec\VDA`
+- Adapter GUID: `{00b41627-04c4-429e-a26e-0265cf50c8fa}`
+- EDID:
 
 ```
 00 FF FF FF FF FF FF 00  42 63 D0 CD ED 5F 84 00
@@ -164,4 +170,4 @@ E0 0E 11 00 00 1E A4 9C  80 A0 70 38 59 40 30 20
 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 A6
 ```
 
-Visit http://www.edidreader.com/ to check online or use [AW EDID Editor](https://www.analogway.com/apac/products/software-tools/aw-edid-editor/)
+Visit http://www.edidreader.com/ to view it online or use an advanced tool [AW EDID Editor](https://www.analogway.com/apac/products/software-tools/aw-edid-editor/)
