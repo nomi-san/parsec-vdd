@@ -1,11 +1,28 @@
 <img align="left" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxBsVvpMSFpgenJxcoNf9IYCxhAL9EbkFPYMsJV3BMoHFfLKE9ZBJiZDHtcTACUyr2PsA&usqp=CAU" width="240px">
 
 # parsec-vdd
-✨ Standalone **ParsecVDD**, create a virtual super display without **Parsec**, upto **4K 2160p@240hz**.<br>
+✨ Standalone **Parsec VDD**, create a virtual super display without **Parsec**, upto **4K 2160p@240hz**.<br>
 
 <br>
 
 ![image](https://user-images.githubusercontent.com/38210249/226080853-2ccd0327-4398-4c58-916f-b002966e7df3.png)
+
+## About
+
+This project introduces a standalone solution for creating a virtual display with Parsec VDD, without relying on the Parsec app.
+
+> "**Parsec VDD** (Virtual Display Driver) is a perfect software driver developed by Parsec. It utilizes the [Idd/cx API](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/indirect-display-driver-model-overview) (Indirect Display Driver) to create a virtual display on a computer. This virtual display is particularly useful in situations where a physical monitor may not be available or when additional screens are desired.
+
+> One of the notable features of Parsec VDD is its support for a wide range of [resolutions and refresh rates](#supported-resolutions), including up to 240 Hz. This makes it well-suited for gaming, as it can provide a high-quality visual experience. It enables users to simulate the presence of additional screens or work without a physical monitor, enhancing flexibility and customization in display management."
+
+How does it compare to other IDDs? There are many open source repos, but you could not get signed drivers and perfect gaming solution.
+
+- https://github.com/fufesou/RustDeskIddDriver
+- https://github.com/douglascgh/IndirectDisplay
+
+If you needs an application, check out this repo: https://github.com/KtzeAbyss/Easy-Virtual-Display
+
+<br>
 
 ## Getting started
 
@@ -108,11 +125,13 @@ int main()
 }
 ```
 
+<br>
+
 ## Supported resolutions
 
 Notes:
 - Low GPUs, e.g GTX 1650 will not support the highest DCI 4K.
-- All these below resolutions are compatible with all refresh rates 24/30/60/144/240 hz.
+- All these below resolutions are compatible with all refresh rates 24/30/60/144/240 Hz.
 
 | Resolution  | Common name         | Aspect ratio
 | -           | :-:                 | :-:
@@ -143,6 +162,8 @@ Notes:
 |  1366 x 768 |
 |  1280 x 800 |   HD                | 16:10
 |  1280 x 720 |  	HD                | 16:9
+
+<br>
 
 ## ParsecVDD adapter
 
