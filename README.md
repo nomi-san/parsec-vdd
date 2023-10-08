@@ -19,8 +19,11 @@ How does it compare to other IDDs? There are many open source repos, but you cou
 
 - https://github.com/fufesou/RustDeskIddDriver
 - https://github.com/douglascgh/IndirectDisplay
+- https://github.com/MolotovCherry/virtual-display-rs
 
-If you needs an application, check out this repo: https://github.com/KtzeAbyss/Easy-Virtual-Display
+There was an [usbmmidd_v2](https://www.amyuni.com/forum/viewtopic.php?t=3030), but it seems useful for a simple virtual display with limited resolutions and refresh rates.
+
+If you need an application, check out this repo: https://github.com/KtzeAbyss/Easy-Virtual-Display
 
 <br>
 
