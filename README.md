@@ -9,19 +9,20 @@
 
 ## About
 
-This project introduces a standalone solution for creating a virtual display with Parsec VDD, without relying on the Parsec app.
+This project introduces a standalone solution for creating a virtual display by using [Parsec VDD](https://support.parsec.app/hc/en-us/articles/4422939339789-Overview-Prerequisites-and-Installation), without relying on the [Parsec app](https://parsec.app/).
 
 > "**Parsec VDD** (Virtual Display Driver) is a perfect software driver developed by Parsec. It utilizes the [Idd/cx API](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/indirect-display-driver-model-overview) (Indirect Display Driver) to create a virtual display on a computer. This virtual display is particularly useful in situations where a physical monitor may not be available or when additional screens are desired.
 
 > One of the notable features of Parsec VDD is its support for a wide range of [resolutions and refresh rates](#supported-resolutions), including up to 240 Hz. This makes it well-suited for gaming, as it can provide a high-quality visual experience. It enables users to simulate the presence of additional screens or work without a physical monitor, enhancing flexibility and customization in display management."
 
-How does it compare to other IDDs? There are many open source repos, but you could not get signed drivers and perfect gaming solution.
+How does it compare to other IDDs?
 
-- https://github.com/fufesou/RustDeskIddDriver
-- https://github.com/douglascgh/IndirectDisplay
-- https://github.com/MolotovCherry/virtual-display-rs
-
-There was an [usbmmidd_v2](https://www.amyuni.com/forum/viewtopic.php?t=3030), but it seems useful for a simple virtual display with limited resolutions and refresh rates.
+- There was an [usbmmidd_v2](https://www.amyuni.com/forum/viewtopic.php?t=3030), but it's built for a simple virtual display with limited resolutions and refresh rates.
+- There are many open source repos, but you could not get signed drivers and perfect gaming solution.
+  - https://github.com/roshkins/IddSampleDriver
+  - https://github.com/fufesou/RustDeskIddDriver
+  - https://github.com/douglascgh/IndirectDisplay
+  - https://github.com/MolotovCherry/virtual-display-rs
 
 If you need an application, check out this repo: https://github.com/KtzeAbyss/Easy-Virtual-Display
 
@@ -29,13 +30,14 @@ If you need an application, check out this repo: https://github.com/KtzeAbyss/Ea
 
 ## Getting started
 
-Download and install **Parsec Virtual Display Driver**, there are two versions, just pick one:
-- [ParsecVDD v0.38](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe) (preferred)
-- [ParsecVDD v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe)
+Download and install **Parsec Virtual Display Driver**, just pick one:
+- [parsec-vdd-v0.37](https://builds.parsec.app/vdd/parsec-vdd-0.37.0.0.exe)
+- [parsec-vdd-v0.38](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe) (recommended)
+- [parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe)
 
 <br>
 
-Use this GUID interface to get the device handle.
+Use this GUID interface to obtain the device handle.
 ```cpp
 const GUID PARSEC_VDD_DEVINTERFACE = \
   { 0x00b41627, 0x04c4, 0x429e, { 0xa2, 0x6e, 0x02, 0x65, 0xcf, 0x50, 0xc8, 0xfa } };
@@ -71,7 +73,7 @@ void VddIoCtl(HANDLE vdd, VddCtlCode code) {
 }
 ```
 
-And here is pseudo code to interface with the VDD:
+And here is the pseudo-code for the VDD manipulation:
 
 ```cpp
 void VddThread(HANDLE vdd, bool &running) {
