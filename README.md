@@ -9,7 +9,7 @@
 
 ## About
 
-This project introduces a standalone solution for creating a virtual display by using [Parsec VDD](https://support.parsec.app/hc/en-us/articles/4422939339789-Overview-Prerequisites-and-Installation), without relying on the [Parsec app](https://parsec.app/).
+This project demonstrates a standalone solution to create a virtual display by using [Parsec VDD](https://support.parsec.app/hc/en-us/articles/4422939339789-Overview-Prerequisites-and-Installation), without relying on the [Parsec app](https://parsec.app/).
 
 > "**Parsec VDD** (Virtual Display Driver) is a perfect software driver developed by Parsec. It utilizes the [Idd/cx API](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/indirect-display-driver-model-overview) (Indirect Display Driver) to create a virtual display on a computer. This virtual display is particularly useful in situations where a physical monitor may not be available or when additional screens are desired.
 
@@ -140,11 +140,11 @@ Notes:
 
 | Resolution  | Common name         | Aspect ratio
 | -           | :-:                 | :-:
-| 4096 x 2160 |		DCI 4K      
+| 4096 x 2160 |		DCI 4K            | 1.90∶1 (256∶135)
 | 3840 x 2160 |		4K UHD            | 16:9
 | 3840 x 1600 |		UltraWide         | 24:10   
-| 3840 x 1080 |		UltraWide         | 32:9
-| 3440 x 1440 |		                  | 43:18
+| 3840 x 1080 |		UltraWide         | 32:9 (2x 16:9 FHD)
+| 3440 x 1440 |		                  | 21.5:9 (43:18)
 | 3240 x 2160 |                     | 3:2
 | 3200 x 1800 |		3K                | 16:9
 | 3000 x 2000 |                     | 3:2
