@@ -1,3 +1,6 @@
+> [!NOTE]  
+> I'm working on a new version with more features and will release it next month. Please help me get to 200 stars 🌟
+
 <img align="left" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxBsVvpMSFpgenJxcoNf9IYCxhAL9EbkFPYMsJV3BMoHFfLKE9ZBJiZDHtcTACUyr2PsA&usqp=CAU" width="240px">
 
 # parsec-vdd
