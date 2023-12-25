@@ -8,7 +8,7 @@
 
 <br>
 
-![image](https://user-images.githubusercontent.com/38210249/226080853-2ccd0327-4398-4c58-916f-b002966e7df3.png)
+![image](https://github.com/nomi-san/parsec-vdd/assets/38210249/2abc933e-29d1-420f-a35f-af865a950a93)
 
 ## About
 
@@ -135,45 +135,47 @@ int main()
 
 <br>
 
-## Supported resolutions
+## Preset display modes
+
+All of the following display modes are set by driver default.
+
+| Resolution   | Common name      | Aspect ratio         | Refresh rates (Hz)
+| -            | :-:              | :-:                  | :-:
+| 4096 x 2160  | DCI 4K           | 1.90:1 (256:135)     | 24/30/60/144/240
+| 3840 x 2160  | 4K UHD           | 16:9                 | 24/30/60/144/240
+| 3840 x 1600  | UltraWide        | 24:10                | 24/30/60/144/240
+| 3840 x 1080  | UltraWide        | 32:9 (2x 16:9 FHD)   | 24/30/60/144/240
+| 3440 x 1440  |                  | 21.5:9 (43:18)       | 24/30/60/144/240
+| 3240 x 2160  |                  | 3:2                  | 60
+| 3200 x 1800  | 3K               | 16:9                 | 24/30/60/144/240
+| 3000 x 2000  |                  | 3:2                  | 60
+| 2880 x 1800  | 2.8K             | 16:10                | 60
+| 2880 x 1620  | 2.8K             | 16:9                 | 24/30/60/144/240
+| 2736 x 1824  |                  |                      | 60
+| 2560 x 1600  | 2K               | 16:10                | 24/30/60/144/240
+| 2560 x 1440  | 2K               | 16:9                 | 24/30/60/144/240
+| 2560 x 1080  | UltraWide        | 21:9                 | 24/30/60/144/240
+| 2496 x 1664  |                  |                      | 60
+| 2256 x 1504  |                  |                      | 60
+| 2048 x 1152  |                  |                      | 60/144/240
+| 1920 x 1200  | FHD              | 16:10                | 60/144/240
+|**1920 x 1080**| **FHD**         | **16:9**             | 24/30/**60**/144/240
+| 1800 x 1200  | FHD              | 3:2                  | 60
+| 1680 x 1050  | HD+              | 16:10                | 60/144/240
+| 1600 x 1200  | HD+              | 4:3                  | 24/30/60/144/240
+|  1600 x 900  | HD+              | 16:9                 | 60/144/240
+|  1440 x 900  | HD               | 16:10                | 60/144/240
+|  1366 x 768  |                  |                      | 60/144/240
+|  1280 x 800  | HD               | 16:10                | 60/144/240
+|  1280 x 720  | HD               | 16:9                 | 60/144/240
 
 Notes:
 - Low GPUs, e.g GTX 1650 will not support the highest DCI 4K.
-- All these below resolutions are compatible with all refresh rates 24/30/60/144/240 Hz.
-
-| Resolution  | Common name         | Aspect ratio
-| -           | :-:                 | :-:
-| 4096 x 2160 |		DCI 4K            | 1.90∶1 (256∶135)
-| 3840 x 2160 |		4K UHD            | 16:9
-| 3840 x 1600 |		UltraWide         | 24:10   
-| 3840 x 1080 |		UltraWide         | 32:9 (2x 16:9 FHD)
-| 3440 x 1440 |		                  | 21.5:9 (43:18)
-| 3240 x 2160 |                     | 3:2
-| 3200 x 1800 |		3K                | 16:9
-| 3000 x 2000 |                     | 3:2
-| 2880 x 1800 |		2.8K              | 16:10
-| 2880 x 1620 |		2.8K              | 16:9
-| 2736 x 1824 |
-| 2560 x 1600 |		2K                | 16:10
-| 2560 x 1440 |		2K                | 16:9
-| 2560 x 1080 |		UltraWide         | 21:9
-| 2496 x 1664 |
-| 2256 x 1504 |
-| 2048 x 1152 |		
-| 1920 x 1200 |		FHD               | 16:10
-| 1920 x 1080 |		FHD               | 16:9
-| 1800 x 1200 |		FHD               | 3:2
-| 1680 x 1050 |		HD+               | 16:10
-| 1600 x 1200 |		HD+               | 4:3
-|  1600 x 900 |		HD+               | 16:9
-|  1440 x 900 |		HD                | 16:10
-|  1366 x 768 |
-|  1280 x 800 |   HD                | 16:10
-|  1280 x 720 |  	HD                | 16:9
+- All resolutions are compatible with 60 Hz refresh rates.
 
 <br>
 
-## ParsecVDD adapter
+## Adapter specs
 
 - Name: Parsec Virtual Display Adapter
 - Hardware ID: `Root\Parsec\VDA`
