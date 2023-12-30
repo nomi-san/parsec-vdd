@@ -1,141 +1,124 @@
-> [!NOTE]  
-> I'm working on a new version with more features and will release it next month. Please help me get to 200 stars 🌟
 
-<img align="left" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxBsVvpMSFpgenJxcoNf9IYCxhAL9EbkFPYMsJV3BMoHFfLKE9ZBJiZDHtcTACUyr2PsA&usqp=CAU" width="240px">
-
-# parsec-vdd
-✨ Standalone **Parsec VDD**, create a virtual super display without **Parsec**, upto **4K 2160p@240hz**.<br>
-
-<br>
-
-![image](https://github.com/nomi-san/parsec-vdd/assets/38210249/2abc933e-29d1-420f-a35f-af865a950a93)
-
-## About
-
-This project demonstrates a standalone solution to create a virtual display by using [Parsec VDD](https://support.parsec.app/hc/en-us/articles/4422939339789-Overview-Prerequisites-and-Installation), without relying on the [Parsec app](https://parsec.app/).
-
-> "**Parsec VDD** (Virtual Display Driver) is a perfect software driver developed by Parsec. It utilizes the [Idd/cx API](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/indirect-display-driver-model-overview) (Indirect Display Driver) to create a virtual display on a computer. This virtual display is particularly useful in situations where a physical monitor may not be available or when additional screens are desired.
-
-> One of the notable features of Parsec VDD is its support for a wide range of [resolutions and refresh rates](#supported-resolutions), including up to 240 Hz. This makes it well-suited for gaming, as it can provide a high-quality visual experience. It enables users to simulate the presence of additional screens or work without a physical monitor, enhancing flexibility and customization in display management."
-
-How does it compare to other IDDs?
-
-- There was an [usbmmidd_v2](https://www.amyuni.com/forum/viewtopic.php?t=3030), but it's built for a simple virtual display with limited resolutions and refresh rates.
-- There are many open source repos, but you could not get signed drivers and perfect gaming solution.
-  - https://github.com/roshkins/IddSampleDriver
-  - https://github.com/fufesou/RustDeskIddDriver
-  - https://github.com/douglascgh/IndirectDisplay
-  - https://github.com/MolotovCherry/virtual-display-rs
-
-If you need an application, check out this repo: https://github.com/KtzeAbyss/Easy-Virtual-Display
+<p align="center">
+  <img src="https://i.imgur.com/dDUa6GH.png" width="64" height="64" />
+  <h1 align="center">parsec-vdd</h1>
+  <p align="center">
+    ✨ Standalone <strong>Parsec Virtual Display</strong>
+    <br />
+    Create virtual displays up to <strong>4K 240Hz</strong>
+  </p>
+</p>
 
 <br>
 
-## Getting started
+## ℹ About
 
-Download and install **Parsec Virtual Display Driver**, just pick one:
-- [parsec-vdd-v0.37](https://builds.parsec.app/vdd/parsec-vdd-0.37.0.0.exe)
-- [parsec-vdd-v0.38](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe) (recommended)
-- [parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe)
+This project demonstrates a standalone solution to create virtual displays by using [Parsec VDD](https://support.parsec.app/hc/en-us/articles/4422939339789-Overview-Prerequisites-and-Installation), without relying on the [Parsec app](https://parsec.app/).
 
-<br>
+> The Virtual Display Driver (VDD) is required to enable virtual displays on a Windows host. Virtual displays is a feature available for Teams and Warp customers that lets you add up to 3 additional virtual displays to the host while connecting to a machine you own through Parsec.
 
-Use this GUID interface to obtain the device handle.
-```cpp
-const GUID PARSEC_VDD_DEVINTERFACE = \
-  { 0x00b41627, 0x04c4, 0x429e, { 0xa2, 0x6e, 0x02, 0x65, 0xcf, 0x50, 0xc8, 0xfa } };
-  
-HANDLE device = OpenDeviceHandle(PARSEC_VDD_DEVINTERFACE);
+> **Parsec VDD** is a perfect software driver developed by Parsec. It utilizes the [IddCx API](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/indirect-display-driver-model-overview) (Indirect Display Driver) to create virtual displays on Windows 10+. This virtual display is particularly useful in situations where a physical monitor may not be available or when additional screens are desired.
+
+> One of the notable features of Parsec VDD is its support for a wide range of [resolutions and refresh rates](#preset-display-modes), including up to 4K@240 Hz. This makes it well-suited for gaming, as it can provide a high-quality visual experience. It enables users to simulate the presence of additional screens or work without a physical monitor, enhancing flexibility and customization in display management.
+
+
+## 📺 ParsecVDisplay App
+
+This is a complete driver application to interact with the Parsec VDD, written in C# and Winforms. It can show the number of virtual displays added, allows adding multiple virtual displays and removing a specific selected one. Also allows to change resolution and take screenshot, and more..
+
+The full source code and production app will be released soon. Here is the preview:
+
+<p align="center">
+  <img src="https://github.com/nomi-san/parsec-vdd/assets/38210249/f7e54a14-de4f-4592-9c26-25442b87755a" />
+</p>
+
+## 🚀 Using Core API
+
+Make sure you have installed the driver:
+- [parsec-vdd-v0.38](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe)
+- [parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe) (recommended)
+
+The core API is designed as single C/C++ header, see 👉 [parsec-vdd.h](./parsec-vdd.h). It has detailed comments, and can be added to any existing projects. There is also a simple usage demo, see 👉 [parsec-vdd-demo.cc](./parsec-vdd-demo.cc). 
+
+You can also unzip the driver setup to obtain the driver files and `devcon` CLI.
+
+```
+./ devcon.exe driver/ mm.cat mm.dll mm.dl
 ```
 
-- Try this function to create your `OpenDeviceHandle(GUID)`: [fc152f42@fufesou/RustDeskIddDriver](https://github.com/fufesou/RustDeskIddDriver/blob/fc152f4282cc167b0bb32aa12c97c90788f32c3d/RustDeskIddApp/IddController.c#L722)
-- Or hard code 😀 with this file path `\\?\root#display#%(DISPLAY_INDEX)#{00b41627-04c4-429e-a26e-0265cf50c8fa}`
+Command line method to install the driver using `devcon` (requires admin):
 
-<br>
-
-Here's the way to control the VDD:
-```cpp
-enum VddCtlCode {
-    IOCTL_VDD_CONNECT = 0x22A008,
-    IOCTL_VDD_ADD = 0x22E004,
-    IOCTL_VDD_UPDATE = 0x22A00C,
-};
-
-void VddIoCtl(HANDLE vdd, VddCtlCode code) {
-    BYTE InBuffer[32]{};
-    int OutBuffer = 0;
-    OVERLAPPED Overlapped{};
-    DWORD NumberOfBytesTransferred;
-
-    Overlapped.hEvent = CreateEventW(NULL, NULL, NULL, NULL);
-    DeviceIoControl(vdd, code, InBuffer, _countof(InBuffer), &OutBuffer, sizeof(OutBuffer), NULL, &Overlapped);
-    GetOverlappedResult(vdd, &Overlapped, &NumberOfBytesTransferred, TRUE);
-
-    if (Overlapped.hEvent && Overlapped.hEvent != INVALID_HANDLE_VALUE)
-        CloseHandle(Overlapped.hEvent);
-}
+```
+admin$ > devcon install driver\mm.inf Root\Parsec\VDA
 ```
 
-And here is the pseudo-code for the VDD manipulation:
+## 😥 Known Limitations
 
-```cpp
-void VddThread(HANDLE vdd, bool &running) {
-    // Plug in monitor.
-    VddIoCtl(vdd, IOCTL_VDD_CONNECT);
-    VddIoCtl(vdd, IOCTL_VDD_UPDATE);
-    VddIoCtl(vdd, IOCTL_VDD_ADD);
-    VddIoCtl(vdd, IOCTL_VDD_UPDATE);
-    // Keep monitor connection.
-    for (running = true; running; ) {
-        Sleep(100);
-        VddIoCtl(vdd, IOCTL_VDD_UPDATE);
-    }
-}
+> This list shows the known limitations of Parsec VDD.
 
-bool PlugInMonitor(HANDLE &vdd, HANDLE &vddThread, bool &running) {
-    char devpath[1024];
-    for (int idx = 0; idx < 5; idx++) {
-        // Hardcode device path.
-        sprintf(devpath, "\\\\?\\root#display#000%d#%s", idx, "{00b41627-04c4-429e-a26e-0265cf50c8fa}");    
-        vdd = CreateFileA(devpath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+### 1. HDR support
 
-        if (vdd && vdd != INVALID_HANDLE_VALUE) {
-            vddThread = CreateThread(VddThread);
-            return true;
-        }
-    }
+Parsec VDD does not support HDR on its displays (see the EDID below). Theoretically, you can unlock support by editing the EDID, then adding HDR metadata and setting 10-bit+ color depth. Unfortunately, you cannot flash its firmware like a physical device.
 
-    return false;
-}
+All IDDs have their own fixed EDID block inside the driver binary to initialize the monitor specs. So the solution is to modify this block in the driver DLL (mm.dll), then update it with `devcon` CLI.
 
-void PlugOutMonitor(HANDLE vdd, HANDLE vddThread, bool &running) {
-    running = false;
-    WaitForSingleObject(vddThread, INFINITE);
-
-    // Reconnect to unplug monitor.
-    VddIoCtl(vdd, IOCTL_VDD_CONNECT);
-    CloseHandle(vdd);
-}
+```
+admin$ > devcon update driver\mm.inf Root\Parsec\VDA
 ```
 
-A simple usage, see [demo.cc](./demo.cc) to learn more.
+### 2. Custom resoutions
 
-```cpp
-int main()
-{
-    bool running;
-    HANDLE vdd, vddThread;
+Before connecting, the virtual display looks in the `HKEY_LOCAL_MACHINE\SOFTWARE\Parsec\vdd` registry for additional preset resolutions. Currently this supports a maximum of 5 values.
 
-    if (PlugInMonitor(vdd, vddThread, running)) {
-        Sleep(5000);
-        PlugOutMonitor(vdd, vddThread, running);
-    }
-}
+```
+SOFTWARE\Parsec\vdd
+  key: 0 -> 5 | (width, height, hz)
 ```
 
-<br>
+To unlock this limit, you need to patch the driver DLL the same way as above, but **5 is enough** for personal use.
 
-## Preset display modes
+## 😑 Known Bugs
+
+> This is a list of known issues when working with standalone Parsec VDD.
+
+### 1. Incompatible with Parsec Privacy Mode
+
+![Alt text](https://i.imgur.com/C74IRgC.png)
+
+If you have enabled "Privacy Mode" in Parsec Host settings, please disable it and clear the connected display configruations in the following Registry path.
+
+```
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Connectivity
+```
+
+This option causes your main display to turn off when virtual displays are added, making it difficult to turn the display on and disrupting the remote desktop session.
+
+### 2. // todo
+
+## Comparison with other IDDs
+
+The table below shows a comparison with other popular Indirect Display Driver projects. 
+
+| Project              | Iddcx version | Signed | Gaming | Tweakable | GUI
+| :--                  | :--:          | :--:   | :--:   | :--:      | :--:
+| [usbmmidd_v2]        |               | ✅     | ❌      |           |
+| [IddSampleDriver]    | 1.2           | ❌     | ❌       |          |
+| [RustDeskIddDriver]  | 1.2           | ❌     | ❌      |           |
+| [virtual-display-rs] | 1.5           | ❌     | 🆗      |  ✅    | ✅
+| parsec-vdd           | 1.4           | ✅     | ✅    | 🆗       | ✅
+
+✅ - full support, 🆗 - limited support
+
+[usbmmidd_v2]: https://www.amyuni.com/forum/viewtopic.php?t=3030
+[IddSampleDriver]: https://github.com/roshkins/IddSampleDriver
+[RustDeskIddDriver]: https://github.com/fufesou/RustDeskIddDriver
+[virtual-display-rs]: https://github.com/MolotovCherry/virtual-display-rs
+
+**Signed** means that the driver files have a valid digital signature. **Tweakable** is the ability to customize display modes. Visit [MSDN IddCx versions](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/iddcx-versions) to check the minimum supported Windows version.
+
+## 📘 Parsec VDD Specs
+
+### Preset display modes
 
 All of the following display modes are set by driver default.
 
@@ -173,9 +156,7 @@ Notes:
 - Low GPUs, e.g GTX 1650 will not support the highest DCI 4K.
 - All resolutions are compatible with 60 Hz refresh rates.
 
-<br>
-
-## Adapter specs
+### Adapter info
 
 - Name: Parsec Virtual Display Adapter
 - Hardware ID: `Root\Parsec\VDA`
