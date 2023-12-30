@@ -1,3 +1,7 @@
+> [!TIP]
+> Please help me to get 512 stars ✨
+
+<br>
 
 <p align="center">
   <img src="https://i.imgur.com/dDUa6GH.png" width="64" height="64" />
@@ -156,11 +160,18 @@ Notes:
 - Low GPUs, e.g GTX 1650 will not support the highest DCI 4K.
 - All resolutions are compatible with 60 Hz refresh rates.
 
+
 ### Adapter info
 
 - Name: Parsec Virtual Display Adapter
 - Hardware ID: `Root\Parsec\VDA`
 - Adapter GUID: `{00b41627-04c4-429e-a26e-0265cf50c8fa}`
+- Class GUID: `{4d36e968-e325-11ce-bfc1-08002be10318}`
+
+### Monitor info
+
+- ID: PSCCDD0
+- Name: ParsecVDA
 - EDID:
 
 ```
