@@ -1,5 +1,5 @@
 > [!TIP]
-> Please help me to get 512 stars ✨
+> Please help me get to 512 stars ✨
 
 <br>
 
@@ -9,7 +9,7 @@
   <p align="center">
     ✨ Standalone <strong>Parsec Virtual Display</strong>
     <br />
-    Create virtual displays up to <strong>4K 240Hz</strong>
+    Create virtual displays up to <strong>4K@240Hz</strong>
   </p>
 </p>
 
@@ -19,16 +19,16 @@
 
 This project demonstrates a standalone solution to create virtual displays by using [Parsec VDD](https://support.parsec.app/hc/en-us/articles/4422939339789-Overview-Prerequisites-and-Installation), without relying on the [Parsec app](https://parsec.app/).
 
-> The Virtual Display Driver (VDD) is required to enable virtual displays on a Windows host. Virtual displays is a feature available for Teams and Warp customers that lets you add up to 3 additional virtual displays to the host while connecting to a machine you own through Parsec.
+> The Virtual Display Driver (VDD) is required to enable virtual displays on a Windows host. Virtual displays is a feature available for **Teams** and **Warp** customers that lets you add up to 3 additional virtual displays to the host while connecting to a machine you own through Parsec.
 
 > **Parsec VDD** is a perfect software driver developed by Parsec. It utilizes the [IddCx API](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/indirect-display-driver-model-overview) (Indirect Display Driver) to create virtual displays on Windows 10+. This virtual display is particularly useful in situations where a physical monitor may not be available or when additional screens are desired.
 
-> One of the notable features of Parsec VDD is its support for a wide range of [resolutions and refresh rates](#preset-display-modes), including up to 4K@240 Hz. This makes it well-suited for gaming, as it can provide a high-quality visual experience. It enables users to simulate the presence of additional screens or work without a physical monitor, enhancing flexibility and customization in display management.
+> One of the notable features of Parsec VDD is its support for a wide range of [resolutions and refresh rates](#preset-display-modes), including up to 4K and 240 Hz. This makes it well-suited for gaming, as it can provide a high-quality visual experience. It enables users to simulate the presence of additional screens or work without a physical monitor, enhancing flexibility and customization in display management.
 
 
 ## 📺 ParsecVDisplay App
 
-This is a complete driver application to interact with the Parsec VDD, written in C# and Winforms. It can show the number of virtual displays added, allows adding multiple virtual displays and removing a specific selected one. Also allows to change resolution and take screenshot, and more..
+This is a complete driver application to control the Parsec VDD, written in C# and Winforms. It can show the number of virtual displays added, allows adding multiple virtual displays and removing a specific selected one. Also allows to change resolution and take screenshot, and more..
 
 The full source code and production app will be released soon. Here is the preview:
 
@@ -62,7 +62,7 @@ admin$ > devcon install driver\mm.inf Root\Parsec\VDA
 
 ### 1. HDR support
 
-Parsec VDD does not support HDR on its displays (see the EDID below). Theoretically, you can unlock support by editing the EDID, then adding HDR metadata and setting 10-bit+ color depth. Unfortunately, you cannot flash its firmware like a physical device.
+Parsec VDD does not support HDR on its displays (see the EDID below). Theoretically, you can unlock support by editing the EDID, then adding HDR metadata and setting 10-bit+ color depth. Unfortunately, you cannot flash its firmware like a physical device, or modify the registry value.
 
 All IDDs have their own fixed EDID block inside the driver binary to initialize the monitor specs. So the solution is to modify this block in the driver DLL (mm.dll), then update it with `devcon` CLI.
 
@@ -70,7 +70,7 @@ All IDDs have their own fixed EDID block inside the driver binary to initialize 
 admin$ > devcon update driver\mm.inf Root\Parsec\VDA
 ```
 
-### 2. Custom resoutions
+### 2. Custom resolutions
 
 Before connecting, the virtual display looks in the `HKEY_LOCAL_MACHINE\SOFTWARE\Parsec\vdd` registry for additional preset resolutions. Currently this supports a maximum of 5 values.
 
@@ -99,7 +99,7 @@ This option causes your main display to turn off when virtual displays are added
 
 ### 2. // todo
 
-## Comparison with other IDDs
+## 🤔 Comparison with other IDDs
 
 The table below shows a comparison with other popular Indirect Display Driver projects. 
 
@@ -163,15 +163,15 @@ Notes:
 
 ### Adapter info
 
-- Name: Parsec Virtual Display Adapter
+- Name: `Parsec Virtual Display Adapter`
 - Hardware ID: `Root\Parsec\VDA`
 - Adapter GUID: `{00b41627-04c4-429e-a26e-0265cf50c8fa}`
 - Class GUID: `{4d36e968-e325-11ce-bfc1-08002be10318}`
 
 ### Monitor info
 
-- ID: PSCCDD0
-- Name: ParsecVDA
+- ID: `PSCCDD0`
+- Name: `ParsecVDA`
 - EDID:
 
 ```
