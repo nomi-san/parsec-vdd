@@ -103,13 +103,14 @@ This option causes your main display to turn off when virtual displays are added
 
 The table below shows a comparison with other popular Indirect Display Driver projects. 
 
-| Project              | Iddcx version | Signed | Gaming | Tweakable | GUI
-| :--                  | :--:          | :--:   | :--:   | :--:      | :--:
-| [usbmmidd_v2]        |               | ✅     | ❌      |           |
-| [IddSampleDriver]    | 1.2           | ❌     | ❌       |          |
-| [RustDeskIddDriver]  | 1.2           | ❌     | ❌      |           |
-| [virtual-display-rs] | 1.5           | ❌     | 🆗      |  ✅    | ✅
-| parsec-vdd           | 1.4           | ✅     | ✅    | 🆗       | ✅
+| Project                         | Iddcx version | Signed | Gaming | HDR  | H-Cursor | Tweakable | Controller 
+| :--                             | :--:          | :--:   | :--:   | :--: | :--:     | :-:       | :-:
+| [usbmmidd_v2]                   |               | ✅     | ❌    |  ❌  |  ❌     |           |
+| [IddSampleDriver]               | 1.2           | ❌     | ❌    |  ❌  |  ❌     |           |
+| [RustDeskIddDriver]             | 1.2           | ❌     | ❌    |  ❌  |  ❌     |           |
+| [Virtual-Display-Driver (HDR)]  | 1.10          | ❌     |       |  ✅  |  ❌     |            |
+| [virtual-display-rs]            | 1.5           | ❌     |       |  ❌   | ❌     |    ✅     |  ✅
+| parsec-vdd                      | 1.4           | ✅     | ✅    |  ❌  |  ✅     |   🆗     |  ✅
 
 ✅ - full support, 🆗 - limited support
 
@@ -117,8 +118,11 @@ The table below shows a comparison with other popular Indirect Display Driver pr
 [IddSampleDriver]: https://github.com/roshkins/IddSampleDriver
 [RustDeskIddDriver]: https://github.com/fufesou/RustDeskIddDriver
 [virtual-display-rs]: https://github.com/MolotovCherry/virtual-display-rs
+[Virtual-Display-Driver (HDR)]: https://github.com/itsmikethetech/Virtual-Display-Driver
 
-**Signed** means that the driver files have a valid digital signature. **Tweakable** is the ability to customize display modes. Visit [MSDN IddCx versions](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/iddcx-versions) to check the minimum supported Windows version.
+**Signed** means that the driver files have a valid digital signature.
+**H-Cursor** means hardware cursor support, without it you will get double cursor on some remote desktop apps.
+**Tweakable** is the ability to customize display modes. Visit [MSDN IddCx versions](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/iddcx-versions) to check the minimum supported Windows version.
 
 ## 📘 Parsec VDD Specs
 
