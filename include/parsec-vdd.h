@@ -29,13 +29,8 @@
 #define __PARSEC_VDD_H
 
 #include <windows.h>
-#include <setupapi.h>
 #include <cfgmgr32.h>
-
-#ifdef _MSC_VER
-#pragma comment(lib, "cfgmgr32.lib")
-#pragma comment(lib, "setupapi.lib")
-#endif
+#include <setupapi.h>
 
 #ifdef __cplusplus
 namespace parsec_vdd
@@ -72,7 +67,7 @@ static DeviceStatus QueryDeviceStatus(const GUID *classGuid, const char *deviceI
     ZeroMemory(&devInfoData, sizeof(SP_DEVINFO_DATA));
     devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
 
-    HDEVINFO devInfo = SetupDiGetClassDevsA(classGuid, NULL, NULL, DIGCF_PRESENT);
+    HDEVINFO devInfo = SetupDiGetClassDevs(classGuid, NULL, NULL, DIGCF_PRESENT);
 
     if (devInfo != INVALID_HANDLE_VALUE)
     {
