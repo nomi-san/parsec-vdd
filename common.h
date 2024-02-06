@@ -4,7 +4,7 @@
 
 namespace vdd_switcher
 {
-    const char *PIPE_NAME = "\\\\.\\pipe\\vddswitcherd";
+    const char *PIPE_NAME = R"(\\.\pipe\vddswitcherd)";
 
     enum Command : uint32_t
     {
