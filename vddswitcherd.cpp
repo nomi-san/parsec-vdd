@@ -11,8 +11,6 @@
 #include "common.h"
 #include "include/parsec-vdd.h"
 
-const char *PRIMARY_DISPLAY_NAME = R"(\\.\DISPLAY1)";
-
 bool process_request(const HANDLE &vdd, const vdd_switcher::Request &request, bool &vd)
 {
     if (request.command == vdd_switcher::Command::StopVirtualDisplay && vd)
@@ -62,48 +60,61 @@ void start(const HANDLE &vdd, DWORD x, DWORD y, DWORD r)
         updater.detach();
 
         parsec_vdd::VddAddDisplay(vdd);
-        std::cout << "width:" << x << std::endl;
-        std::cout << "height:" << y << std::endl;
-        std::cout << "framerate:" << r << std::endl;
 
-        std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> settings;
+        std::cout << "stream resolution:" << x << "x" << y << "@" << r << std::endl;
+        std::vector<std::tuple<DWORD, DWORD, DWORD>> resolutions;
 
         DISPLAY_DEVICE dd;
         dd.cb = sizeof(DISPLAY_DEVICE);
+
+        const size_t DEVICE_NAME_MAX = 32;
+        char device_name[DEVICE_NAME_MAX];
         for (DWORD i = 0; EnumDisplayDevices(NULL, i, &dd, 0); ++i)
         {
             if (!(dd.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) &&
-                (dd.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) && strcmp(dd.DeviceName, PRIMARY_DISPLAY_NAME) == 0)
+                (dd.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) && strcmp(dd.DeviceID, parsec_vdd::VDD_HARDWARE_ID) == 0)
             {
                 DEVMODE devMode;
                 int modeNum = 0;
-                while (EnumDisplaySettings(PRIMARY_DISPLAY_NAME, modeNum, &devMode))
+
+                strcpy_s(device_name, DEVICE_NAME_MAX, dd.DeviceName);
+
+                std::cout << device_name << " resolutions:" << std::endl;
+
+                while (EnumDisplaySettings(device_name, modeNum, &devMode))
                 {
-                    settings.emplace_back(
-                        devMode.dmPelsHeight,
+                    resolutions.emplace_back(
                         devMode.dmPelsWidth,
+                        devMode.dmPelsHeight,
                         devMode.dmDisplayFrequency);
+
+                    std::cout << "    " << devMode.dmPelsWidth << "x" << devMode.dmPelsHeight << "@" << devMode.dmDisplayFrequency << std::endl;
 
                     ++modeNum;
                 }
             }
         }
 
-        std::set<std::tuple<uint64_t, uint64_t, uint64_t>> resolutions(settings.begin(), settings.end());
-
-        if (resolutions.find({x, y, r}) != resolutions.end())
+        bool find = false;
+        for (auto resolution = resolutions.begin(); resolution != resolutions.end(); resolution++)
         {
-            DEVMODE devMode;
-            ZeroMemory(&devMode, sizeof(devMode));
-            devMode.dmSize = sizeof(devMode);
-            devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
-            devMode.dmPelsWidth = x;
-            devMode.dmPelsHeight = y;
-            devMode.dmDisplayFrequency = r;
+            if ((x == std::get<0>(*resolution)) && (y == std::get<1>(*resolution)) && (r == std::get<2>(*resolution)))
+            {
+                DEVMODE devMode;
+                ZeroMemory(&devMode, sizeof(devMode));
+                devMode.dmSize = sizeof(devMode);
+                devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
+                devMode.dmPelsWidth = x;
+                devMode.dmPelsHeight = y;
+                devMode.dmDisplayFrequency = r;
 
-            ChangeDisplaySettingsEx(PRIMARY_DISPLAY_NAME, &devMode, NULL, CDS_GLOBAL | CDS_UPDATEREGISTRY, NULL);
+                ChangeDisplaySettingsEx(device_name, &devMode, NULL, CDS_GLOBAL | CDS_UPDATEREGISTRY, NULL);
+                find = true;
+                break;
+            }
         }
-        else
+
+        if (!find)
         {
             std::cerr << "No match resolution in the primary display." << std::endl;
         }
@@ -164,23 +175,28 @@ int main(int argc, char *argv[])
 {
     int opt;
     bool async = false;
+    bool debug = false;
     DWORD x = 0;
     DWORD y = 0;
     DWORD r = 0;
 
     struct option long_options[] = {
         {"async", no_argument, NULL, 'a'},
+        {"debug", no_argument, NULL, 'd'},
         {"width", required_argument, NULL, 'x'},
         {"height", required_argument, NULL, 'y'},
         {"fps", required_argument, NULL, 'r'},
         {NULL, 0, NULL, 0}};
 
-    while ((opt = getopt_long(argc, argv, "ax:y:r:", long_options, NULL)) != -1)
+    while ((opt = getopt_long(argc, argv, "adx:y:r:", long_options, NULL)) != -1)
     {
         switch (opt)
         {
         case 'a':
             async = true;
+            break;
+        case 'd':
+            debug = true;
             break;
         case 'x':
             x = atoi(optarg);
@@ -192,14 +208,14 @@ int main(int argc, char *argv[])
             r = atoi(optarg);
             break;
         default:
-            std::cerr << "Usage:" << argv[0] << "--async --width <width> --height <height> --fps <fps>" << std::endl;
+            std::cerr << "Usage:" << argv[0] << "--width <width> --height <height> --fps <fps> (--async) (--debug)" << std::endl;
             exit(EXIT_FAILURE);
         }
     }
 
     if (x <= 0 || y <= 0 || r <= 0)
     {
-        std::cerr << "Usage:" << argv[0] << "--async --width <width> --height <height> --fps <fps>" << std::endl;
+        std::cerr << "Usage:" << argv[0] << "--width <width> --height <height> --fps <fps> (--async) (--debug)" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -208,13 +224,7 @@ int main(int argc, char *argv[])
         std::stringstream ss;
         ss << "--async"
            << " --width " << x << " --height " << y << " --fps " << r;
-        ShellExecute(NULL, "open", argv[0], ss.str().c_str(), NULL,
-#ifdef HIDE_CONSOLE
-                     SW_HIDE
-#else
-                     SW_SHOW
-#endif
-        );
+        ShellExecute(NULL, "open", argv[0], ss.str().c_str(), NULL, debug ? SW_SHOW : SW_HIDE);
 
         exit(EXIT_SUCCESS);
     }
