@@ -1,76 +1,30 @@
 #include <iostream>
+#include <sstream>
+#include <vector>
+#include <set>
+#include <getopt.h>
 #include <chrono>
 #include <thread>
 #include <unistd.h>
 #include <Windows.h>
 
 #include "common.h"
-#include "vddswitcherd.h"
 #include "include/parsec-vdd.h"
 
-int main(int argc, char *argv[])
+const char *PRIMARY_DISPLAY_NAME = R"(\\.\DISPLAY1)";
+
+bool process_request(const HANDLE &vdd, const vdd_switcher::Request &request, bool &vd)
 {
-    if (argc > 1)
+    if (request.command == vdd_switcher::Command::StopVirtualDisplay && vd)
     {
-        std::string command = argv[1];
-
-        if (command != "async")
-        {
-            std::cerr << "Invalid command!" << std::endl;
-            return 1;
-        }
-    }
-    else
-    {
-        TCHAR currentPath[MAX_PATH];
-        GetModuleFileName(NULL, currentPath, MAX_PATH);
-        ShellExecute(NULL, "open", currentPath, "async", NULL,
-#ifdef HIDE_CONSOLE
-                     SW_HIDE
-#else
-                     SW_SHOW
-#endif
-        );
-        return 0;
+        parsec_vdd::VddRemoveDisplay(vdd, 0);
+        return false;
     }
 
-    auto hMutex = CreateMutex(NULL, TRUE, "586291D7-3993-5607-8C32-F2E7569E1DCA");
-    if (GetLastError() == ERROR_ALREADY_EXISTS)
-    {
-        std::cerr << "You can only run one vddswitcherd instance at a time." << std::endl;
-        CloseHandle(hMutex);
-        return 0;
-    }
-
-    do
-    {
-        auto status = parsec_vdd::QueryDeviceStatus(&parsec_vdd::VDD_CLASS_GUID, parsec_vdd::VDD_HARDWARE_ID);
-        if (status != parsec_vdd::DEVICE_OK)
-        {
-            std::cerr << "Parsec VDD device is not OK, got status" << status << "." << std::endl;
-            break;
-        }
-
-        auto vdd = parsec_vdd::OpenDeviceHandle(&parsec_vdd::VDD_ADAPTER_GUID);
-        if (vdd == NULL || vdd == INVALID_HANDLE_VALUE)
-        {
-            std::cerr << "Failed to obtain the device handle." << std::endl;
-            break;
-        }
-
-        start(vdd);
-
-        // Close the device handle.
-        parsec_vdd::CloseDeviceHandle(vdd);
-
-    } while (0);
-
-    CloseHandle(hMutex);
-
-    return 0;
+    return true;
 }
 
-void start(const HANDLE &vdd)
+void start(const HANDLE &vdd, DWORD x, DWORD y, DWORD r)
 {
     std::byte buffer[vdd_switcher::REQUEST_SIZE];
     DWORD bytesRead;
@@ -108,7 +62,51 @@ void start(const HANDLE &vdd)
         updater.detach();
 
         parsec_vdd::VddAddDisplay(vdd);
-        std::cout << "width:" << getenv("SUNSHINE_CLIENT_WIDTH") << std::endl;
+        std::cout << "width:" << x << std::endl;
+        std::cout << "height:" << y << std::endl;
+        std::cout << "framerate:" << r << std::endl;
+
+        std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> settings;
+
+        DISPLAY_DEVICE dd;
+        dd.cb = sizeof(DISPLAY_DEVICE);
+        for (DWORD i = 0; EnumDisplayDevices(NULL, i, &dd, 0); ++i)
+        {
+            if (!(dd.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) &&
+                (dd.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) && strcmp(dd.DeviceName, PRIMARY_DISPLAY_NAME) == 0)
+            {
+                DEVMODE devMode;
+                int modeNum = 0;
+                while (EnumDisplaySettings(PRIMARY_DISPLAY_NAME, modeNum, &devMode))
+                {
+                    settings.emplace_back(
+                        devMode.dmPelsHeight,
+                        devMode.dmPelsWidth,
+                        devMode.dmDisplayFrequency);
+
+                    ++modeNum;
+                }
+            }
+        }
+
+        std::set<std::tuple<uint64_t, uint64_t, uint64_t>> resolutions(settings.begin(), settings.end());
+
+        if (resolutions.find({x, y, r}) != resolutions.end())
+        {
+            DEVMODE devMode;
+            ZeroMemory(&devMode, sizeof(devMode));
+            devMode.dmSize = sizeof(devMode);
+            devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+            devMode.dmPelsWidth = x;
+            devMode.dmPelsHeight = y;
+            devMode.dmDisplayFrequency = r;
+
+            ChangeDisplaySettingsEx(PRIMARY_DISPLAY_NAME, &devMode, NULL, CDS_GLOBAL | CDS_UPDATEREGISTRY, NULL);
+        }
+        else
+        {
+            std::cerr << "No match resolution in the primary display." << std::endl;
+        }
 
         while (running)
         {
@@ -162,13 +160,97 @@ void start(const HANDLE &vdd)
     CloseHandle(hPipe);
 }
 
-bool process_request(const HANDLE &vdd, const vdd_switcher::Request &request, bool &vd)
+int main(int argc, char *argv[])
 {
-    if (request.command == vdd_switcher::Command::StopVirtualDisplay && vd)
+    int opt;
+    bool async = false;
+    DWORD x = 0;
+    DWORD y = 0;
+    DWORD r = 0;
+
+    struct option long_options[] = {
+        {"async", no_argument, NULL, 'a'},
+        {"width", required_argument, NULL, 'x'},
+        {"height", required_argument, NULL, 'y'},
+        {"fps", required_argument, NULL, 'r'},
+        {NULL, 0, NULL, 0}};
+
+    while ((opt = getopt_long(argc, argv, "ax:y:r:", long_options, NULL)) != -1)
     {
-        parsec_vdd::VddRemoveDisplay(vdd, 0);
-        return false;
+        switch (opt)
+        {
+        case 'a':
+            async = true;
+            break;
+        case 'x':
+            x = atoi(optarg);
+            break;
+        case 'y':
+            y = atoi(optarg);
+            break;
+        case 'r':
+            r = atoi(optarg);
+            break;
+        default:
+            std::cerr << "Usage:" << argv[0] << "--async --width <width> --height <height> --fps <fps>" << std::endl;
+            exit(EXIT_FAILURE);
+        }
     }
 
-    return true;
+    if (x <= 0 || y <= 0 || r <= 0)
+    {
+        std::cerr << "Usage:" << argv[0] << "--async --width <width> --height <height> --fps <fps>" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (!async)
+    {
+        std::stringstream ss;
+        ss << "--async"
+           << " --width " << x << " --height " << y << " --fps " << r;
+        ShellExecute(NULL, "open", argv[0], ss.str().c_str(), NULL,
+#ifdef HIDE_CONSOLE
+                     SW_HIDE
+#else
+                     SW_SHOW
+#endif
+        );
+
+        exit(EXIT_SUCCESS);
+    }
+
+    auto hMutex = CreateMutex(NULL, TRUE, "586291D7-3993-5607-8C32-F2E7569E1DCA");
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        std::cerr << "You can only run one vddswitcherd instance at a time." << std::endl;
+        CloseHandle(hMutex);
+        exit(EXIT_SUCCESS);
+    }
+
+    do
+    {
+        auto status = parsec_vdd::QueryDeviceStatus(&parsec_vdd::VDD_CLASS_GUID, parsec_vdd::VDD_HARDWARE_ID);
+        if (status != parsec_vdd::DEVICE_OK)
+        {
+            std::cerr << "Parsec VDD device is not OK, got status" << status << "." << std::endl;
+            break;
+        }
+
+        auto vdd = parsec_vdd::OpenDeviceHandle(&parsec_vdd::VDD_ADAPTER_GUID);
+        if (vdd == NULL || vdd == INVALID_HANDLE_VALUE)
+        {
+            std::cerr << "Failed to obtain the device handle." << std::endl;
+            break;
+        }
+
+        start(vdd, x, y, r);
+
+        // Close the device handle.
+        parsec_vdd::CloseDeviceHandle(vdd);
+
+    } while (0);
+
+    CloseHandle(hMutex);
+
+    exit(EXIT_SUCCESS);
 }
