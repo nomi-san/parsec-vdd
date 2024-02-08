@@ -64,6 +64,8 @@ void start(const HANDLE &vdd, DWORD x, DWORD y, DWORD r)
         std::cout << "stream resolution:" << x << "x" << y << "@" << r << std::endl;
         std::vector<std::tuple<DWORD, DWORD, DWORD>> resolutions;
 
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
         DISPLAY_DEVICE dd;
         dd.cb = sizeof(DISPLAY_DEVICE);
 
