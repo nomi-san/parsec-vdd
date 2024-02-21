@@ -4,52 +4,46 @@
 
 主要功能：
 
-- 开始串流时创建虚拟显示器
+- 开始串流时创建虚拟显示器，禁用实体显示器
 
-- 自动根据 moonlight 客户端设置的分辨率设置虚拟显示器的分辨率(如果支持的话)
+- 自动根据 moonlight 客户端设置的分辨率设置虚拟显示器的分辨率(如果不支持你设备的分辨率，请根据3自定义，最多可配置5个自定义分辨率)
 
 - 结束串流时关闭虚拟显示器
 
 ## 使用方法
 
-确保你已经安装了以下驱动
-
-- [parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe) 
-
-将 `vddswitcher.exe` 和 `vddswitcherd.exe` 放到你喜欢的位置
-
-首次使用需要先配置虚拟桌面为主显示器：
-
-右键开始图标 - 运行 - 输入 `cmd`
-在打开的 cmd 窗口中输入 
-
-`cmd /C "vddswitcherd.exe的路径" -x "你的主显示器像素宽度" -y "你的主显示器像素高度" -r "你的主显示器刷新率"`
-
-此时将创建一个和你主显示器相同分辨率的虚拟显示器。
-
-进入显示器配置页，选择创建出来的虚拟显示器，勾选设置为主显示器。(注意，此操作将会让你的桌面变得奇怪，但是这一切都是可以恢复的)
-
-你发现你的鼠标找不到了，一些窗口也被移动到了虚拟显示器，此时不管你做什么都不如重启一下电脑来的方便。
-
-重启电脑之后，你会发现虚拟显示器已经消失了。
-
+### 1.安装[Virtual Display Driver parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe)
+### 2.将 [`vddswitcher.exe`](https://github.com/VergilGao/vddswitcher/releases/download/v0.2.1/vddswitcher.exe) 和 [`vddswitcherd.exe`](https://github.com/VergilGao/vddswitcher/releases/download/v0.2.1/vddswitcherd.exe) 放到你喜欢的位置
+### 3.自定义分辨率
+> 对照下面支持的分辨率，如果你需要的分辨率在列举中可以跳过此步骤
+查看parsec官网，根据教程在注册表添加自己需要的分辨率 [VDD Advanced Configuration](https://support.parsec.app/hc/en-us/articles/4423615425293-VDD-Advanced-Configuration)
+### 4.配置sunshine
 打开 sunshine 转到 `Configuration - General` 
 
 最下方 Do Command 栏填入 `cmd /C "vddswitcherd.exe的路径" -x %SUNSHINE_CLIENT_WIDTH% -y %SUNSHINE_CLIENT_HEIGHT% -r %SUNSHINE_CLIENT_FPS%`
 
 例如:
-
 `cmd /C "D:\game\utils\vddswitcher\vddswitcherd.exe"  -x %SUNSHINE_CLIENT_WIDTH% -y %SUNSHINE_CLIENT_HEIGHT% -r %SUNSHINE_CLIENT_FPS%`
 
-Undo Command 栏填入 `cmd /C "vddswitcherd.exe的路径"`
+Undo Command 栏填入 `cmd /C taskkill /f /t /im vddswitcherd.exe`
 
-例如:
+保存并提交
 
-`cmd /C "D:\game\utils\vddswitcher\vddswitcher.exe"`
+### 5.启动moonlight连接到sunshine，在屏幕设置中设置仅在屏幕2显示
 
-保存并提交，等待重启后，使用 moonlight 进入桌面。
+> 以上即可实现连接到sunshine自动禁用实体显示器，断开sunshine关闭虚拟显示器。注意这里说的关闭是在moonlight退出，仅退出串流画面是不会关闭的
 
-进入显示器配置页，将虚拟显示器外的其他显示器禁用来节约能源。
+## 命令行单独使用
+```cmd
+vddswitcherd.exe -x 屏幕宽度 -y 屏幕高度 -r 刷新率
+
+##例如开启一个1920x1080@60的虚拟显示器
+vddswitcherd.exe -x 1920 -y 1080 -r 60
+```
+
+## 如何关闭虚拟显示器
+1. 方法一：任务管理器找到vddswitcherd.exe关闭
+2. 方法二：命令行输入`cmd /C taskkill /f /t /im vddswitcherd.exe`
 
 ## 支持的分辨率
 
