@@ -29,7 +29,7 @@ Undo Command 栏填入 `cmd /C taskkill /f /t /im vddswitcherd.exe`
 
 保存并提交
 
-### 5.启动moonlight连接到sunshine，在屏幕设置中设置仅在屏幕2显示
+### 5.启动moonlight连接到sunshine，在屏幕设置中设置仅在屏幕2显示；此时moonlight画面会卡住，退出重新连接就可以。这里只有30秒时间来确认
 
 > 以上即可实现连接到sunshine自动禁用实体显示器，断开sunshine关闭虚拟显示器。注意这里说的关闭是在moonlight退出，仅退出串流画面是不会关闭的
 
