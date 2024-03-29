@@ -1,0 +1,55 @@
+﻿<UserControl
+    x:Class="ParsecVDisplay.Components.DisplayItem"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:ParsecVDisplay.Components"
+    mc:Ignorable="d" 
+    Width="160" Height="100"
+    d:Background="Black"
+>
+    <Grid Margin="5" MouseDown="UserControl_MouseDown" MouseUp="UserControl_MouseUp">
+        <Rectangle StrokeThickness="2" Stroke="#FFF" />
+        <TextBlock Text="{Binding DisplayNum}" d:Text="1" FontSize="24" FontWeight="SemiBold" Foreground="#FFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,5" />
+        <TextBlock Grid.Row="1" Text="{Binding DisplayMode}" d:Text="1920 x 1080 @ 60 Hz" FontSize="12" Foreground="White" TextAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8" />
+        <Grid.Style>
+            <Style TargetType="{x:Type Grid}">
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#3FFF"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+    </Grid>
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="{Binding DisplayName}" />
+            <MenuItem Header="{Binding DisplayPath}" />
+            <MenuItem IsEnabled="False" Header="ParsecVDA">
+                <MenuItem.Icon>
+                    <Image Source="../app.ico" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem x:Name="xResolution" Click="ChangeResolution" Header="Resolution" IsEnabled="{Binding Active}">
+                <MenuItem Header="3260 x 2140" />
+                <MenuItem Header="1920 x 1080" />
+                <MenuItem Header="1280 x 720" />
+            </MenuItem>
+            <MenuItem x:Name="xRefreshRate" Click="ChangeRefreshRate" Header="Refresh rate" IsEnabled="{Binding Active}">
+                <MenuItem Header="60 Hz" />
+            </MenuItem>
+            <MenuItem x:Name="xOrientation" Click="ChangeOrientation" Header="Orientation" IsEnabled="{Binding Active}">
+                <MenuItem Header="Landscape" />
+                <MenuItem Header="Portrait" />
+                <MenuItem Header="Landscape (flipped)" />
+                <MenuItem Header="Portrait (flipped)" />
+            </MenuItem>
+            <MenuItem Click="TakeScreenshot" Header="Take Screenshot" IsEnabled="{Binding Active}" />
+            <Separator />
+            <MenuItem Click="RemoveDisplay" Header="Remove" />
+        </ContextMenu>
+    </UserControl.ContextMenu>
+</UserControl>
