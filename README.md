@@ -1,6 +1,3 @@
-> [!TIP]
-> Please help me get to 512 stars ✨
-
 <br>
 
 <p align="center">
@@ -40,20 +37,23 @@ The full source code and production app will be released soon. Here is the previ
 
 Make sure you have installed the driver:
 - [parsec-vdd-v0.38](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe)
-- [parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe) (recommended)
+- [parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe)
+- [parsec-vdd-v0.45](https://builds.parsec.app/vdd/parsec-vdd-0.45.0.0.exe) (recommended)
 
 The core API is designed as single C/C++ header, see 👉 [parsec-vdd.h](./parsec-vdd.h). It has detailed comments, and can be added to any existing projects. There is also a simple usage demo, see 👉 [parsec-vdd-demo.cc](./parsec-vdd-demo.cc). 
 
-You can also unzip the driver setup to obtain the driver files and `devcon` CLI.
+You can also unzip the driver setup to obtain the driver files and `nefconw` CLI.
 
 ```
-./ devcon.exe driver/ mm.cat mm.dll mm.dl
+./ nefconw.exe driver/ mm.cat mm.dll mm.inf
 ```
 
-Command line method to install the driver using `devcon` (requires admin):
+Command line method to install the driver using `nefconw` (may require admin):
 
 ```
-admin$ > devcon install driver\mm.inf Root\Parsec\VDA
+start /wait .\nefconw.exe --remove-device-node --hardware-id Root\Parsec\VDA --class-guid "4D36E968-E325-11CE-BFC1-08002BE10318"
+start /wait .\nefconw.exe --create-device-node --class-name Display --class-guid "4D36E968-E325-11CE-BFC1-08002BE10318" --hardware-id Root\Parsec\VDA
+start /wait .\nefconw.exe --install-driver --inf-path ".\driver\mm.inf"
 ```
 
 ## 😥 Known Limitations
@@ -64,11 +64,7 @@ admin$ > devcon install driver\mm.inf Root\Parsec\VDA
 
 Parsec VDD does not support HDR on its displays (see the EDID below). Theoretically, you can unlock support by editing the EDID, then adding HDR metadata and setting 10-bit+ color depth. Unfortunately, you cannot flash its firmware like a physical device, or modify the registry value.
 
-All IDDs have their own fixed EDID block inside the driver binary to initialize the monitor specs. So the solution is to modify this block in the driver DLL (mm.dll), then update it with `devcon` CLI.
-
-```
-admin$ > devcon update driver\mm.inf Root\Parsec\VDA
-```
+All IDDs have their own fixed EDID block inside the driver binary to initialize the monitor specs. So the solution is to modify this block in the driver DLL (mm.dll), then reinstall it with `nefconw` CLI (see above).
 
 ### 2. Custom resolutions
 
@@ -109,7 +105,7 @@ The table below shows a comparison with other popular Indirect Display Driver pr
 | [IddSampleDriver]               | 1.2           | ❌     | ❌    |  ❌  |  ❌     |           |
 | [RustDeskIddDriver]             | 1.2           | ❌     | ❌    |  ❌  |  ❌     |           |
 | [Virtual-Display-Driver (HDR)]  | 1.10          | ❌     |       |  ✅  |  ❌     |            |
-| [virtual-display-rs]            | 1.5           | ❌     |       |  ❌   | ❌     |    ✅     |  ✅
+| [virtual-display-rs]            | 1.5           | ❌     |       |  ❌   | [#81](https://github.com/MolotovCherry/virtual-display-rs/issues/81)     |    ✅     |  ✅
 | parsec-vdd                      | 1.4           | ✅     | ✅    |  ❌  |  ✅     |   🆗     |  ✅
 
 ✅ - full support, 🆗 - limited support
