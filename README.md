@@ -48,7 +48,7 @@ change resolution and take screenshot, and more..
 👉 Check out [Releases](https://github.com/nomi-san/parsec-vdd/releases) to download it.
 
 <p align="center">
-  <img src="https://github.com/nomi-san/parsec-vdd/assets/38210249/f7e54a14-de4f-4592-9c26-25442b87755a" />
+  <img src="https://github.com/nomi-san/parsec-vdd/assets/38210249/71b25bc6-eee1-4d80-94e0-e39eab7f8fb9" />
 </p>
 
 ## 🚀 Using Core API
