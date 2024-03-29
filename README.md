@@ -45,8 +45,7 @@ and Winforms. It can show the number of virtual displays added, allows adding
 multiple virtual displays and removing a specific selected one. Also allows to
 change resolution and take screenshot, and more..
 
-The full source code and production app will be released soon. Here is the
-preview:
+👉 Check out [Releases](https://github.com/nomi-san/parsec-vdd/releases) to download it.
 
 <p align="center">
   <img src="https://github.com/nomi-san/parsec-vdd/assets/38210249/f7e54a14-de4f-4592-9c26-25442b87755a" />
