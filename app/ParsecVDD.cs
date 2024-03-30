@@ -42,6 +42,12 @@ namespace ParsecVDisplay
                 SystemEvents.DisplaySettingsChanged += DisplaySettingsChanged;
                 SystemEvents.SessionEnding += SessionEnding;
 
+                DisplayCount = Config.DisplayCount;
+                for(int i = 0; i < DisplayCount; ++i)
+                {
+                    AddDisplay();
+                }
+
                 return true;
             }
 
@@ -56,7 +62,9 @@ namespace ParsecVDisplay
             Cancellation?.Cancel();
             UpdateTask?.Wait();
 
+            OnAppClose();
             Device.CloseHandle(VddHandle);
+
         }
 
         static async void UpdateRoutine(CancellationToken token)
@@ -108,6 +116,11 @@ namespace ParsecVDisplay
         }
 
         static void SessionEnding(object sender, SessionEndingEventArgs e)
+        {
+            OnAppClose();
+        }
+
+        static void OnAppClose()
         {
             Config.DisplayCount = DisplayCount;
         }
