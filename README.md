@@ -6,7 +6,7 @@
   <p align="center">
     ✨ Standalone <strong>Parsec Virtual Display</strong>
     <br />
-    Create virtual displays up to <strong>4K@240Hz</strong>
+    Create virtual display up to <strong>4K@240Hz</strong>
   </p>
 </p>
 
@@ -41,7 +41,7 @@ without relying on the [Parsec app](https://parsec.app/).
 ## 📺 ParsecVDisplay App
 
 This is a complete driver application to control the Parsec VDD, written in C#
-and Winforms. It can show the number of virtual displays added, allows adding
+and WPF. It can show the number of virtual displays added, allows adding
 multiple virtual displays and removing a specific selected one. Also allows to
 change resolution and take screenshot, and more..
 
@@ -51,11 +51,13 @@ change resolution and take screenshot, and more..
   <img src="https://github.com/nomi-san/parsec-vdd/assets/38210249/71b25bc6-eee1-4d80-94e0-e39eab7f8fb9" />
 </p>
 
+Full source code of this application is located in the [app](./app) folder.
+
 ## 🚀 Using Core API
 
 Make sure you have installed the driver:
 
-- [parsec-vdd-v0.38](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe)
+- [~~parsec-vdd-v0.38~~](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe)
 - [parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe)
 - [parsec-vdd-v0.45](https://builds.parsec.app/vdd/parsec-vdd-0.45.0.0.exe)
   (recommended)
@@ -78,6 +80,12 @@ Command line method to install the driver using `nefconw` (may require admin):
 start /wait .\nefconw.exe --remove-device-node --hardware-id Root\Parsec\VDA --class-guid "4D36E968-E325-11CE-BFC1-08002BE10318"
 start /wait .\nefconw.exe --create-device-node --class-name Display --class-guid "4D36E968-E325-11CE-BFC1-08002BE10318" --hardware-id Root\Parsec\VDA
 start /wait .\nefconw.exe --install-driver --inf-path ".\driver\mm.inf"
+```
+
+In additional, you can run the driver setup in silent mode to install it quickly.
+
+```
+.\parsec-vdd-0.45.0.0.exe /S
 ```
 
 ## 😥 Known Limitations
