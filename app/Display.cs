@@ -300,19 +300,23 @@ namespace ParsecVDisplay
 
         static List<string> GetDisplayPaths()
         {
+            var paths = new List<string>();
+
             using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\monitor\Enum", false))
             {
-                var paths = new List<string>();
-                int count = Convert.ToInt32(key.GetValue("Count", 0));
-
-                for (int i = 0; i < count; ++i)
+                if (key != null)
                 {
-                    var path = key.GetValue($"{i}");
-                    paths.Add(Convert.ToString(path));
-                }
+                    int count = Convert.ToInt32(key.GetValue("Count", 0));
 
-                return paths;
+                    for (int i = 0; i < count; ++i)
+                    {
+                        var path = key.GetValue($"{i}");
+                        paths.Add(Convert.ToString(path));
+                    }
+                }
             }
+
+            return paths;
         }
 
         static int ParseDisplayAddress(string path)
