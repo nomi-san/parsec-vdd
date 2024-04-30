@@ -12,7 +12,7 @@ namespace ParsecVDisplay
     {
         const string ID = "QpHOX8IBUHBznGtqk9xm1";
         public const string NAME = "ParsecVDisplay";
-        public const string VERSION = "0.45.0";
+        public const string VERSION = "0.45.2";
 
         public static bool Silent { get; private set; }
 
