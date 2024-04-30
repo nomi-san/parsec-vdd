@@ -3,7 +3,7 @@
 #define MyAppPublisher "Nguyen Duy"
 #define MyAppURL "https://github.com/nomi-san/parsec-vdd"
 #define MyAppExeName "ParsecVDisplay.exe"
-#define MyAppCopyright "© 2024 Nguyen Duy. All rights reserved."
+#define MyAppCopyright "ï¿½ 2024 Nguyen Duy. All rights reserved."
 
 #define _Major
 #define _Minor
@@ -61,4 +61,4 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 Filename: "{app}\driver\parsec-vdd-setup.exe"; Parameters: "/S"; Flags: runascurrentuser; Tasks: install_vdd
 
 [Registry]
-Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletevalue; Tasks: add_startup
+Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"" -silent"; Flags: uninsdeletevalue; Tasks: add_startup
