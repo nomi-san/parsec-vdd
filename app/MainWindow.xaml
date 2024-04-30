@@ -8,7 +8,7 @@
     xmlns:components="clr-namespace:ParsecVDisplay.Components"
     mc:Ignorable="d"
 
-    Icon="app.ico"
+    Icon="./Resources/icon.ico"
     WindowStyle="None"
     BorderThickness="0"
     Width="800" Height="450"
@@ -49,7 +49,7 @@
 
         <StackPanel Margin="25,0,0,20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="230">
             <StackPanel Orientation="Horizontal">
-                <Image Source="app.ico" Width="20" Height="18" Margin="0,0,5,0" />
+                <Image Source="./Resources/icon.ico" Width="20" Height="18" Margin="0,0,5,0" />
                 <Label x:Name="xAppName" Content="ParsecVDisplay" FontSize="14" Cursor="Hand" MouseDown="QueryStatus">
                     <Label.Style>
                         <Style TargetType="Label">
@@ -88,7 +88,7 @@
         <ContextMenu>
             <MenuItem Header="{x:Static local:App.NAME}" Click="QueryStatus">
                 <MenuItem.Icon>
-                    <Image Source="app.ico" />
+                    <Image Source="./Resources/icon.ico" />
                 </MenuItem.Icon>
             </MenuItem>
             <Separator />

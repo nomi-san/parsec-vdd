@@ -29,7 +29,7 @@
             <MenuItem Header="{Binding DisplayPath}" />
             <MenuItem IsEnabled="False" Header="ParsecVDA">
                 <MenuItem.Icon>
-                    <Image Source="../app.ico" />
+                    <Image Source="../Resources/icon.ico" />
                 </MenuItem.Icon>
             </MenuItem>
             <Separator />
