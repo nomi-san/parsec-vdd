@@ -8,6 +8,10 @@
     <br />
     Create virtual display up to <strong>4K@240Hz</strong>
   </p>
+  <p align="center">
+    <img src="https://img.shields.io/github/stars/nomi-san/parsec-vdd?style=for-the-badge&logo=github" />
+    <img src="https://img.shields.io/github/downloads/nomi-san/parsec-vdd/total?style=for-the-badge&label=Downloads" />
+  </p>
 </p>
 
 <br>
