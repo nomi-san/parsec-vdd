@@ -59,6 +59,8 @@ namespace ParsecVDisplay
         {
             Loaded -= Window_Loaded;
 
+            CheckUpdate(null, null);
+
             if (App.Silent)
                 Hide();
 
@@ -167,7 +169,35 @@ namespace ParsecVDisplay
         private void OpenRepoLink(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
-            Helper.OpenLink("https://github.com/nomi-san/parsec-vdd");
+            Helper.OpenLink($"https://github.com/{App.GITHUB_REPO}");
+        }
+
+        private async void CheckUpdate(object sender, RoutedEventArgs e)
+        {
+            var oldText = xMICheckUpdate.Header;
+            xMICheckUpdate.Header = "Checking for update...";
+            xMICheckUpdate.IsEnabled = false;
+
+            var newVersion = await Updater.CheckUpdate();
+            if (!string.IsNullOrEmpty(newVersion))
+            {
+                var ret = MessageBox.Show(this,
+                    $"A new version — v{newVersion} is available!\n" +
+                    $"To keep your experience optimal, please update it now.",
+                    App.NAME, MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (ret == MessageBoxResult.Yes)
+                {
+                    Helper.OpenLink(Updater.DOWNLOAD_URL);
+                }
+            }
+            else if (sender != null)
+            {
+                MessageBox.Show(this, "Your app version is up-to-date.",
+                    App.NAME, MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            xMICheckUpdate.Header = oldText;
+            xMICheckUpdate.IsEnabled = true;
         }
     }
 }

@@ -99,6 +99,8 @@
             <MenuItem Header="Fallback display" IsCheckable="True" IsChecked="{Binding Path=(local:Config.FallbackDisplay), Mode=TwoWay}" />
             <MenuItem Header="Keep screen on" IsCheckable="True" IsChecked="{Binding Path=(local:Config.KeepScreenOn), Mode=TwoWay}" />
             <Separator />
+            <MenuItem Header="Check for update" x:Name="xMICheckUpdate" Click="CheckUpdate" />
+            <Separator />
             <MenuItem Header="Exit" Click="ExitApp" />
         </ContextMenu>
     </Window.ContextMenu>

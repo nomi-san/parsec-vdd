@@ -86,6 +86,7 @@
     <Compile Include="Shadow.cs" />
     <Compile Include="Tray.cs" />
     <Compile Include="ParsecVDD.cs" />
+    <Compile Include="Updater.cs" />
     <Page Include="Components\Button.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
