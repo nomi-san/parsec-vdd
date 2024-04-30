@@ -29,6 +29,14 @@ namespace ParsecVDisplay
                 var modes = Display.ParseModes(e.Args[1]);
                 ParsecVDD.SetCustomDisplayModes(modes);
 
+                if (e.Args.Length >= 3)
+                {
+                    if (Enum.TryParse<ParsecVDD.ParentGPU>(e.Args[2], true, out var kind))
+                    {
+                        ParsecVDD.SetParentGPU(kind);
+                    }
+                }
+
                 Shutdown();
                 return;
             }

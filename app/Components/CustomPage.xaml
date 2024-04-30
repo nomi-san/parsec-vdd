@@ -77,6 +77,14 @@
                 <Label>Hz</Label>
             </StackPanel>
         </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25,0,0,25">
+            <TextBlock Text="Parent GPU:" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
+            <ComboBox x:Name="xParentGPU" Width="80" FontSize="14" SelectedIndex="0" BorderBrush="Transparent" Background="Transparent" Margin="10,0,0,0">
+                <ComboBoxItem Content="Auto" />
+                <ComboBoxItem Content="AMD" />
+                <ComboBoxItem Content="NVIDIA" />
+            </ComboBox>
+        </StackPanel>
         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0,0,25,25">
             <local:Button Click="ApplyChanges" Width="120" Height="36" Foreground="White">
                 <local:Button.Children>

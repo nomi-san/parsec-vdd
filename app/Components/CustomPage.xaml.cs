@@ -14,6 +14,12 @@ namespace ParsecVDisplay.Components
         public CustomPage()
         {
             InitializeComponent();
+
+            xParentGPU.Items.Clear();
+            foreach (var item in Enum.GetValues(typeof(ParsecVDD.ParentGPU)))
+            {
+                xParentGPU.Items.Add(item.ToString());
+            }
         }
 
         private void ApplyChanges(object sender, EventArgs e)
@@ -44,15 +50,19 @@ namespace ParsecVDisplay.Components
                 }
             }
 
-            if (modes.Count > 0)
+            ParsecVDD.ParentGPU parentGPU;
+            bool validParentGPU = Enum.TryParse(xParentGPU.SelectedValue.ToString(), true, out parentGPU);
+
+            if (modes.Count > 0 && validParentGPU)
             {
                 if (Helper.IsAdmin())
                 {
                     ParsecVDD.SetCustomDisplayModes(modes);
+                    ParsecVDD.SetParentGPU(parentGPU);
                 }
                 else
                 {
-                    var args = $"-custom \"{Display.DumpModes(modes)}\"";
+                    var args = $"-custom \"{Display.DumpModes(modes)}\" \"{parentGPU}\"";
                     if (Helper.RunAdminTask(args) == false)
                     {
                         MessageBox.Show("Could not set custom resolutions, access denied!",
@@ -77,6 +87,9 @@ namespace ParsecVDisplay.Components
                 TextBoxes[i + 1].Text = $"{modes[j].Height}";
                 TextBoxes[i + 2].Text = $"{modes[j].Hz}";
             }
+
+            var parentGPU = ParsecVDD.GetParentGPU();
+            xParentGPU.SelectedValue = parentGPU.ToString();
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)

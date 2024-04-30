@@ -269,6 +269,54 @@ namespace ParsecVDisplay
             }
         }
 
+        public enum ParentGPU
+        {
+            Auto = 0,
+            NVIDIA = 0x10DE,
+            AMD = 0x1002,
+        }
+
+        public static ParentGPU GetParentGPU()
+        {
+            using (var parameters = Registry.LocalMachine.OpenSubKey(
+                "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WUDF\\Services\\ParsecVDA\\Parameters",
+                RegistryKeyPermissionCheck.ReadSubTree))
+            {
+                if (parameters != null)
+                {
+                    object value = parameters.GetValue("PreferredRenderAdapterVendorId");
+                    if (value != null)
+                    {
+                        return (ParentGPU)Convert.ToInt32(value);
+                    }
+                }
+            }
+
+            return ParentGPU.Auto;
+        }
+
+        // Requires admin perm
+        public static void SetParentGPU(ParentGPU kind)
+        {
+            using (var parameters = Registry.LocalMachine.OpenSubKey(
+                "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WUDF\\Services\\ParsecVDA\\Parameters",
+                RegistryKeyPermissionCheck.ReadWriteSubTree))
+            {
+                if (parameters != null)
+                {
+                    if (kind == ParentGPU.Auto)
+                    {
+                        parameters.DeleteValue("PreferredRenderAdapterVendorId", false);
+                    }
+                    else
+                    {
+                        parameters.SetValue("PreferredRenderAdapterVendorId",
+                            (uint)kind, RegistryValueKind.DWord);
+                    }
+                }
+            }
+        }
+
         static unsafe class Native
         {
             [DllImport("kernel32.dll")]
