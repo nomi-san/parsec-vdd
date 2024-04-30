@@ -3,7 +3,7 @@
 #define MyAppPublisher "Nguyen Duy"
 #define MyAppURL "https://github.com/nomi-san/parsec-vdd"
 #define MyAppExeName "ParsecVDisplay.exe"
-#define MyAppCopyright "� 2024 Nguyen Duy. All rights reserved."
+#define MyAppCopyright "(c) 2024 Nguyen Duy."
 
 #define _Major
 #define _Minor
