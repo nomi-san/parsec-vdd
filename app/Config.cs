@@ -9,6 +9,12 @@ namespace ParsecVDisplay
         static string REG_PATH => $"HKEY_CURRENT_USER\\SOFTWARE\\{App.NAME}";
         static string REG_STARTUP_PATH => @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
+        public static string Language
+        {
+            get => GetString(nameof(Language), "English");
+            set => SetString(nameof(Language), value);
+        }
+
         public static int DisplayCount
         {
             get => GetInt(nameof(DisplayCount));
@@ -34,6 +40,17 @@ namespace ParsecVDisplay
                 SetInt(nameof(KeepScreenOn), value ? 1 : 0);
                 Helper.StayAwake(value);
             }
+        }
+
+        static string GetString(string key, string @default)
+        {
+            var value = Registry.GetValue(REG_PATH, key, null);
+            return value == null ? @default : Convert.ToString(value);
+        }
+
+        static void SetString(string key, string value)
+        {
+            Registry.SetValue(REG_PATH, key, value, RegistryValueKind.String);
         }
 
         static int GetInt(string key, int @default = 0)

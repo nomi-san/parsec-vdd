@@ -11,6 +11,8 @@ namespace ParsecVDisplay
 {
     public partial class MainWindow : Window
     {
+        public static bool IsMenuOpen;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -64,7 +66,31 @@ namespace ParsecVDisplay
             if (App.Silent)
                 Hide();
 
+            var defaultLang = Config.Language;
+            foreach (var item in App.Languages)
+            {
+                var mi = new MenuItem
+                {
+                    Header = item,
+                    IsCheckable = true,
+                    IsChecked = item == defaultLang
+                };
+
+                mi.Click += delegate
+                {
+                    foreach (MenuItem item2 in xLanguageMenu.Items)
+                        item2.IsChecked = false;
+
+                    mi.IsChecked = true;
+                    App.SetLanguage(mi.Header.ToString());
+                };
+
+                xLanguageMenu.Items.Add(mi);
+            }
+
             ContextMenu.DataContext = this;
+            ContextMenu.Resources = App.Current.Resources;
+
             Tray.Init(this, ContextMenu);
             ContextMenu = null;
 
@@ -198,6 +224,17 @@ namespace ParsecVDisplay
 
             xMICheckUpdate.Header = oldText;
             xMICheckUpdate.IsEnabled = true;
+        }
+
+        private void ChangeLanguage(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            (sender as TextBlock).ContextMenu.IsOpen = true;
+        }
+
+        private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

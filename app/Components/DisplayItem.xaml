@@ -33,23 +33,23 @@
                 </MenuItem.Icon>
             </MenuItem>
             <Separator />
-            <MenuItem x:Name="xResolution" Click="ChangeResolution" Header="Resolution" IsEnabled="{Binding Active}">
+            <MenuItem x:Name="xResolution" Click="ChangeResolution" Header="{DynamicResource t_resolution}" IsEnabled="{Binding Active}">
                 <MenuItem Header="3260 x 2140" />
                 <MenuItem Header="1920 x 1080" />
                 <MenuItem Header="1280 x 720" />
             </MenuItem>
-            <MenuItem x:Name="xRefreshRate" Click="ChangeRefreshRate" Header="Refresh rate" IsEnabled="{Binding Active}">
+            <MenuItem x:Name="xRefreshRate" Click="ChangeRefreshRate" Header="{DynamicResource t_refresh_rate}" IsEnabled="{Binding Active}">
                 <MenuItem Header="60 Hz" />
             </MenuItem>
-            <MenuItem x:Name="xOrientation" Click="ChangeOrientation" Header="Orientation" IsEnabled="{Binding Active}">
-                <MenuItem Header="Landscape" />
-                <MenuItem Header="Portrait" />
-                <MenuItem Header="Landscape (flipped)" />
-                <MenuItem Header="Portrait (flipped)" />
+            <MenuItem x:Name="xOrientation" Click="ChangeOrientation" Header="{DynamicResource t_orientation}" IsEnabled="{Binding Active}">
+                <MenuItem Header="{DynamicResource t_landscape}" />
+                <MenuItem Header="{DynamicResource t_portrait}" />
+                <MenuItem Header="{DynamicResource t_landscape_flipped}" />
+                <MenuItem Header="{DynamicResource t_portrait_flipped}" />
             </MenuItem>
-            <MenuItem Click="TakeScreenshot" Header="Take Screenshot" IsEnabled="{Binding Active}" />
+            <MenuItem Click="TakeScreenshot" Header="{DynamicResource t_take_screenshot}" IsEnabled="{Binding Active}" />
             <Separator />
-            <MenuItem Click="RemoveDisplay" Header="Remove" />
+            <MenuItem Click="RemoveDisplay" Header="{DynamicResource t_remove}" />
         </ContextMenu>
     </UserControl.ContextMenu>
 </UserControl>

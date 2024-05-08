@@ -23,7 +23,7 @@
             <ImageBrush ImageSource="Resources/background.png"/>
         </Grid.Background>
 
-        <Label x:Name="xNoDisplay" Content="Add a virtual display first!" Foreground="#AAA" FontSize="16"
+        <Label x:Name="xNoDisplay" Content="{DynamicResource t_hint_add_display_first}" Foreground="#AAA" FontSize="16"
             HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,183,0,0" />
 
         <WrapPanel x:Name="xDisplays" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0,20,52">
@@ -43,8 +43,16 @@
                 </components:Button.Children>
             </components:Button>
 
-            <components:Button Click="OpenCustom" Children="CUSTOM..." FontSize="14" Margin="10,0,0,0" Width="100" />
-            <components:Button x:Name="xAdd" Click="AddDisplay" Children="ADD DISPLAY" FontSize="14" Margin="25,0,0,0" Width="120"  />
+            <components:Button Click="OpenCustom" FontSize="14" Margin="10,0,0,0" Width="100">
+                <components:Button.Children>
+                    <TextBlock Text="{DynamicResource t_custom}" />
+                </components:Button.Children>
+            </components:Button>
+            <components:Button x:Name="xAdd" Click="AddDisplay" FontSize="14" Margin="25,0,0,0" Width="120">
+                <components:Button.Children>
+                    <TextBlock Text="{DynamicResource t_add_display}" />
+                </components:Button.Children>
+            </components:Button>
         </StackPanel>
 
         <StackPanel Margin="25,0,0,20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="230">
@@ -78,6 +86,22 @@
                     </Label.Style>
                 </Label>
             </StackPanel>
+            <TextBlock FontSize="14" Margin="5" Cursor="Hand" MouseDown="TextBlock_MouseDown" MouseUp="ChangeLanguage">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="White" />
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#66b3ff" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+                <TextBlock.ContextMenu>
+                    <ContextMenu x:Name="xLanguageMenu" />
+                </TextBlock.ContextMenu>
+                <TextBlock Text="{DynamicResource t_language}" />: <TextBlock Text="{DynamicResource lang_name}" />
+            </TextBlock>
         </StackPanel>
 
         <Frame Visibility="Hidden" NavigationUIVisibility="Hidden" Background="#C222" x:Name="xFrame" />
@@ -92,16 +116,16 @@
                 </MenuItem.Icon>
             </MenuItem>
             <Separator />
-            <MenuItem Header="Add display" Click="AddDisplay" />
-            <MenuItem Header="Remove last display" Click="RemoveLastDisplay" />
+            <MenuItem Header="{DynamicResource t_add_display}" Click="AddDisplay" />
+            <MenuItem Header="{DynamicResource t_remove_last_display}" Click="RemoveLastDisplay" />
             <Separator />
-            <MenuItem Header="Run on startup" IsCheckable="True" IsChecked="{Binding Path=(local:Config.RunOnStartup), Mode=TwoWay}" />
-            <MenuItem Header="Fallback display" IsCheckable="True" IsChecked="{Binding Path=(local:Config.FallbackDisplay), Mode=TwoWay}" />
-            <MenuItem Header="Keep screen on" IsCheckable="True" IsChecked="{Binding Path=(local:Config.KeepScreenOn), Mode=TwoWay}" />
+            <MenuItem Header="{DynamicResource t_run_on_startup}" IsCheckable="True" IsChecked="{Binding Path=(local:Config.RunOnStartup), Mode=TwoWay}" />
+            <MenuItem Header="{DynamicResource t_fallback_display}" IsCheckable="True" IsChecked="{Binding Path=(local:Config.FallbackDisplay), Mode=TwoWay}" />
+            <MenuItem Header="{DynamicResource t_keep_screen_on}" IsCheckable="True" IsChecked="{Binding Path=(local:Config.KeepScreenOn), Mode=TwoWay}" />
             <Separator />
-            <MenuItem Header="Check for update" x:Name="xMICheckUpdate" Click="CheckUpdate" />
+            <MenuItem Header="{DynamicResource t_check_for_update}" x:Name="xMICheckUpdate" Click="CheckUpdate" />
             <Separator />
-            <MenuItem Header="Exit" Click="ExitApp" />
+            <MenuItem Header="{DynamicResource t_exit}" Click="ExitApp" />
         </ContextMenu>
     </Window.ContextMenu>
 </Window>

@@ -5,6 +5,11 @@ using System.Windows;
 using System.Linq;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Reflection;
+using System.Collections.Generic;
+using System.Collections;
+using System.Globalization;
+using System.Resources;
 
 namespace ParsecVDisplay
 {
@@ -16,12 +21,8 @@ namespace ParsecVDisplay
         public const string GITHUB_REPO = "nomi-san/parsec-vdd";
 
         public static bool Silent { get; private set; }
-
-        static App()
-        {
-            var displays = Display.GetAllDisplays();
-            return;
-        }
+        public static string[] Languages => LanguageDicts.Keys.ToArray();
+        static Dictionary<string, ResourceDictionary> LanguageDicts;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -100,6 +101,7 @@ namespace ParsecVDisplay
             });
 
             base.OnStartup(e);
+            LoadLanguages();
 
             // Disable GPU to prevent flickering when adding display
             RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
@@ -109,6 +111,74 @@ namespace ParsecVDisplay
         {
             ParsecVDD.Uninit();
             base.OnExit(e);
+        }
+
+        static void LoadLanguages()
+        {
+            LanguageDicts = new Dictionary<string, ResourceDictionary>();
+
+            var assembly = Assembly.GetExecutingAssembly();
+            var rm = new ResourceManager(assembly.GetName().Name + ".g", assembly);
+            try
+            {
+                var list = rm.GetResourceSet(CultureInfo.CurrentCulture, true, true);
+                foreach (DictionaryEntry item in list)
+                {
+                    if (item.Key is string key
+                        && key.StartsWith("languages/"))
+                    {
+                        var source = key
+                            .Replace("languages/", "Languages/")
+                            .Replace(".baml", ".xaml");
+
+                        try
+                        {
+                            var dict = new ResourceDictionary();
+                            dict.Source = new Uri(source, UriKind.Relative);
+
+                            var name = dict["lang_name"].ToString();
+                            LanguageDicts.Add(name, dict);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                rm.ReleaseAllResources();
+            }
+
+            SetLanguage(Config.Language, saveConfig: false);
+        }
+
+        public static void SetLanguage(string name, bool saveConfig = true)
+        {
+            if (LanguageDicts.TryGetValue(name, out var dict))
+            {
+                Current.Resources.MergedDictionaries.Add(dict);
+
+                if (saveConfig)
+                {
+                    Config.Language = name;
+                }
+            }
+        }
+
+        public static string GetTranslation(string key)
+        {
+            try
+            {
+                var trans = Current.FindResource(key);
+                if (trans != null && trans is string)
+                    return trans as string;
+            }
+            catch
+            {
+            }
+
+            return string.Format("{{{{{0}}}}}", key);
         }
     }
 }

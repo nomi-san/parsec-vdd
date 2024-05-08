@@ -1,0 +1,39 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+>
+    <system:String x:Key="lang_name">Tiếng Việt</system:String>
+    
+    <!--Interface-->
+    <system:String x:Key="t_add_display">Cắm màn hình</system:String>
+    <system:String x:Key="t_hint_add_display_first">Hãy cắm màn hình ảo!</system:String>
+    <system:String x:Key="t_custom">Tùy chỉnh...</system:String>
+    <system:String x:Key="t_apply">Áp dụng</system:String>
+    <system:String x:Key="t_parent_gpu">GPU nguồn</system:String>
+    <system:String x:Key="t_driver_status">Trạng thái driver</system:String>
+    <system:String x:Key="t_language">Ngôn ngữ</system:String>
+
+    <!--Context menu-->
+    <system:String x:Key="t_resolution">Độ phân giải</system:String>
+    <system:String x:Key="t_refresh_rate">Tần số quét</system:String>
+    <system:String x:Key="t_orientation">Hướng màn hình</system:String>
+        <system:String x:Key="t_landscape">Ngang</system:String>
+        <system:String x:Key="t_portrait">Dọc</system:String>
+        <system:String x:Key="t_landscape_flipped">Ngang (lật ngược)</system:String>
+        <system:String x:Key="t_portrait_flipped">Dọc (lật ngược)</system:String>
+    <system:String x:Key="t_take_screenshot">Chụp màn hình</system:String>
+    <system:String x:Key="t_remove">Tháo bỏ</system:String>
+    
+    <!--Tray menu-->
+    <system:String x:Key="t_remove_last_display">Bỏ màn hình cuối</system:String>
+    <system:String x:Key="t_run_on_startup">Chạy cùng hệ thống</system:String>
+    <system:String x:Key="t_fallback_display">Màn hình dự phòng</system:String>
+    <system:String x:Key="t_keep_screen_on">Luôn sáng màn hình</system:String>
+    <system:String x:Key="t_check_for_update">Kiểm tra cập nhật</system:String>
+    <system:String x:Key="t_exit">Thoát</system:String>
+
+    <!--Dialog messages-->
+    <system:String x:Key="t_msg_">Thoát</system:String>
+
+</ResourceDictionary>

@@ -27,6 +27,7 @@ namespace ParsecVDisplay.Components
             xRefreshRate.Items.Clear();
 
             DataContext = this;
+            ContextMenu.Resources = App.Current.Resources;
         }
 
         internal DisplayItem(Display display) : this()

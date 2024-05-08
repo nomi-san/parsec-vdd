@@ -14,7 +14,7 @@
     d:Background="#222"
 >
     <Grid>
-        <Label Content="Custom Display Modes" Foreground="White" Margin="5,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Label Content="{DynamicResource t_custom}" Foreground="White" Margin="5,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type StackPanel}">
@@ -32,7 +32,7 @@
                 </Style>
             </StackPanel.Resources>
             <StackPanel Orientation="Horizontal">
-                <Label Width="50">Slot 1</Label>
+                <Label Width="50">Slot #1</Label>
                 <TextBox Width="80" />
                 <Label>×</Label>
                 <TextBox Width="80" />
@@ -41,7 +41,7 @@
                 <Label>Hz</Label>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label Width="50">Slot 2</Label>
+                <Label Width="50">Slot #2</Label>
                 <TextBox Width="80" />
                 <Label>×</Label>
                 <TextBox Width="80" />
@@ -50,7 +50,7 @@
                 <Label>Hz</Label>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label Width="50">Slot 3</Label>
+                <Label Width="50">Slot #3</Label>
                 <TextBox Width="80" />
                 <Label>×</Label>
                 <TextBox Width="80" />
@@ -59,7 +59,7 @@
                 <Label>Hz</Label>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label Width="50">Slot 4</Label>
+                <Label Width="50">Slot #4</Label>
                 <TextBox Width="80" />
                 <Label>×</Label>
                 <TextBox Width="80" />
@@ -68,7 +68,7 @@
                 <Label>Hz</Label>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label Width="50">Slot 5</Label>
+                <Label Width="50">Slot #5</Label>
                 <TextBox Width="80" />
                 <Label>×</Label>
                 <TextBox Width="80" />
@@ -78,7 +78,9 @@
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25,0,0,25">
-            <TextBlock Text="Parent GPU:" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
+            <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center">
+                <TextBlock Text="{DynamicResource t_parent_gpu}" />:
+            </TextBlock>
             <ComboBox x:Name="xParentGPU" Width="80" FontSize="14" SelectedIndex="0" BorderBrush="Transparent" Background="Transparent" Margin="10,0,0,0">
                 <ComboBoxItem Content="Auto" />
                 <ComboBoxItem Content="AMD" />
@@ -91,11 +93,11 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <Image Source="../Resources/admin.png" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="APPLY" Margin="6,0,0,0" />
+                        <TextBlock Grid.Column="1" Text="{DynamicResource t_apply}" Margin="6,0,0,0" />
                     </Grid>
                 </local:Button.Children>
             </local:Button>

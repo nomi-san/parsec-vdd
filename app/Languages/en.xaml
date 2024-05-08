@@ -1,0 +1,35 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+>
+    <system:String x:Key="lang_name">English</system:String>
+    
+    <!--Interface-->
+    <system:String x:Key="t_add_display">Add display</system:String>
+    <system:String x:Key="t_hint_add_display_first">Add a virtual display first!</system:String>
+    <system:String x:Key="t_custom">Custom...</system:String>
+    <system:String x:Key="t_apply">Apply</system:String>
+    <system:String x:Key="t_parent_gpu">Parent GPU</system:String>
+    <system:String x:Key="t_driver_status">Driver status</system:String>
+    <system:String x:Key="t_language">Language</system:String>
+
+    <!--Context menu-->
+    <system:String x:Key="t_resolution">Resolution</system:String>
+    <system:String x:Key="t_refresh_rate">Refresh rate</system:String>
+    <system:String x:Key="t_orientation">Orientation</system:String>
+        <system:String x:Key="t_landscape">Landscape</system:String>
+        <system:String x:Key="t_portrait">Portrait</system:String>
+        <system:String x:Key="t_landscape_flipped">Landscape (flipped)</system:String>
+        <system:String x:Key="t_portrait_flipped">Portrait (flipped)</system:String>
+    <system:String x:Key="t_take_screenshot">Take screenshot</system:String>
+    <system:String x:Key="t_remove">Remove</system:String>
+    
+    <!--Tray menu-->
+    <system:String x:Key="t_remove_last_display">Remove last display</system:String>
+    <system:String x:Key="t_run_on_startup">Run on startup</system:String>
+    <system:String x:Key="t_fallback_display">Fallback display</system:String>
+    <system:String x:Key="t_keep_screen_on">Keep screen on</system:String>
+    <system:String x:Key="t_check_for_update">Check for update</system:String>
+    <system:String x:Key="t_exit">Exit</system:String>
+</ResourceDictionary>
