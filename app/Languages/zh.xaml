@@ -1,0 +1,52 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+>
+    <system:String x:Key="lang_name">简体中文</system:String>
+    
+    <!--Interface-->
+    <system:String x:Key="t_add_display">添加虚拟显示器</system:String>
+    <system:String x:Key="t_hint_add_display_first">请先添加虚拟显示器！</system:String>
+    <system:String x:Key="t_custom">自定义...</system:String>
+    <system:String x:Key="t_apply">应用</system:String>
+    <system:String x:Key="t_parent_gpu">主 GPU</system:String>
+    <system:String x:Key="t_language">语言</system:String>
+
+    <!--Context menu-->
+    <system:String x:Key="t_resolution">分辨率</system:String>
+    <system:String x:Key="t_refresh_rate">刷新率</system:String>
+    <system:String x:Key="t_orientation">屏幕方向</system:String>
+        <system:String x:Key="t_landscape">水平</system:String>
+        <system:String x:Key="t_portrait">纵向</system:String>
+        <system:String x:Key="t_landscape_flipped">水平 (翻转)</system:String>
+        <system:String x:Key="t_portrait_flipped">纵向 (翻转)</system:String>
+    <system:String x:Key="t_take_screenshot">屏幕截图</system:String>
+    <system:String x:Key="t_remove">删除</system:String>
+    
+    <!--Tray menu-->
+    <system:String x:Key="t_remove_last_display">删除最后一个虚拟显示器</system:String>
+    <system:String x:Key="t_run_on_startup">开机启动</system:String>
+    <system:String x:Key="t_fallback_display">备用显示</system:String>
+    <system:String x:Key="t_keep_screen_on">保持屏幕开启</system:String>
+    <system:String x:Key="t_check_for_update">检查更新</system:String>
+    <system:String x:Key="t_exit">退出</system:String>
+    
+    <!--Dialog messages-->
+    <system:String x:Key="t_msg_up_to_date">您的应用程序版本已经是最新的。</system:String>
+    <system:String x:Key="t_msg_update_available">有新的更新可用 — v{0} 。\n为了保持您的最佳体验，请立即更新。"</system:String>
+    
+    <system:String x:Key="t_msg_custom_access_denied">无法应用自定义分辨率，访问被拒绝！</system:String>
+    <system:String x:Key="t_msg_custom_invalid_slot">插槽 #{0} 中的值无效。</system:String>
+
+    <system:String x:Key="t_msg_exceeded_display_limit">到达最大虚拟显示器限额，无法添加更多的虚拟显示器。 ({0}).</system:String>
+    <system:String x:Key="t_msg_prompt_leave_all">即将删除全部的虚拟显示器。\n您是否仍然要退出？</system:String>
+
+    <system:String x:Key="t_msg_driver_status">驱动状态</system:String>
+    <system:String x:Key="t_msg_must_restart_pc">你需要重新启动计算机才能使驱动程序正常工作</system:String>
+    <system:String x:Key="t_msg_driver_is_disabled">{0} 已禁用，请在设备管理器中启用它。</system:String>
+    <system:String x:Key="t_msg_please_install_driver">请先安装驱动程序。</system:String>
+    <system:String x:Key="t_msg_driver_status_not_ok">驱动程序不正常，请重新检查。当前状态： {0}.</system:String>
+    <system:String x:Key="t_msg_failed_to_obtain_handle">无法获取设备句柄，请重新检查驱动程序安装。</system:String>
+    
+</ResourceDictionary>
