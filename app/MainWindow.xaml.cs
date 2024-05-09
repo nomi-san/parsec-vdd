@@ -24,6 +24,13 @@ namespace ParsecVDisplay
 
             xDisplays.Children.Clear();
             xNoDisplay.Visibility = Visibility.Hidden;
+
+            // setup tray context menu
+            ContextMenu.DataContext = this;
+            ContextMenu.Resources = App.Current.Resources;
+
+            Tray.Init(this, ContextMenu);
+            ContextMenu = null;
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -61,10 +68,10 @@ namespace ParsecVDisplay
         {
             Loaded -= Window_Loaded;
 
-            CheckUpdate(null, null);
-
             if (App.Silent)
                 Hide();
+
+            CheckUpdate(null, null);
 
             var defaultLang = Config.Language;
             foreach (var item in App.Languages)
@@ -87,12 +94,6 @@ namespace ParsecVDisplay
 
                 xLanguageMenu.Items.Add(mi);
             }
-
-            ContextMenu.DataContext = this;
-            ContextMenu.Resources = App.Current.Resources;
-
-            Tray.Init(this, ContextMenu);
-            ContextMenu = null;
 
             ParsecVDD.DisplayChanged += DisplayChanged;
             ParsecVDD.Invalidate();
@@ -200,9 +201,12 @@ namespace ParsecVDisplay
 
         private async void CheckUpdate(object sender, RoutedEventArgs e)
         {
-            var oldText = xMICheckUpdate.Header;
-            xMICheckUpdate.Header = "Checking for update...";
-            xMICheckUpdate.IsEnabled = false;
+            MenuItem menuItem = null;
+            if (sender is MenuItem)
+            {
+                menuItem = sender as MenuItem;
+                menuItem.IsEnabled = false;
+            }
 
             var newVersion = await Updater.CheckUpdate();
             if (!string.IsNullOrEmpty(newVersion))
@@ -222,19 +226,18 @@ namespace ParsecVDisplay
                     App.NAME, MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
-            xMICheckUpdate.Header = oldText;
-            xMICheckUpdate.IsEnabled = true;
+            if (menuItem != null)
+            {
+                menuItem.IsEnabled = true;
+            }
         }
 
-        private void ChangeLanguage(object sender, MouseButtonEventArgs e)
+        private void LanguageText_MouseEvent(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
-            (sender as TextBlock).ContextMenu.IsOpen = true;
-        }
 
-        private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
+            if (e.LeftButton == MouseButtonState.Released)
+                (sender as TextBlock).ContextMenu.IsOpen = true;
         }
     }
 }

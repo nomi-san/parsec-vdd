@@ -86,7 +86,7 @@
                     </Label.Style>
                 </Label>
             </StackPanel>
-            <TextBlock FontSize="14" Margin="5" Cursor="Hand" MouseDown="TextBlock_MouseDown" MouseUp="ChangeLanguage">
+            <TextBlock FontSize="14" Margin="5" Cursor="Hand" MouseDown="LanguageText_MouseEvent" MouseUp="LanguageText_MouseEvent" HorizontalAlignment="Left">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
                         <Setter Property="Foreground" Value="White" />
@@ -123,7 +123,7 @@
             <MenuItem Header="{DynamicResource t_fallback_display}" IsCheckable="True" IsChecked="{Binding Path=(local:Config.FallbackDisplay), Mode=TwoWay}" />
             <MenuItem Header="{DynamicResource t_keep_screen_on}" IsCheckable="True" IsChecked="{Binding Path=(local:Config.KeepScreenOn), Mode=TwoWay}" />
             <Separator />
-            <MenuItem Header="{DynamicResource t_check_for_update}" x:Name="xMICheckUpdate" Click="CheckUpdate" />
+            <MenuItem Header="{DynamicResource t_check_for_update}" Click="CheckUpdate" />
             <Separator />
             <MenuItem Header="{DynamicResource t_exit}" Click="ExitApp" />
         </ContextMenu>
