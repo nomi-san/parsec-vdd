@@ -1,0 +1,35 @@
+name: auto-build
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch project files
+        run: |
+          (Get-Content app\ParsecVDisplay.csproj) -replace "FrameworkVersion>v4.5", "FrameworkVersion>v4.8" | Out-File app\ParsecVDisplay.csproj
+          (Get-Content app\App.config) -replace "Version=v4.5", "Version=v4.8" | Out-File app\App.config
+
+      - name: Setup msbuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build app
+        run: |
+          cd app
+          msbuild ParsecVDisplay.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU
+
+      - uses: actions/upload-artifact@v4
+        with:
+          path: app/bin
