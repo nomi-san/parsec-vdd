@@ -86,7 +86,6 @@
     <Compile Include="Device.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Helper.cs" />
-    <Compile Include="Shadow.cs" />
     <Compile Include="Tray.cs" />
     <Compile Include="ParsecVDD.cs" />
     <Compile Include="Updater.cs" />

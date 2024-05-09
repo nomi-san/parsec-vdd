@@ -38,7 +38,7 @@ namespace ParsecVDisplay
             base.OnSourceInitialized(e);
 
             var hwnd = new WindowInteropHelper(this).EnsureHandle();
-            Shadow.ApplyShadow(hwnd);
+            Helper.EnableDropShadow(hwnd);
         }
 
         protected override void OnClosing(CancelEventArgs e)
