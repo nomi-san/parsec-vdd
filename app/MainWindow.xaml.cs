@@ -28,9 +28,6 @@ namespace ParsecVDisplay
             // setup tray context menu
             ContextMenu.DataContext = this;
             ContextMenu.Resources = App.Current.Resources;
-
-            Tray.Init(this, ContextMenu);
-            ContextMenu = null;
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -67,6 +64,9 @@ namespace ParsecVDisplay
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= Window_Loaded;
+
+            Tray.Init(this, ContextMenu);
+            ContextMenu = null;
 
             if (App.Silent)
                 Hide();
@@ -128,8 +128,7 @@ namespace ParsecVDisplay
         {
             if (ParsecVDD.DisplayCount >= ParsecVDD.MAX_DISPLAYS)
             {
-                MessageBox.Show(this,
-                    $"Could not add more virtual displays, you have exceeded the maximum number ({ParsecVDD.MAX_DISPLAYS}).",
+                MessageBox.Show(this, App.GetTranslation("t_msg_exceeded_display_limit", ParsecVDD.MAX_DISPLAYS),
                     Title, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else
@@ -176,16 +175,15 @@ namespace ParsecVDisplay
             var status = ParsecVDD.QueryStatus();
             var version = ParsecVDD.QueryVersion();
 
-            MessageBox.Show(this,
-                $"Parsec Virtual Display v{version}\nDriver status: {status}",
+            MessageBox.Show(this, $"Parsec Virtual Display v{version}\n" +
+                $"{App.GetTranslation("t_msg_driver_status")}: {status}",
                 App.NAME, MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ExitApp(object sender, EventArgs e)
         {
             if (ParsecVDD.DisplayCount > 0)
-                if (MessageBox.Show(this,
-                    "All added virtual displays will be unplugged.\nDo you still want to exit?",
+                if (MessageBox.Show(this, App.GetTranslation("t_msg_prompt_leave_all"),
                     App.NAME, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     return;
 
@@ -211,9 +209,7 @@ namespace ParsecVDisplay
             var newVersion = await Updater.CheckUpdate();
             if (!string.IsNullOrEmpty(newVersion))
             {
-                var ret = MessageBox.Show(this,
-                    $"A new version — v{newVersion} is available!\n" +
-                    $"To keep your experience optimal, please update it now.",
+                var ret = MessageBox.Show(this, App.GetTranslation("t_msg_update_available", newVersion),
                     App.NAME, MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (ret == MessageBoxResult.Yes)
                 {
@@ -222,7 +218,7 @@ namespace ParsecVDisplay
             }
             else if (sender != null)
             {
-                MessageBox.Show(this, "Your app version is up-to-date.",
+                MessageBox.Show(this, App.GetTranslation("t_msg_up_to_date"),
                     App.NAME, MessageBoxButton.OK, MessageBoxImage.Information);
             }
 

@@ -11,7 +11,6 @@
     <system:String x:Key="t_custom">Custom...</system:String>
     <system:String x:Key="t_apply">Apply</system:String>
     <system:String x:Key="t_parent_gpu">Parent GPU</system:String>
-    <system:String x:Key="t_driver_status">Driver status</system:String>
     <system:String x:Key="t_language">Language</system:String>
 
     <!--Context menu-->
@@ -32,4 +31,22 @@
     <system:String x:Key="t_keep_screen_on">Keep screen on</system:String>
     <system:String x:Key="t_check_for_update">Check for update</system:String>
     <system:String x:Key="t_exit">Exit</system:String>
+    
+    <!--Dialog messages-->
+    <system:String x:Key="t_msg_up_to_date">Your app version is up-to-date.</system:String>
+    <system:String x:Key="t_msg_update_available">A new version — v{0} is available.\nTo keep your experience optimal, please update it now."</system:String>
+    
+    <system:String x:Key="t_msg_custom_access_denied">Could not apply custom resolutions, access denied!</system:String>
+    <system:String x:Key="t_msg_custom_invalid_slot">Found invalid value in slot #{0}.</system:String>
+
+    <system:String x:Key="t_msg_exceeded_display_limit">Could not add more virtual displays, you have exceeded the maximum number ({0}).</system:String>
+    <system:String x:Key="t_msg_prompt_leave_all">All added virtual displays will be unplugged.\nDo you still want to exit?.</system:String>
+
+    <system:String x:Key="t_msg_driver_status">Driver status</system:String>
+    <system:String x:Key="t_msg_must_restart_pc">You must restart your PC to complete the driver setup.</system:String>
+    <system:String x:Key="t_msg_driver_is_disabled">{0} is disabled, please enable it in Device Manager.</system:String>
+    <system:String x:Key="t_msg_please_install_driver">Please install the driver first.</system:String>
+    <system:String x:Key="t_msg_driver_status_not_ok">The driver is not OK, please check again. Current status: {0}.</system:String>
+    <system:String x:Key="t_msg_failed_to_obtain_handle">Failed to obtain the device handle, please check the driver installation again.</system:String>
+    
 </ResourceDictionary>

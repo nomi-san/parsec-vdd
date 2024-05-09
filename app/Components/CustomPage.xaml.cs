@@ -39,7 +39,7 @@ namespace ParsecVDisplay.Components
                     // Check negative values & limit 8K resolution
                     if (width < 0 || width > 7680 || height < 0 || height > 4320 || hz < 0)
                     {
-                        MessageBox.Show($"Found invalid value in slot {i / 3 + 1}.",
+                        MessageBox.Show(App.GetTranslation("t_msg_custom_invalid_slot", i / 3 + 1),
                             App.NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
@@ -65,7 +65,7 @@ namespace ParsecVDisplay.Components
                     var args = $"-custom \"{Display.DumpModes(modes)}\" \"{parentGPU}\"";
                     if (Helper.RunAdminTask(args) == false)
                     {
-                        MessageBox.Show("Could not set custom resolutions, access denied!",
+                        MessageBox.Show(App.GetTranslation("t_msg_custom_access_denied"),
                             App.NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }

@@ -34,6 +34,20 @@
     <system:String x:Key="t_exit">Thoát</system:String>
 
     <!--Dialog messages-->
-    <system:String x:Key="t_msg_">Thoát</system:String>
+    <system:String x:Key="t_msg_up_to_date">Bạn đang sử dụng phiên bản mới nhất.</system:String>
+    <system:String x:Key="t_msg_update_available">Có bản cập nhật mới — v{0}.\nHãy cập nhật ngay để trải nghiệm các tính năng mới."</system:String>
+
+    <system:String x:Key="t_msg_custom_access_denied">Không thể áp dụng độ phân giải tùy chỉnh, quyền truy cập bị từ chối!</system:String>
+    <system:String x:Key="t_msg_custom_invalid_slot">Giá trị không hợp lệ ở slot #{0}.</system:String>
+
+    <system:String x:Key="t_msg_exceeded_display_limit">Không thể cắm thêm màn hình ảo, bạn đã đạt đến con số giới hạn ({0}).</system:String>
+    <system:String x:Key="t_msg_prompt_leave_all">Tất cả màn hình ảo sẽ bị tháo bỏ.\nBạn có muốn thoát không?.</system:String>
+
+    <system:String x:Key="t_msg_driver_status">Trạng thái driver</system:String>
+    <system:String x:Key="t_msg_must_restart_pc">Bạn phải khởi động lại PC để driver hoạt động.</system:String>
+    <system:String x:Key="t_msg_driver_is_disabled">{0} đã bị vô hiệu, vui lòng bật nó trong Device Manager.</system:String>
+    <system:String x:Key="t_msg_please_install_driver">Vui lòng cài đặt driver trước.</system:String>
+    <system:String x:Key="t_msg_driver_status_not_ok">Driver không được OK, vui lòng kiểm tra lại. Trạng thái hiện tại: {0}.</system:String>
+    <system:String x:Key="t_msg_failed_to_obtain_handle">Không thể lấy 'device handle', vui lòng kiểm tra cài đặt driver và thử lại.</system:String>
 
 </ResourceDictionary>

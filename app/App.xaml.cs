@@ -55,27 +55,30 @@ namespace ParsecVDisplay
                 return;
             }
 
+            base.OnStartup(e);
+            LoadLanguages();
+
             var status = ParsecVDD.QueryStatus();
             if (status != Device.Status.OK)
             {
                 if (status == Device.Status.RESTART_REQUIRED)
                 {
-                    MessageBox.Show("You must restart your PC to complete the driver setup.",
+                    MessageBox.Show(GetTranslation("t_msg_must_restart_pc"),
                         NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else if (status == Device.Status.DISABLED)
                 {
-                    MessageBox.Show($"{ParsecVDD.ADAPTER} is disabled, please enable it.",
+                    MessageBox.Show(GetTranslation("t_msg_driver_is_disabled", ParsecVDD.ADAPTER),
                         NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else if (status == Device.Status.NOT_INSTALLED)
                 {
-                    MessageBox.Show("Please install the driver first.",
+                    MessageBox.Show(GetTranslation("t_msg_please_install_driver"),
                         NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else
                 {
-                    MessageBox.Show($"The driver is not OK, please check again. Current status: {status}.",
+                    MessageBox.Show(GetTranslation("t_msg_driver_status_not_ok", status),
                         NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
 
@@ -85,7 +88,7 @@ namespace ParsecVDisplay
 
             if (ParsecVDD.Init() == false)
             {
-                MessageBox.Show("Failed to obtain the device handle, please check the driver installation again.",
+                MessageBox.Show(GetTranslation("t_msg_failed_to_obtain_handle"),
                     NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 Shutdown();
@@ -99,9 +102,6 @@ namespace ParsecVDisplay
                     Tray.ShowApp();
                 }
             });
-
-            base.OnStartup(e);
-            LoadLanguages();
 
             // Disable GPU to prevent flickering when adding display
             RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
@@ -166,13 +166,16 @@ namespace ParsecVDisplay
             }
         }
 
-        public static string GetTranslation(string key)
+        public static string GetTranslation(string key, params object[] args)
         {
             try
             {
-                var trans = Current.FindResource(key);
-                if (trans != null && trans is string)
-                    return trans as string;
+                var translation = Current.FindResource(key);
+                if (translation != null && translation is string t)
+                {
+                    t = t.Replace("\\n", "\n");
+                    return string.Format(t, args);
+                }
             }
             catch
             {
