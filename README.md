@@ -59,26 +59,40 @@ Full source code of this application is located in the [app](./app) folder.
 
 ## 🚀 Using Core API
 
-Make sure you have installed the driver:
+### Using the source
 
-- [~~parsec-vdd-v0.38~~](https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe)
-- [parsec-vdd-v0.41](https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe)
-- [parsec-vdd-v0.45](https://builds.parsec.app/vdd/parsec-vdd-0.45.0.0.exe)
-  (recommended)
+- The core API is designed as single C/C++ header that can be added to any project, 👉 [core/parsec-vdd.h](./core/parsec-vdd.h)
+- There is also a simple demo program, 👉 [core/vdd-demo.cc](./core/vdd-demo.cc)
 
-The core API is designed as single C/C++ header, see 👉
-[core/parsec-vdd.h](./core/parsec-vdd.h). It has detailed comments, and can be
-added to any existing projects. There is also a simple usage demo, see 👉
-[core/vdd-demo.cc](./core/vdd-demo.cc).
+### Picking a driver
 
-You can also unzip the driver setup to obtain the driver files and `nefconw`
+You have to install the driver to make them work.
+
+| Version           | Minimum OS      | IddCx  | Notes
+| :---------------- | :-------------- | :----: | :------
+| [parsec-vdd-0.38] | Windows 10 1607 | 1.0    | Obsolete, may crash randomly.
+| [parsec-vdd-0.41] | Windows 10 19H2 | 1.4    | Stable.
+| [parsec-vdd-0.45] | Windows 10 21H2 | 1.5    | Better streaming color, but may not work on some Windows.
+
+[parsec-vdd-0.38]: https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe
+[parsec-vdd-0.41]: https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe
+[parsec-vdd-0.45]: https://builds.parsec.app/vdd/parsec-vdd-0.45.0.0.exe
+
+> All of them also work on Windows Server 2019 or higher.
+
+You can unzip (using 7z) the driver setup above to obtain the driver files and `nefconw`
 CLI.
 
 ```
-./ nefconw.exe driver/ mm.cat mm.dll mm.inf
+vdd-0.45/
+  |__ nefconw.exe
+  |__ driver/
+    |__ mm.cat
+    |__ mm.dll
+    |__ mm.inf
 ```
 
-Command line method to install the driver using `nefconw` (may require admin):
+Command line method to install the driver using `nefconw` (admin required):
 
 ```
 start /wait .\nefconw.exe --remove-device-node --hardware-id Root\Parsec\VDA --class-guid "4D36E968-E325-11CE-BFC1-08002BE10318"
@@ -154,7 +168,7 @@ projects.
 | [RustDeskIddDriver]            |      1.2      |   ❌   |   ❌   | ❌  |                                  ❌                                  |           |            |
 | [Virtual-Display-Driver (HDR)] |     1.10      |   ❌   |        | ✅  |                                  ❌                                  |           |            |
 | [virtual-display-rs]           |      1.5      |   ❌   |        | ❌  | [#81](https://github.com/MolotovCherry/virtual-display-rs/issues/81) |    ✅     |     ✅     |
-| parsec-vdd                     |      1.4      |   ✅   |   ✅   | ❌  |                                  ✅                                  |    🆗     |     ✅     |
+| parsec-vdd                     |      1.5      |   ✅   |   ✅   | ❌  |                                  ✅                                  |    🆗     |     ✅     |
 
 ✅ - full support, 🆗 - limited support
 
