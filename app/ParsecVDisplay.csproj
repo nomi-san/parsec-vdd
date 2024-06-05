@@ -45,7 +45,7 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>ParsecVDisplay.App</StartupObject>
+    <StartupObject>ParsecVDisplay.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -87,6 +87,7 @@
     <Compile Include="Device.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Tray.cs" />
     <Compile Include="ParsecVDD.cs" />
     <Compile Include="Updater.cs" />

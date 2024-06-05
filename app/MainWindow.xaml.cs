@@ -16,7 +16,7 @@ namespace ParsecVDisplay
         public MainWindow()
         {
             InitializeComponent();
-            xAppName.Content += $" v{App.VERSION}";
+            xAppName.Content += $" v{Program.AppVersion}";
 
             // prevent frame history
             xFrame.Navigating += (_, e) => { e.Cancel = e.NavigationMode != NavigationMode.New; };
@@ -177,14 +177,14 @@ namespace ParsecVDisplay
 
             MessageBox.Show(this, $"Parsec Virtual Display v{version}\n" +
                 $"{App.GetTranslation("t_msg_driver_status")}: {status}",
-                App.NAME, MessageBoxButton.OK, MessageBoxImage.Information);
+                Program.AppName, MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ExitApp(object sender, EventArgs e)
         {
             if (ParsecVDD.DisplayCount > 0)
                 if (MessageBox.Show(this, App.GetTranslation("t_msg_prompt_leave_all"),
-                    App.NAME, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    Program.AppName, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                     return;
 
             Tray.Uninit();
@@ -194,7 +194,7 @@ namespace ParsecVDisplay
         private void OpenRepoLink(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
-            Helper.OpenLink($"https://github.com/{App.GITHUB_REPO}");
+            Helper.OpenLink($"https://github.com/{Program.GitHubRepo}");
         }
 
         private async void CheckUpdate(object sender, RoutedEventArgs e)
@@ -210,7 +210,7 @@ namespace ParsecVDisplay
             if (!string.IsNullOrEmpty(newVersion))
             {
                 var ret = MessageBox.Show(this, App.GetTranslation("t_msg_update_available", newVersion),
-                    App.NAME, MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    Program.AppName, MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (ret == MessageBoxResult.Yes)
                 {
                     Helper.OpenLink(Updater.DOWNLOAD_URL);
@@ -219,7 +219,7 @@ namespace ParsecVDisplay
             else if (sender != null)
             {
                 MessageBox.Show(this, App.GetTranslation("t_msg_up_to_date"),
-                    App.NAME, MessageBoxButton.OK, MessageBoxImage.Information);
+                    Program.AppName, MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             if (menuItem != null)

@@ -6,7 +6,7 @@ namespace ParsecVDisplay
 {
     internal static class Config
     {
-        static string REG_PATH => $"HKEY_CURRENT_USER\\SOFTWARE\\{App.NAME}";
+        static string REG_PATH => $"HKEY_CURRENT_USER\\SOFTWARE\\{Program.AppName}";
         static string REG_STARTUP_PATH => @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
         public static string Language
@@ -70,7 +70,7 @@ namespace ParsecVDisplay
             {
                 using (var key = Registry.CurrentUser.OpenSubKey(REG_STARTUP_PATH, false))
                 {
-                    return key.GetValue(App.NAME) != null;
+                    return key.GetValue(Program.AppName) != null;
                 }
             }
             set
@@ -80,11 +80,11 @@ namespace ParsecVDisplay
                     if (value)
                     {
                         var exePath = Assembly.GetExecutingAssembly().Location;
-                        key.SetValue(App.NAME, $"\"{exePath}\" -silent", RegistryValueKind.String);
+                        key.SetValue(Program.AppName, $"\"{exePath}\" -silent", RegistryValueKind.String);
                     }
                     else
                     {
-                        key.DeleteValue(App.NAME, false);
+                        key.DeleteValue(Program.AppName, false);
                     }
                 }
             }

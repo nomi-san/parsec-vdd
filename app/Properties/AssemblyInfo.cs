@@ -7,12 +7,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle(ParsecVDisplay.App.NAME)]
+[assembly: AssemblyTitle(ParsecVDisplay.Program.AppName)]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct(ParsecVDisplay.App.NAME)]
-[assembly: AssemblyCopyright("Copyright ©  2024")]
+[assembly: AssemblyProduct(ParsecVDisplay.Program.AppName)]
+[assembly: AssemblyCopyright("Copyright (c) 2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -51,5 +51,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion(ParsecVDisplay.App.VERSION)]
-[assembly: AssemblyFileVersion(ParsecVDisplay.App.VERSION)]
+[assembly: AssemblyVersion(ParsecVDisplay.Program.AppVersion)]
+[assembly: AssemblyFileVersion(ParsecVDisplay.Program.AppVersion)]

@@ -40,7 +40,7 @@ namespace ParsecVDisplay.Components
                     if (width < 0 || width > 7680 || height < 0 || height > 4320 || hz < 0)
                     {
                         MessageBox.Show(App.GetTranslation("t_msg_custom_invalid_slot", i / 3 + 1),
-                            App.NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Program.AppName, MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                     else
@@ -66,7 +66,7 @@ namespace ParsecVDisplay.Components
                     if (Helper.RunAdminTask(args) == false)
                     {
                         MessageBox.Show(App.GetTranslation("t_msg_custom_access_denied"),
-                            App.NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Program.AppName, MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }

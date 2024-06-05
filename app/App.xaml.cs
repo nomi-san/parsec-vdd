@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Windows;
 using System.Linq;
 using System.Windows.Interop;
@@ -15,93 +13,49 @@ namespace ParsecVDisplay
 {
     public partial class App : Application
     {
-        const string ID = "QpHOX8IBUHBznGtqk9xm1";
-        public const string NAME = "ParsecVDisplay";
-        public const string VERSION = "0.45.2";
-        public const string GITHUB_REPO = "nomi-san/parsec-vdd";
-
         public static bool Silent { get; private set; }
+
         public static string[] Languages => LanguageDicts.Keys.ToArray();
         static Dictionary<string, ResourceDictionary> LanguageDicts;
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            if (e.Args.Length >= 2 && e.Args[0] == "-custom")
-            {
-                var modes = Display.ParseModes(e.Args[1]);
-                ParsecVDD.SetCustomDisplayModes(modes);
-
-                if (e.Args.Length >= 3)
-                {
-                    if (Enum.TryParse<ParsecVDD.ParentGPU>(e.Args[2], true, out var kind))
-                    {
-                        ParsecVDD.SetParentGPU(kind);
-                    }
-                }
-
-                Shutdown();
-                return;
-            }
-
             Silent = e.Args.Contains("-silent");
-
-            var signal = new EventWaitHandle(false,
-                EventResetMode.AutoReset, ID, out var isOwned);
-
-            if (!isOwned)
-            {
-                signal.Set();
-                Shutdown();
-                return;
-            }
 
             base.OnStartup(e);
             LoadLanguages();
 
+            string error = null;
             var status = ParsecVDD.QueryStatus();
+
             if (status != Device.Status.OK)
             {
-                if (status == Device.Status.RESTART_REQUIRED)
+                switch (status)
                 {
-                    MessageBox.Show(GetTranslation("t_msg_must_restart_pc"),
-                        NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    case Device.Status.RESTART_REQUIRED:
+                        error = GetTranslation("t_msg_must_restart_pc");
+                        break;
+                    case Device.Status.DISABLED:
+                        error =GetTranslation("t_msg_driver_is_disabled", ParsecVDD.ADAPTER);
+                        break;
+                    case Device.Status.NOT_INSTALLED:
+                        error = GetTranslation("t_msg_please_install_driver");
+                        break;
+                    default:
+                        error = GetTranslation("t_msg_driver_status_not_ok", status);
+                        break;
                 }
-                else if (status == Device.Status.DISABLED)
-                {
-                    MessageBox.Show(GetTranslation("t_msg_driver_is_disabled", ParsecVDD.ADAPTER),
-                        NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-                else if (status == Device.Status.NOT_INSTALLED)
-                {
-                    MessageBox.Show(GetTranslation("t_msg_please_install_driver"),
-                        NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-                else
-                {
-                    MessageBox.Show(GetTranslation("t_msg_driver_status_not_ok", status),
-                        NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-
-                Shutdown();
-                return;
+            }
+            else if (ParsecVDD.Init() != true)
+            {
+                error = GetTranslation("t_msg_failed_to_obtain_handle");
             }
 
-            if (ParsecVDD.Init() == false)
+            if (error != null)
             {
-                MessageBox.Show(GetTranslation("t_msg_failed_to_obtain_handle"),
-                    NAME, MessageBoxButton.OK, MessageBoxImage.Warning);
-
+                MessageBox.Show(error, Program.AppName, MessageBoxButton.OK, MessageBoxImage.Warning);
                 Shutdown();
-                return;
             }
-
-            Task.Run(() =>
-            {
-                while (signal.WaitOne())
-                {
-                    Tray.ShowApp();
-                }
-            });
 
             // Disable GPU to prevent flickering when adding display
             RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;

@@ -9,8 +9,8 @@ namespace ParsecVDisplay
 {
     internal static class Updater
     {
-        public static string DOWNLOAD_URL => $"https://github.com/{App.GITHUB_REPO}/releases/latest";
-        static string GH_API_URL => $"https://api.github.com/repos/{App.GITHUB_REPO}/releases/latest";
+        public static string DOWNLOAD_URL => $"https://github.com/{Program.GitHubRepo}/releases/latest";
+        static string GH_API_URL => $"https://api.github.com/repos/{Program.GitHubRepo}/releases/latest";
 
         static Updater()
         {
@@ -22,7 +22,7 @@ namespace ParsecVDisplay
         {
             return Task.Run(async () =>
             {
-                var localVersion = new Version(App.VERSION);
+                var localVersion = new Version(Program.AppVersion);
                 var remoteVersion = await FetchLatestVersion();
 
                 if (remoteVersion.CompareTo(localVersion) > 0)
@@ -59,7 +59,7 @@ namespace ParsecVDisplay
             {
             }
 
-            return new Version(App.VERSION);
+            return new Version(Program.AppVersion);
         }
 
         static async Task<string> DownloadString(string url)

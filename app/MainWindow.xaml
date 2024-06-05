@@ -110,7 +110,7 @@
     
     <Window.ContextMenu>
         <ContextMenu>
-            <MenuItem Header="{x:Static local:App.NAME}" Click="QueryStatus">
+            <MenuItem Header="{x:Static local:Program.AppName}" Click="QueryStatus">
                 <MenuItem.Icon>
                     <Image Source="./Resources/icon.ico" />
                 </MenuItem.Icon>

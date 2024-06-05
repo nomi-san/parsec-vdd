@@ -83,7 +83,7 @@ namespace ParsecVDisplay
 
                 if ((sw.ElapsedMilliseconds - start) < 100)
                 {
-                    await Task.Delay(80);
+                    await Task.Delay(50);
                 }
             }
         }
