@@ -193,7 +193,7 @@ namespace ParsecVDisplay
             if (sender == MI_RunOnStartup)
                 Config.RunOnStartup = MI_RunOnStartup.Checked;
             else if (sender == MI_RestoreDisplays)
-                Config.DisplayCount = ParsecVDD.GetDisplays().Count;
+                Config.DisplayCount = MI_RestoreDisplays.Checked ? ParsecVDD.GetDisplays().Count : -1;
             else if (sender == MI_FallbackDisplay)
                 Config.FallbackDisplay = MI_FallbackDisplay.Checked;
             else if (sender == MI_KeepScreenOn)
