@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.Win32;
+
+using Timer = System.Windows.Forms.Timer;
 
 namespace ParsecVDisplay
 {
@@ -20,8 +21,8 @@ namespace ParsecVDisplay
         public const string CLASS_GUID = "{4d36e968-e325-11ce-bfc1-08002be10318}";
 
         static IntPtr VddHandle;
-        static Task UpdateTask;
-        static CancellationTokenSource Cancellation;
+        static Timer UpdateTimer;
+        static Thread UpdateThread;
 
         // actually 16 devices could be created per adapter
         // so just use a half to avoid plugging lag
@@ -36,12 +37,23 @@ namespace ParsecVDisplay
         {
             if (Device.OpenHandle(ADAPTER_GUID, out VddHandle))
             {
-                Cancellation = new CancellationTokenSource();
-                UpdateTask = Task.Run(() => UpdateRoutine(Cancellation.Token), Cancellation.Token);
+                UpdateThread = new Thread(() =>
+                {
+                    Control.CheckForIllegalCrossThreadCalls = false;
+
+                    UpdateTimer = new Timer();
+                    UpdateTimer.Tick += delegate { Ping(); };
+                    UpdateTimer.Interval = 50;
+                    UpdateTimer.Start();
+
+                    Application.Run();
+                });
+
+                UpdateThread.SetApartmentState(ApartmentState.STA);
+                UpdateThread.Start();
 
                 SystemEvents.DisplaySettingsChanged += DisplaySettingsChanged;
                 SystemEvents.SessionEnding += SessionEnding;
-
                 return true;
             }
 
@@ -53,13 +65,14 @@ namespace ParsecVDisplay
             //Config.DisplayCount = DisplayCount;
             SystemEvents.DisplaySettingsChanged -= DisplaySettingsChanged;
 
-            Cancellation?.Cancel();
-            UpdateTask?.Wait();
+            //UpdateTimer.Tick -= UpdateRoutine;
+            UpdateTimer.Stop();
+            UpdateThread.Abort();
 
             Device.CloseHandle(VddHandle);
         }
 
-        static async void UpdateRoutine(CancellationToken token)
+        static void UpdateRoutine(object s, EventArgs e)
         {
             // TODO: restore added displays
 
@@ -70,22 +83,8 @@ namespace ParsecVDisplay
             //        AddDisplay();
             //}
 
-            var sw = Stopwatch.StartNew();
-
-            while (!token.IsCancellationRequested)
-            {
-                long start = sw.ElapsedMilliseconds;
-
-                Core.Update(VddHandle);
-
-                if (token.IsCancellationRequested)
-                    break;
-
-                if ((sw.ElapsedMilliseconds - start) < 100)
-                {
-                    await Task.Delay(50);
-                }
-            }
+            //var sw = Stopwatch.StartNew();
+            //Core.Update(VddHandle);
         }
 
         public static void Invalidate()
@@ -117,26 +116,45 @@ namespace ParsecVDisplay
             return Device.QueryStatus(CLASS_GUID, HARDWARE_ID);
         }
 
-        public static string QueryVersion()
+        public static bool QueryVersion(out string version)
         {
-            Core.Update(VddHandle);
-            Core.Version(VddHandle, out int minor);
-
-            return $"0.{minor}";
+            if (Core.IoControl(VddHandle, Core.IOCTL_VERSION, null, out int vernum, 100))
+            {
+                int major = 0;
+                int minor = vernum & 0xFFFF;
+                version = $"{major}.{minor}";
+                return true;
+            }
+            else
+            {
+                version = "0.???";
+                return false;
+            }     
         }
 
-        public static int AddDisplay()
+        public static bool AddDisplay(out int index)
         {
-            Core.Add(VddHandle, out int index);
-            Core.Update(VddHandle);
+            if (Core.IoControl(VddHandle, Core.IOCTL_ADD, null, out index, 5000))
+            {
+                Ping();
+                return true;
+            }
 
-            return index;
+            return false;
         }
 
-        public static void RemoveDisplay(int index)
+        public static bool RemoveDisplay(int index)
         {
-            Core.Remove(VddHandle, index);
-            Core.Update(VddHandle);
+            var input = new byte[2];
+            input[1] = (byte)(index & 0xFF);
+
+            if (Core.IoControl(VddHandle, Core.IOCTL_REMOVE, input, out var _, 1000))
+            {
+                Ping();
+                return true;
+            }
+
+            return false;
         }
 
         public static void RemoveLastDisplay()
@@ -148,60 +166,47 @@ namespace ParsecVDisplay
             }
         }
 
+        public static void Ping()
+        {
+            Core.IoControl(VddHandle, Core.IOCTL_UPDATE, null, out var _, 1000);
+        }
+
         static unsafe class Core
         {
-            public const uint IOCTL_ADD = 0x0022e004;
-            public const uint IOCTL_REMOVE = 0x0022a008;
-            public const uint IOCTL_UPDATE = 0x0022a00c;
-            public const uint IOCTL_VERSION = 0x0022e010;
+            public const uint IOCTL_ADD = 0x22E004;
+            public const uint IOCTL_REMOVE = 0x22A008;
+            public const uint IOCTL_UPDATE = 0x22A00C;
+            public const uint IOCTL_VERSION = 0x22E010;
 
-            static int IoControl(IntPtr handle, uint code, byte[] data)
+            public static bool IoControl(IntPtr handle, uint code, byte[] input, out int result, int timeout)
             {
                 var InBuffer = new byte[32];
                 var Overlapped = new Native.OVERLAPPED();
                 int OutBuffer = 0;
 
-                if (data != null)
-                    Array.Copy(data, InBuffer, Math.Min(data.Length, InBuffer.Length));
-
-                fixed (byte* input = InBuffer)
+                if (input != null && input.Length > 0)
                 {
-                    Overlapped.hEvent = Native.CreateEventA(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-                    Native.DeviceIoControl(handle, code, input, InBuffer.Length, &OutBuffer, sizeof(int), IntPtr.Zero, ref Overlapped);
-                    Native.GetOverlappedResult(handle, ref Overlapped, out var NumberOfBytesTransferred, true);
+                    Array.Copy(input, InBuffer, Math.Min(input.Length, InBuffer.Length));
+                }
+
+                fixed (byte* buffer = InBuffer)
+                {
+                    Overlapped.hEvent = Native.CreateEvent(null, false, false, null);
+
+                    Native.DeviceIoControl(handle, code,
+                        buffer, InBuffer.Length,
+                        &OutBuffer, sizeof(uint),
+                        null, ref Overlapped);
+
+                    bool success = Native.GetOverlappedResultEx(handle, ref Overlapped,
+                        out var NumberOfBytesTransferred, timeout, false);
 
                     if (Overlapped.hEvent != IntPtr.Zero)
                         Native.CloseHandle(Overlapped.hEvent);
+
+                    result = OutBuffer;
+                    return success;
                 }
-
-                return OutBuffer;
-            }
-
-            public static void Version(IntPtr handle, out int minor)
-            {
-                // Remove() takes only 2 bytes for index
-                //   so this 4 bytes return could be a combination ((major << 16) | minor)
-                //   it should be clear when Parsec VDD comes to v1.0
-                minor = IoControl(handle, IOCTL_VERSION, null);
-            }
-
-            public static void Update(IntPtr handle)
-            {
-                IoControl(handle, IOCTL_UPDATE, null);
-            }
-
-            public static void Add(IntPtr handle, out int index)
-            {
-                index = IoControl(handle, IOCTL_ADD, null);
-            }
-
-            public static void Remove(IntPtr handle, int index)
-            {
-                // 16-bit BE index
-                var indexData = BitConverter.GetBytes((ushort)unchecked(index & 0xFFFF));
-                Array.Reverse(indexData);
-
-                IoControl(handle, IOCTL_REMOVE, indexData);
             }
         }
 
@@ -325,7 +330,7 @@ namespace ParsecVDisplay
                 IntPtr device, uint code,
                 void* lpInBuffer, int nInBufferSize,
                 void* lpOutBuffer, int nOutBufferSize,
-                IntPtr lpBytesReturned,
+                void* lpBytesReturned,
                 ref OVERLAPPED lpOverlapped
             );
 
@@ -338,6 +343,16 @@ namespace ParsecVDisplay
                 [MarshalAs(UnmanagedType.Bool)] bool bWait
             );
 
+            [DllImport("kernel32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool GetOverlappedResultEx(
+                IntPtr handle,
+                ref OVERLAPPED lpOverlapped,
+                out uint lpNumberOfBytesTransferred,
+                int dwMilliseconds,
+                [MarshalAs(UnmanagedType.Bool)] bool bAlertable
+            );
+
             [StructLayout(LayoutKind.Sequential)]
             public struct OVERLAPPED
             {
@@ -347,8 +362,13 @@ namespace ParsecVDisplay
                 public IntPtr hEvent;
             }
 
-            [DllImport("kernel32.dll")]
-            public static extern IntPtr CreateEventA(IntPtr a, IntPtr b, IntPtr c, IntPtr d);
+            [DllImport("kernel32.dll", EntryPoint = "CreateEventW", CharSet = CharSet.Unicode)]
+            public static extern IntPtr CreateEvent(
+                void* lpEventAttributes,
+                [MarshalAs(UnmanagedType.Bool)] bool bManualReset,
+                [MarshalAs(UnmanagedType.Bool)] bool bInitialState,
+                string lpName
+            );
 
             [DllImport("kernel32.dll")]
             [return: MarshalAs(UnmanagedType.Bool)]

@@ -133,7 +133,7 @@ namespace ParsecVDisplay
             }
             else
             {
-                ParsecVDD.AddDisplay();
+                ParsecVDD.AddDisplay(out var _);
                 xAdd.IsEnabled = false;
             }
         }
@@ -173,7 +173,7 @@ namespace ParsecVDisplay
             Tray.ShowApp();
 
             var status = ParsecVDD.QueryStatus();
-            var version = ParsecVDD.QueryVersion();
+            ParsecVDD.QueryVersion(out string version);
 
             MessageBox.Show(this, $"Parsec Virtual Display v{version}\n" +
                 $"{App.GetTranslation("t_msg_driver_status")}: {status}",
