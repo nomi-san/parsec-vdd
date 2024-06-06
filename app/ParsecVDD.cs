@@ -129,7 +129,7 @@ namespace ParsecVDisplay
             {
                 version = "0.???";
                 return false;
-            }     
+            }
         }
 
         public static bool AddDisplay(out int index)
@@ -177,6 +177,11 @@ namespace ParsecVDisplay
             public const uint IOCTL_REMOVE = 0x22A008;
             public const uint IOCTL_UPDATE = 0x22A00C;
             public const uint IOCTL_VERSION = 0x22E010;
+
+            // new code in driver v0.45
+            // relates to IOCTL_UPDATE and per display state
+            // but unused in Parsec app
+            public const uint IOCTL_UNKNOWN1 = 0x22A014;
 
             public static bool IoControl(IntPtr handle, uint code, byte[] input, out int result, int timeout)
             {
