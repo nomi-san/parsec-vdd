@@ -32,6 +32,8 @@ namespace ParsecVDisplay
             {
                 window.Show();
             }
+
+            SetLanguage(Config.Language, false);
         }
 
         public static class BamlReader
