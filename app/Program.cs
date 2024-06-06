@@ -37,6 +37,7 @@ namespace ParsecVDisplay
 
                 if (InitDriver())
                 {
+                    Helper.StayAwake(false);
                     Application.Run(new Tray());
                     ParsecVDD.Uninit();
                 }
