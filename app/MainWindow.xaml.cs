@@ -169,5 +169,42 @@ namespace ParsecVDisplay
             if (e.LeftButton == MouseButtonState.Released)
                 (sender as TextBlock).ContextMenu.IsOpen = true;
         }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (!e.IsRepeat &&
+                (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+            {
+                var screen = System.Windows.Forms.Screen.FromHandle(Handle);
+                if (screen != null)
+                {
+                    var screens = System.Windows.Forms.Screen.AllScreens;
+
+                    int index = -1, nextIndex;
+                    for (int i = 0; i < screens.Length; i++)
+                        if (screens[i].Bounds.Contains(screen.Bounds))
+                            index = i;
+
+                    if (index != -1)
+                    {
+                        if (e.Key == Key.Left)
+                            nextIndex = index - 1;
+                        else if (e.Key == Key.Right)
+                            nextIndex = index + 1;
+                        else return;
+
+                        if (nextIndex >= screens.Length) nextIndex = 0;
+                        else if (nextIndex < 0) nextIndex = screens.Length - 1;
+
+                        if (index != nextIndex)
+                        {
+                            var wa = screens[nextIndex].WorkingArea;
+                            Left = wa.Location.X + (wa.Width - RenderSize.Width) / 2;
+                            Top = wa.Location.Y + (wa.Height - RenderSize.Height) / 2;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

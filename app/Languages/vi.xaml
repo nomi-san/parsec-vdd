@@ -6,8 +6,8 @@
     <system:String x:Key="lang_name">Tiếng Việt</system:String>
     
     <!--Interface-->
-    <system:String x:Key="t_add_display">Cắm màn hình</system:String>
-    <system:String x:Key="t_hint_add_display_first">Hãy cắm màn hình ảo!</system:String>
+    <system:String x:Key="t_add_display">Thêm màn hình</system:String>
+    <system:String x:Key="t_hint_add_display_first">Hãy thêm màn hình ảo!</system:String>
     <system:String x:Key="t_custom">Tùy chỉnh...</system:String>
     <system:String x:Key="t_apply">Áp dụng</system:String>
     <system:String x:Key="t_parent_gpu">GPU nguồn</system:String>
@@ -42,7 +42,7 @@
     <system:String x:Key="t_msg_custom_access_denied">Không thể áp dụng độ phân giải tùy chỉnh, quyền truy cập bị từ chối!</system:String>
     <system:String x:Key="t_msg_custom_invalid_slot">Giá trị không hợp lệ ở slot #{0}.</system:String>
 
-    <system:String x:Key="t_msg_exceeded_display_limit">Không thể cắm thêm màn hình ảo, bạn đã đạt đến con số giới hạn ({0}).</system:String>
+    <system:String x:Key="t_msg_exceeded_display_limit">Không thể thêm thêm màn hình ảo, bạn đã đạt đến con số giới hạn ({0}).</system:String>
     <system:String x:Key="t_msg_prompt_leave_all">Tất cả màn hình ảo sẽ bị tháo bỏ.\nBạn có muốn thoát không?.</system:String>
 
     <system:String x:Key="t_msg_driver_status">Trạng thái driver</system:String>

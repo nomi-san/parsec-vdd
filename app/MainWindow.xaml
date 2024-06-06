@@ -17,6 +17,7 @@
     WindowStartupLocation="CenterScreen"
     Loaded="Window_Loaded"
     Unloaded="Window_Unloaded"
+    KeyDown="Window_KeyDown"
 >
     <Grid MouseDown="Grid_MouseDown">
         <Grid.Background>
