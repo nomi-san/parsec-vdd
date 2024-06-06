@@ -42,6 +42,14 @@ namespace ParsecVDisplay
             }
         }
 
+        public static bool SkipDriverCheck
+        {
+            get => GetInt(nameof(SkipDriverCheck)) != 0;
+            set => SetInt(nameof(SkipDriverCheck), value ? 1 : 0);
+        }
+
+        #region Registry data store
+
         static string GetString(string key, string @default)
         {
             var value = Registry.GetValue(REG_PATH, key, null);
@@ -63,6 +71,8 @@ namespace ParsecVDisplay
         {
             Registry.SetValue(REG_PATH, key, value, RegistryValueKind.DWord);
         }
+
+        #endregion
 
         public static bool RunOnStartup
         {

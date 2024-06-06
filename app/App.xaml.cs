@@ -28,7 +28,7 @@ namespace ParsecVDisplay
             string error = null;
             var status = ParsecVDD.QueryStatus();
 
-            if (status != Device.Status.OK)
+            if (!(status == Device.Status.OK || Config.SkipDriverCheck))
             {
                 switch (status)
                 {

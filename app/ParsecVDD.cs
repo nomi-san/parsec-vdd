@@ -66,8 +66,8 @@ namespace ParsecVDisplay
             SystemEvents.DisplaySettingsChanged -= DisplaySettingsChanged;
 
             //UpdateTimer.Tick -= UpdateRoutine;
-            UpdateTimer.Stop();
-            UpdateThread.Abort();
+            UpdateTimer?.Stop();
+            UpdateThread?.Abort();
 
             Device.CloseHandle(VddHandle);
         }
