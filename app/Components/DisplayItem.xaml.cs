@@ -9,7 +9,6 @@ namespace ParsecVDisplay.Components
 {
     public partial class DisplayItem : UserControl
     {
-        int Index = -1;
         public bool Active { get; set; } = true;
         public string DisplayNum { get; set; } = "1";
         public string DisplayName { get; set; } = "Display [1]";
@@ -33,9 +32,7 @@ namespace ParsecVDisplay.Components
         internal DisplayItem(Display display) : this()
         {
             Display = display;
-
             Active = display.Active;
-            Index = display.Address - 0x100;
 
             DisplayNum = $"{display.Identifier}";
             DisplayName = $"Display [{display.Identifier}]";
@@ -197,9 +194,9 @@ namespace ParsecVDisplay.Components
 
         private void RemoveDisplay(object sender, RoutedEventArgs e)
         {
-            if (Index != -1)
+            if (Display.DisplayIndex >= 0)
             {
-                ParsecVDD.RemoveDisplay(Index);
+                ParsecVDD.RemoveDisplay(Display.DisplayIndex);
             }
         }
     }

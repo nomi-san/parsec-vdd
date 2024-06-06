@@ -76,6 +76,8 @@ namespace ParsecVDisplay
         public List<Mode> ModeList;
         public List<ModeSet> SupportedResolutions;
 
+        public int DisplayIndex => Address - 0x100;
+
         Display()
         {
             ModeList = new List<Mode>();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -11,31 +12,31 @@ namespace ParsecVDisplay
 {
     public partial class MainWindow : Window
     {
+        public static IntPtr Handle { get; private set; }
+        public static MainWindow Instance { get; private set; }
+
         public static bool IsMenuOpen;
 
         public MainWindow()
         {
+            Instance = this;
             InitializeComponent();
             xAppName.Content += $" v{Program.AppVersion}";
 
             // prevent frame history
-            xFrame.Navigating += (_, e) => { e.Cancel = e.NavigationMode != NavigationMode.New; };
-            xFrame.Navigated += (_, e) => { xFrame.NavigationService.RemoveBackEntry(); };
+            xFrame.Navigating += (_, e) => e.Cancel = e.NavigationMode != NavigationMode.New;
+            xFrame.Navigated += (_, e) => xFrame.NavigationService.RemoveBackEntry();
 
             xDisplays.Children.Clear();
             xNoDisplay.Visibility = Visibility.Hidden;
-
-            // setup tray context menu
-            ContextMenu.DataContext = this;
-            ContextMenu.Resources = App.Current.Resources;
         }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
 
-            var hwnd = new WindowInteropHelper(this).EnsureHandle();
-            Helper.EnableDropShadow(hwnd);
+            Handle = new WindowInteropHelper(this).EnsureHandle();
+            Helper.EnableDropShadow(Handle);
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -65,14 +66,6 @@ namespace ParsecVDisplay
         {
             Loaded -= Window_Loaded;
 
-            Tray.Init(this, ContextMenu);
-            ContextMenu = null;
-
-            if (App.Silent)
-                Hide();
-
-            CheckUpdate(null, null);
-
             var defaultLang = Config.Language;
             foreach (var item in App.Languages)
             {
@@ -90,58 +83,48 @@ namespace ParsecVDisplay
 
                     mi.IsChecked = true;
                     App.SetLanguage(mi.Header.ToString());
+                    Tray.Instance?.Invoke(Tray.Instance.UpdateContent);
                 };
 
                 xLanguageMenu.Items.Add(mi);
             }
 
-            ParsecVDD.DisplayChanged += DisplayChanged;
-            ParsecVDD.Invalidate();
+            SystemEvents.DisplaySettingsChanged += DisplayChanged;
+            DisplayChanged(null, EventArgs.Empty);
         }
 
         private void Window_Unloaded(object sender, RoutedEventArgs e)
         {
-            ParsecVDD.DisplayChanged -= DisplayChanged;
-            Tray.Uninit();
+            SystemEvents.DisplaySettingsChanged -= DisplayChanged;
         }
 
-        private void DisplayChanged(List<Display> displays, bool noMonitors)
+        private void DisplayChanged(object sender, EventArgs  e)
         {
-            xDisplays.Children.Clear();
-            xNoDisplay.Visibility = displays.Count <= 0 ? Visibility.Visible : Visibility.Hidden;
-
-            foreach (var display in displays)
+            Dispatcher.Invoke(() =>
             {
-                var item = new Components.DisplayItem(display);
-                xDisplays.Children.Add(item);
-            }
+                var displays = ParsecVDD.GetDisplays(out bool noMonitors);
 
-            xAdd.IsEnabled = true;
+                xDisplays.Children.Clear();
+                xNoDisplay.Visibility = displays.Count <= 0 ? Visibility.Visible : Visibility.Hidden;
 
-            if (noMonitors && Config.FallbackDisplay)
-            {
-                AddDisplay(null, EventArgs.Empty);
-            }
+                foreach (var display in displays)
+                {
+                    var item = new Components.DisplayItem(display);
+                    xDisplays.Children.Add(item);
+                }
+
+                xAdd.IsEnabled = true;
+
+                if (noMonitors && Config.FallbackDisplay)
+                {
+                    AddDisplay(null, EventArgs.Empty);
+                }
+            });
         }
 
         private void AddDisplay(object sender, EventArgs e)
         {
-            if (ParsecVDD.DisplayCount >= ParsecVDD.MAX_DISPLAYS)
-            {
-                MessageBox.Show(this, App.GetTranslation("t_msg_exceeded_display_limit", ParsecVDD.MAX_DISPLAYS),
-                    Title, MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            else
-            {
-                ParsecVDD.AddDisplay(out var _);
-                xAdd.IsEnabled = false;
-            }
-        }
-
-        private void RemoveLastDisplay(object sender, EventArgs e)
-        {
-            xAdd.IsEnabled = false;
-            ParsecVDD.RemoveLastDisplay();
+            Tray.Instance.Invoke(() => Tray.Instance.AddDisplay(null, null));
         }
 
         private void OpenCustom(object sender, EventArgs e)
@@ -152,7 +135,7 @@ namespace ParsecVDisplay
             xFrame.Visibility = Visibility.Visible;
         }
 
-        private void OpenSettings(object sender, EventArgs e)
+        private void OpenDisplaySettings(object sender, EventArgs e)
         {
             Helper.ShellExec("ms-settings:display");
         }
@@ -162,7 +145,7 @@ namespace ParsecVDisplay
             xAdd.IsEnabled = false;
             xDisplays.Children.Clear();
 
-            ParsecVDD.Invalidate();
+            DisplayChanged(null, null);
         }
 
         private void QueryStatus(object sender, EventArgs e)
@@ -170,62 +153,13 @@ namespace ParsecVDisplay
             if (e is MouseEventArgs mbe)
                 mbe.Handled = true;
 
-            Tray.ShowApp();
-
-            var status = ParsecVDD.QueryStatus();
-            ParsecVDD.QueryVersion(out string version);
-
-            MessageBox.Show(this, $"Parsec Virtual Display v{version}\n" +
-                $"{App.GetTranslation("t_msg_driver_status")}: {status}",
-                Program.AppName, MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void ExitApp(object sender, EventArgs e)
-        {
-            if (ParsecVDD.DisplayCount > 0)
-                if (MessageBox.Show(this, App.GetTranslation("t_msg_prompt_leave_all"),
-                    Program.AppName, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
-                    return;
-
-            Tray.Uninit();
-            Application.Current.Shutdown();
+            Tray.Instance.Invoke(() => Tray.Instance.QueryDriver(null, null));
         }
 
         private void OpenRepoLink(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             Helper.OpenLink($"https://github.com/{Program.GitHubRepo}");
-        }
-
-        private async void CheckUpdate(object sender, RoutedEventArgs e)
-        {
-            MenuItem menuItem = null;
-            if (sender is MenuItem)
-            {
-                menuItem = sender as MenuItem;
-                menuItem.IsEnabled = false;
-            }
-
-            var newVersion = await Updater.CheckUpdate();
-            if (!string.IsNullOrEmpty(newVersion))
-            {
-                var ret = MessageBox.Show(this, App.GetTranslation("t_msg_update_available", newVersion),
-                    Program.AppName, MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (ret == MessageBoxResult.Yes)
-                {
-                    Helper.OpenLink(Updater.DOWNLOAD_URL);
-                }
-            }
-            else if (sender != null)
-            {
-                MessageBox.Show(this, App.GetTranslation("t_msg_up_to_date"),
-                    Program.AppName, MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-
-            if (menuItem != null)
-            {
-                menuItem.IsEnabled = true;
-            }
         }
 
         private void LanguageText_MouseEvent(object sender, MouseButtonEventArgs e)

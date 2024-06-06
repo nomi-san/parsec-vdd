@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ParsecVDisplay
 {
@@ -12,7 +13,7 @@ namespace ParsecVDisplay
         public const string GitHubRepo = "nomi-san/parsec-vdd";
 
         [STAThread]
-        static int Main(string[] args)
+        static void Main(string[] args)
         {
             if (args.Length >= 2 && args[0] == "-custom")
             {
@@ -27,9 +28,23 @@ namespace ParsecVDisplay
                     }
                 }
 
-                return 0;
+                return;
             }
 
+            if (SingleInstance())
+            {
+                App.LoadTranslations();
+
+                if (InitDriver())
+                {
+                    Application.Run(new Tray());
+                    ParsecVDD.Uninit();
+                }
+            }
+        }
+
+        static bool SingleInstance()
+        {
             bool isOwned = false;
             var signal = new EventWaitHandle(false,
                 EventResetMode.AutoReset, AppId, out isOwned);
@@ -40,11 +55,9 @@ namespace ParsecVDisplay
                 {
                     while (signal.WaitOne())
                     {
-                        Tray.ShowApp();
+                        Tray.Instance?.Invoke(Tray.Instance.ShowApp);
                     }
                 });
-
-                App.Main();
             }
             else
             {
@@ -52,7 +65,43 @@ namespace ParsecVDisplay
                 signal.Dispose();
             }
 
-            return 0;
+            return isOwned;
+        }
+
+        static bool InitDriver()
+        {
+            string error = null;
+            var status = ParsecVDD.QueryStatus();
+
+            if (!(status == Device.Status.OK || Config.SkipDriverCheck))
+            {
+                switch (status)
+                {
+                    case Device.Status.RESTART_REQUIRED:
+                        error = App.GetTranslation("t_msg_must_restart_pc");
+                        break;
+                    case Device.Status.DISABLED:
+                        error = App.GetTranslation("t_msg_driver_is_disabled", ParsecVDD.ADAPTER);
+                        break;
+                    case Device.Status.NOT_INSTALLED:
+                        error = App.GetTranslation("t_msg_please_install_driver");
+                        break;
+                    default:
+                        error = App.GetTranslation("t_msg_driver_status_not_ok", status);
+                        break;
+                }
+            }
+            else if (ParsecVDD.Init() != true)
+            {
+                error = App.GetTranslation("t_msg_failed_to_obtain_handle");
+            }
+
+            if (error != null)
+            {
+                MessageBox.Show(error, AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            return error == null;
         }
     }
 }

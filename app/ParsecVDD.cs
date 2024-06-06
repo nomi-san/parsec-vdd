@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Windows.Forms;
 using Microsoft.Win32;
-
-using Timer = System.Windows.Forms.Timer;
 
 namespace ParsecVDisplay
 {
@@ -21,94 +17,36 @@ namespace ParsecVDisplay
         public const string CLASS_GUID = "{4d36e968-e325-11ce-bfc1-08002be10318}";
 
         static IntPtr VddHandle;
-        static Timer UpdateTimer;
-        static Thread UpdateThread;
 
         // actually 16 devices could be created per adapter
         // so just use a half to avoid plugging lag
         public static int MAX_DISPLAYS => 8;
 
-        public static int DisplayCount { get; private set; } = 0;
-
-        public delegate void DisplayChangedCallback(List<Display> displays, bool noMonitors);
-        public static event DisplayChangedCallback DisplayChanged;
-
         public static bool Init()
         {
-            if (Device.OpenHandle(ADAPTER_GUID, out VddHandle))
-            {
-                UpdateThread = new Thread(() =>
-                {
-                    Control.CheckForIllegalCrossThreadCalls = false;
-
-                    UpdateTimer = new Timer();
-                    UpdateTimer.Tick += delegate { Ping(); };
-                    UpdateTimer.Interval = 50;
-                    UpdateTimer.Start();
-
-                    Application.Run();
-                });
-
-                UpdateThread.SetApartmentState(ApartmentState.STA);
-                UpdateThread.Start();
-
-                SystemEvents.DisplaySettingsChanged += DisplaySettingsChanged;
-                SystemEvents.SessionEnding += SessionEnding;
-                return true;
-            }
-
-            return false;
+            return Device.OpenHandle(ADAPTER_GUID, out VddHandle);
         }
 
         public static void Uninit()
         {
-            //Config.DisplayCount = DisplayCount;
-            SystemEvents.DisplaySettingsChanged -= DisplaySettingsChanged;
-
-            //UpdateTimer.Tick -= UpdateRoutine;
-            UpdateTimer?.Stop();
-            UpdateThread?.Abort();
-
             Device.CloseHandle(VddHandle);
         }
 
-        static void UpdateRoutine(object s, EventArgs e)
-        {
-            // TODO: restore added displays
-
-            //int initialCount = Config.DisplayCount;
-            //if (initialCount > 0)
-            //{
-            //    for (int i = 0; i < initialCount; i++)
-            //        AddDisplay();
-            //}
-
-            //var sw = Stopwatch.StartNew();
-            //Core.Update(VddHandle);
-        }
-
-        public static void Invalidate()
-        {
-            DisplaySettingsChanged(null, EventArgs.Empty);
-        }
-
-        static void DisplaySettingsChanged(object sender, EventArgs e)
+        public static List<Display> GetDisplays(out bool noMonitors)
         {
             var displays = Display.GetAllDisplays();
-            bool noMonitors = displays.Count == 0;
+            noMonitors = displays.Count == 0;
 
             displays = displays.FindAll(d => d.DisplayName
                 .Equals(DISPLAY_ID, StringComparison.OrdinalIgnoreCase));
 
-            DisplayCount = displays.Count;
-            noMonitors = DisplayCount == 0 && noMonitors;
-
-            DisplayChanged?.Invoke(displays, noMonitors);
+            noMonitors = displays.Count == 0 && noMonitors;
+            return displays;
         }
 
-        static void SessionEnding(object sender, SessionEndingEventArgs e)
+        public static List<Display> GetDisplays()
         {
-            Config.DisplayCount = DisplayCount;
+            return GetDisplays(out var _);
         }
 
         public static Device.Status QueryStatus()
@@ -155,15 +93,6 @@ namespace ParsecVDisplay
             }
 
             return false;
-        }
-
-        public static void RemoveLastDisplay()
-        {
-            if (DisplayCount > 0)
-            {
-                int index = DisplayCount - 1;
-                RemoveDisplay(index);
-            }
         }
 
         public static void Ping()
@@ -337,15 +266,6 @@ namespace ParsecVDisplay
                 void* lpOutBuffer, int nOutBufferSize,
                 void* lpBytesReturned,
                 ref OVERLAPPED lpOverlapped
-            );
-
-            [DllImport("kernel32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool GetOverlappedResult(
-                IntPtr handle,
-                ref OVERLAPPED lpOverlapped,
-                out uint lpNumberOfBytesTransferred,
-                [MarshalAs(UnmanagedType.Bool)] bool bWait
             );
 
             [DllImport("kernel32.dll")]

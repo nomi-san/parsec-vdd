@@ -4,6 +4,8 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Windows;
+using System.Windows.Interop;
 
 namespace ParsecVDisplay
 {
@@ -74,7 +76,7 @@ namespace ParsecVDisplay
         }
 
         [DllImport("kernel32.dll")]
-        static extern int SetThreadExecutionState(uint esFlags);
+        static extern uint SetThreadExecutionState(uint esFlags);
 
         public static void EnableDropShadow(IntPtr hwnd)
         {
@@ -105,5 +107,31 @@ namespace ParsecVDisplay
 
         [DllImport("dwmapi.dll")]
         static extern int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS pMarInset);
+
+        public static void ShowMe(this Window window)
+        {
+            if (window.Visibility != Visibility.Visible)
+            {
+                window.Show();
+            }
+
+            if (PresentationSource.FromVisual(window) is HwndSource hwndSource)
+            {
+                ShowWindow(hwndSource.Handle, 5);
+                SetForegroundWindow(hwndSource.Handle);
+            }
+        }
+
+        [DllImport("user32.dll")]
+        static extern IntPtr SetForegroundWindow(IntPtr hwnd);
+
+        [DllImport("user32.dll")]
+        static extern int ShowWindow(IntPtr hwnd, int flag);
+
+        public class ArbitraryWindow : System.Windows.Forms.IWin32Window
+        {
+            public ArbitraryWindow(IntPtr handle) { Handle = handle; }
+            public IntPtr Handle { get; private set; }
+        }
     }
 }

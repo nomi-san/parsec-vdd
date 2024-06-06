@@ -31,7 +31,7 @@
         </WrapPanel>
 
         <StackPanel x:Name="xButtons" Margin="0,0,25,25"  Orientation="Horizontal" Height="36" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-            <components:Button FontSize="14" Width="40" Click="OpenSettings">
+            <components:Button FontSize="14" Width="40" Click="OpenDisplaySettings">
                 <components:Button.Children>
                     <Image Source="Resources/settings.png" Width="24" Height="24" />
                 </components:Button.Children>
@@ -107,25 +107,4 @@
         <Frame Visibility="Hidden" NavigationUIVisibility="Hidden" Background="#C222" x:Name="xFrame" />
         <components:CloseButton Width="48" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" />
     </Grid>
-    
-    <Window.ContextMenu>
-        <ContextMenu>
-            <MenuItem Header="{x:Static local:Program.AppName}" Click="QueryStatus">
-                <MenuItem.Icon>
-                    <Image Source="./Resources/icon.ico" />
-                </MenuItem.Icon>
-            </MenuItem>
-            <Separator />
-            <MenuItem Header="{DynamicResource t_add_display}" Click="AddDisplay" />
-            <MenuItem Header="{DynamicResource t_remove_last_display}" Click="RemoveLastDisplay" />
-            <Separator />
-            <MenuItem Header="{DynamicResource t_run_on_startup}" IsCheckable="True" IsChecked="{Binding Path=(local:Config.RunOnStartup), Mode=TwoWay}" />
-            <MenuItem Header="{DynamicResource t_fallback_display}" IsCheckable="True" IsChecked="{Binding Path=(local:Config.FallbackDisplay), Mode=TwoWay}" />
-            <MenuItem Header="{DynamicResource t_keep_screen_on}" IsCheckable="True" IsChecked="{Binding Path=(local:Config.KeepScreenOn), Mode=TwoWay}" />
-            <Separator />
-            <MenuItem Header="{DynamicResource t_check_for_update}" Click="CheckUpdate" />
-            <Separator />
-            <MenuItem Header="{DynamicResource t_exit}" Click="ExitApp" />
-        </ContextMenu>
-    </Window.ContextMenu>
 </Window>

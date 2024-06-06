@@ -26,6 +26,7 @@
     
     <!--Tray menu-->
     <system:String x:Key="t_remove_last_display">删除最后一个虚拟显示器</system:String>
+    <system:String x:Key="t_options">选项</system:String>
     <system:String x:Key="t_run_on_startup">开机启动</system:String>
     <system:String x:Key="t_fallback_display">备用显示</system:String>
     <system:String x:Key="t_keep_screen_on">保持屏幕开启</system:String>

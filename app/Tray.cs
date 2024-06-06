@@ -1,84 +1,262 @@
 ﻿using System;
-using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Interop;
-using System.Runtime.InteropServices;
+using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ParsecVDisplay
 {
-    internal static class Tray
+    internal class Tray : ApplicationContext
     {
-        static NotifyIcon Icon;
-        static Window Window;
+        public static Tray Instance { get; private set; }
+        static IWin32Window Owner => new Helper.ArbitraryWindow(MainWindow.Handle);
+
+        NotifyIcon TrayIcon;
         static System.Windows.Controls.ContextMenu Menu;
 
-        public static void Init(Window window, System.Windows.Controls.ContextMenu menu)
+        Thread AppThread;
+        System.Windows.Forms.Timer VddTimer;
+
+        ToolStripMenuItem MI_RunOnStartup;
+        ToolStripMenuItem MI_FallbackDisplay;
+        ToolStripMenuItem MI_KeepScreenOn;
+
+        //  ParsecVDisplay
+        //  ______________
+        //  Add display
+        //  Remove last display
+        //  --------------
+        //  Options        >   Run on startup
+        //                 |   Fallback display
+        //                 |   Keep screen on
+        //  Check update
+        //  --------------
+        //  Exit
+
+        public Tray()
         {
-            Window = window;
-            Menu = menu;
+            Instance = this;
 
-            Icon = new NotifyIcon();
+            AppThread = new Thread(App.Main);
+            AppThread.IsBackground = true;
+            AppThread.SetApartmentState(ApartmentState.STA);
+            AppThread.Start();
 
-            var uri = new Uri(window.Icon.ToString());
-            var streamInfo = System.Windows.Application.GetResourceStream(uri);
-            Icon.Icon = new System.Drawing.Icon(streamInfo.Stream);
+            VddTimer = new System.Windows.Forms.Timer();
+            VddTimer.Interval = 50;
+            VddTimer.Tick += VddTimer_Tick;
+            VddTimer.Start();
 
-            Icon.MouseClick += Icon_MouseClick;
-            Icon.DoubleClick += Icon_DoubleClick;
+            var appName = Program.AppName;
+            var appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
-            Icon.Visible = true;
+            TrayIcon = new NotifyIcon()
+            {
+                Text = appName,
+                Icon = appIcon,
+                Visible = true,
+                ContextMenuStrip = new ContextMenuStrip()
+                {
+                    Items =
+                    {
+                        new ToolStripMenuItem(appName, appIcon.ToBitmap(), QueryDriver),
+                        new ToolStripSeparator(),
+                        new ToolStripMenuItem("t_add_display", null, AddDisplay),
+                        new ToolStripMenuItem("t_remove_last_display", null, RemoveLastDisplay),
+                        new ToolStripSeparator(),
+                        new ToolStripMenuItem("t_options")
+                        {
+                            DropDownItems =
+                            {
+                                (MI_RunOnStartup = new ToolStripMenuItem("t_run_on_startup",
+                                    null, OptionsCheck) { CheckOnClick = true, Checked = Config.RunOnStartup }),
+                                (MI_FallbackDisplay = new ToolStripMenuItem("t_fallback_display",
+                                    null, OptionsCheck) { CheckOnClick = true, Checked = Config.FallbackDisplay }),
+                                (MI_KeepScreenOn = new ToolStripMenuItem("t_keep_screen_on",
+                                    null, OptionsCheck) { CheckOnClick = true, Checked = Config.KeepScreenOn }),
+                            }
+                        },
+                        new ToolStripMenuItem("t_check_for_update", null, CheckUpdate),
+                        new ToolStripSeparator(),
+                        new ToolStripMenuItem("t_exit", null, Exit),
+                    }
+                }
+            };
+
+            UpdateContent();
+
+            TrayIcon.DoubleClick += delegate { ShowApp(); };
+            TrayIcon.Visible = true;
+
+            Invoke(async () =>
+            {
+                await Task.Delay(2000);
+                CheckUpdate(null, null);
+            });
+
         }
 
-        public static void Uninit()
+        void VddTimer_Tick(object sender, EventArgs e)
         {
-            if (Icon != null)
+            ParsecVDD.Ping();
+        }
+
+        public void AddDisplay(object sender, EventArgs e)
+        {
+            if (ParsecVDD.GetDisplays().Count >= ParsecVDD.MAX_DISPLAYS)
             {
-                Icon.Visible = false;
-                Icon.Dispose();
+                MessageBox.Show(Owner, App.GetTranslation("t_msg_exceeded_display_limit", ParsecVDD.MAX_DISPLAYS),
+                    Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                ParsecVDD.AddDisplay(out var _);
             }
         }
 
-        private static void Icon_DoubleClick(object sender, EventArgs e)
+        void RemoveLastDisplay(object sender, EventArgs e)
+        {
+            var displays = ParsecVDD.GetDisplays();
+            if (displays.Count > 0)
+            {
+                var last = displays[displays.Count - 1];
+                ParsecVDD.RemoveDisplay(last.DisplayIndex);
+            }
+        }
+
+        public void QueryDriver(object sender, EventArgs e)
         {
             ShowApp();
+
+            var status = ParsecVDD.QueryStatus();
+            ParsecVDD.QueryVersion(out string version);
+
+            MessageBox.Show(Owner, $"Parsec Virtual Display v{version}\n" +
+                $"{App.GetTranslation("t_msg_driver_status")}: {status}",
+                Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private static void Icon_MouseClick(object sender, MouseEventArgs e)
+        async void CheckUpdate(object sender, EventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
+            ToolStripMenuItem menuItem = null;
+            if (sender is ToolStripMenuItem)
             {
-                Menu.IsOpen = true;
+                menuItem = (ToolStripMenuItem)sender;
+                menuItem.Enabled = false;
+            }
 
-                if (PresentationSource.FromVisual(Menu) is HwndSource hwndSource)
+            var newVersion = await Updater.CheckUpdate()
+                .ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(newVersion))
+            {
+                var ret = MessageBox.Show(Owner, App.GetTranslation("t_msg_update_available", newVersion),
+                    Program.AppName, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (ret == DialogResult.Yes)
                 {
-                    SetForegroundWindow(hwndSource.Handle);
+                    Helper.OpenLink(Updater.DOWNLOAD_URL);
                 }
             }
+            else if (sender != null)
+            {
+                MessageBox.Show(Owner, App.GetTranslation("t_msg_up_to_date"),
+                    Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            if (menuItem != null)
+            {
+                menuItem.Enabled = true;
+            }
         }
 
-        public static void ShowApp()
+        void OptionsCheck(object sender, EventArgs e)
         {
-            if (Window == null) return;
+            if (sender == MI_RunOnStartup)
+                Config.RunOnStartup = MI_RunOnStartup.Checked;
+            else if (sender == MI_FallbackDisplay)
+                Config.FallbackDisplay = MI_FallbackDisplay.Checked;
+            else if (sender == MI_KeepScreenOn)
+                Config.KeepScreenOn = MI_KeepScreenOn.Checked;
+        }
 
-            if (Window.Dispatcher.Thread.ManagedThreadId != Thread.CurrentThread.ManagedThreadId)
+        public void ShowApp()
+        {
+            MainWindow.Instance?.Dispatcher
+                .Invoke(MainWindow.Instance.ShowMe);
+        }
+
+        public void UpdateContent()
+        {
+            void UpdateItem(ToolStripItem item, bool submenu)
             {
-                Window.Dispatcher.BeginInvoke(new Action(ShowApp));
-                return;
+                if (item is ToolStripMenuItem mi)
+                {
+                    if (mi.Tag is string t) { }
+                    else
+                    {
+                        t = mi.Text;
+                        mi.Tag = t;
+                    }
+                    mi.Text = App.GetTranslation(t);
+
+                    if (submenu && mi.HasDropDownItems)
+                    {
+                        foreach (ToolStripItem sub in mi.DropDownItems)
+                        {
+                            UpdateItem(sub, false);
+                        }
+                    }
+                }
             }
 
-            if (Window.Visibility == Visibility.Hidden)
+            var items = TrayIcon.ContextMenuStrip.Items;
+            for (int i = 1; i < items.Count; i++)
             {
-                Window.Show();
-            }
-
-            if (PresentationSource.FromVisual(Window) is HwndSource hwndSource)
-            {
-                SetForegroundWindow(hwndSource.Handle);
+                UpdateItem(items[i], true);
             }
         }
 
-        [DllImport("user32.dll")]
-        static extern IntPtr SetForegroundWindow(IntPtr hwnd);
+        void Exit(object sender, EventArgs e)
+        {
+            var displays = ParsecVDD.GetDisplays();
+            if (displays.Count > 0)
+            {
+                if (MessageBox.Show(Owner, App.GetTranslation("t_msg_prompt_leave_all"),
+                    Program.AppName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                    return;
+
+                for (int i = displays.Count - 1; i >= 0; i--)
+                {
+                    var index = displays[i].DisplayIndex;
+                    ParsecVDD.RemoveDisplay(index);
+                }
+            }
+
+            VddTimer.Tick -= VddTimer_Tick;
+            VddTimer.Stop();
+
+            App.Current?.Dispatcher.Invoke(App.Current.Shutdown);
+            AppThread.Join();
+
+            TrayIcon.Visible = false;
+            Application.Exit();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                VddTimer.Dispose();
+                TrayIcon.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        public void Invoke(Action action)
+        {
+            TrayIcon.ContextMenuStrip.Invoke(action);
+        }
     }
 }
