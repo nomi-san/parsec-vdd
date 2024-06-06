@@ -28,6 +28,7 @@
     <system:String x:Key="t_remove_last_display">Remove last display</system:String>
     <system:String x:Key="t_options">Options</system:String>
     <system:String x:Key="t_run_on_startup">Run on startup</system:String>
+    <system:String x:Key="t_restore_displays">Restore displays</system:String>
     <system:String x:Key="t_fallback_display">Fallback display</system:String>
     <system:String x:Key="t_keep_screen_on">Keep screen on</system:String>
     <system:String x:Key="t_check_for_update">Check for update</system:String>

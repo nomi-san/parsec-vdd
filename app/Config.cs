@@ -17,7 +17,7 @@ namespace ParsecVDisplay
 
         public static int DisplayCount
         {
-            get => GetInt(nameof(DisplayCount));
+            get => GetInt(nameof(DisplayCount), 0);
             set => SetInt(nameof(DisplayCount), value);
         }
 

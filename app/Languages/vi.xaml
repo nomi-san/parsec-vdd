@@ -29,6 +29,7 @@
     <system:String x:Key="t_remove_last_display">Bỏ màn hình cuối</system:String>
     <system:String x:Key="t_options">Tùy chọn</system:String>
     <system:String x:Key="t_run_on_startup">Chạy cùng hệ thống</system:String>
+    <system:String x:Key="t_restore_displays">Khôi phục lại màn hình</system:String>
     <system:String x:Key="t_fallback_display">Màn hình dự phòng</system:String>
     <system:String x:Key="t_keep_screen_on">Luôn sáng màn hình</system:String>
     <system:String x:Key="t_check_for_update">Kiểm tra cập nhật</system:String>

@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 namespace ParsecVDisplay
 {
@@ -18,6 +19,7 @@ namespace ParsecVDisplay
         System.Windows.Forms.Timer VddTimer;
 
         ToolStripMenuItem MI_RunOnStartup;
+        ToolStripMenuItem MI_RestoreDisplays;
         ToolStripMenuItem MI_FallbackDisplay;
         ToolStripMenuItem MI_KeepScreenOn;
 
@@ -27,6 +29,8 @@ namespace ParsecVDisplay
         //  Remove last display
         //  --------------
         //  Options        >   Run on startup
+        //                 |   Restore displays
+        //                 |   --------------
         //                 |   Fallback display
         //                 |   Keep screen on
         //  Check update
@@ -70,6 +74,9 @@ namespace ParsecVDisplay
                             {
                                 (MI_RunOnStartup = new ToolStripMenuItem("t_run_on_startup",
                                     null, OptionsCheck) { CheckOnClick = true, Checked = Config.RunOnStartup }),
+                                (MI_RestoreDisplays = new ToolStripMenuItem("t_restore_displays",
+                                    null, OptionsCheck) { CheckOnClick = true, Checked = Config.DisplayCount >= 0 }),
+                                new ToolStripSeparator(),
                                 (MI_FallbackDisplay = new ToolStripMenuItem("t_fallback_display",
                                     null, OptionsCheck) { CheckOnClick = true, Checked = Config.FallbackDisplay }),
                                 (MI_KeepScreenOn = new ToolStripMenuItem("t_keep_screen_on",
@@ -88,12 +95,23 @@ namespace ParsecVDisplay
             TrayIcon.DoubleClick += delegate { ShowApp(); };
             TrayIcon.Visible = true;
 
+            SystemEvents.SessionEnding += SaveDisplayCount;
+            SystemEvents.SessionSwitch += SaveDisplayCount;
+            SystemEvents.DisplaySettingsChanged += SaveDisplayCount;
+
             Invoke(async () =>
             {
-                await Task.Delay(2000);
+                await Task.Delay(1000);
+
+                var savedCount = Config.DisplayCount;
+                if (savedCount >= 0)
+                {
+                    for (int i = 0; i < savedCount; i++)
+                        ParsecVDD.AddDisplay(out var _);
+                }
+
                 CheckUpdate(null, null);
             });
-
         }
 
         void VddTimer_Tick(object sender, EventArgs e)
@@ -174,10 +192,21 @@ namespace ParsecVDisplay
         {
             if (sender == MI_RunOnStartup)
                 Config.RunOnStartup = MI_RunOnStartup.Checked;
+            else if (sender == MI_RestoreDisplays)
+                Config.DisplayCount = ParsecVDD.GetDisplays().Count;
             else if (sender == MI_FallbackDisplay)
                 Config.FallbackDisplay = MI_FallbackDisplay.Checked;
             else if (sender == MI_KeepScreenOn)
                 Config.KeepScreenOn = MI_KeepScreenOn.Checked;
+        }
+
+        void SaveDisplayCount(object sender, EventArgs e)
+        {
+            if (Config.DisplayCount >= 0)
+            {
+                var displays = ParsecVDD.GetDisplays();
+                Config.DisplayCount = displays.Count;
+            }
         }
 
         public void ShowApp()
@@ -219,6 +248,10 @@ namespace ParsecVDisplay
 
         void Exit(object sender, EventArgs e)
         {
+            SystemEvents.SessionEnding -= SaveDisplayCount;
+            SystemEvents.SessionSwitch -= SaveDisplayCount;
+            SystemEvents.DisplaySettingsChanged -= SaveDisplayCount;
+
             var displays = ParsecVDD.GetDisplays();
             if (displays.Count > 0)
             {
@@ -231,6 +264,9 @@ namespace ParsecVDisplay
                     var index = displays[i].DisplayIndex;
                     ParsecVDD.RemoveDisplay(index);
                 }
+
+                if (Config.DisplayCount >= 0)
+                    Config.DisplayCount = displays.Count;
             }
 
             VddTimer.Tick -= VddTimer_Tick;
