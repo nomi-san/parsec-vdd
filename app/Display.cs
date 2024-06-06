@@ -281,7 +281,7 @@ namespace ParsecVDisplay
             displays.Sort((a, b) =>
             {
                 if (a.AdapterInstance == b.AdapterInstance)
-                    return a.LastArrival.CompareTo(b.LastArrival);
+                    return a.DeviceName.CompareTo(b.DeviceName);
                 return a.AdapterArrival.CompareTo(b.AdapterArrival);
             });
 
