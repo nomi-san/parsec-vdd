@@ -49,7 +49,8 @@ and WPF. It can show the number of virtual displays added, allows adding
 multiple virtual displays and removing a specific selected one. Also allows to
 change resolution and take screenshot, and more..
 
-👉 Check out [Releases](https://github.com/nomi-san/parsec-vdd/releases) to download it.
+👉 Check out [Releases](https://github.com/nomi-san/parsec-vdd/releases) to
+download it.
 
 <p align="center">
   <img src="https://github.com/nomi-san/parsec-vdd/assets/38210249/71b25bc6-eee1-4d80-94e0-e39eab7f8fb9" />
@@ -59,20 +60,47 @@ Full source code of this application is located in the [app](./app) folder.
 
 ## 🚀 Using Core API
 
-### Using the source
+### Design notes
 
-- The core API is designed as single C/C++ header that can be added to any project, 👉 [core/parsec-vdd.h](./core/parsec-vdd.h)
+Parsec VDD is designed to work with Parsec client-connection session. When user
+connects to the host, the app will start controlling the driver, it sends IO
+control codes and gets result. When adding a virtual display, you will get its
+index to be used for unplugging, the maximum number of displays could be added
+up to 16 per adapter. You have to ping to the driver periodically to keep added
+displays alive, otherwise all of them will be unplugged after a second. There's
+no direct way to manipulate added displays, you should call Win32 Display API to
+change their display mode (see the ParsecVDisplay source).
+
+```mermaid
+flowchart LR
+  A(app)
+  B(vdd)
+
+  A <--->|ioctl| B
+  A ..->|ping| B
+
+  B --- X(display1)
+  B --- Y(display2)
+  B --- Z(display3)
+
+  winapi -->|manipulate| X
+```
+
+### Using the code
+
+- The core API is designed as single C/C++ header that can be added to any
+  project, 👉 [core/parsec-vdd.h](./core/parsec-vdd.h)
 - There is also a simple demo program, 👉 [core/vdd-demo.cc](./core/vdd-demo.cc)
 
 ### Picking a driver
 
 You have to install the driver to make them work.
 
-| Version           | Minimum OS      | IddCx  | Notes
-| :---------------- | :-------------- | :----: | :------
-| [parsec-vdd-0.38] | Windows 10 1607 | 1.0    | Obsolete, may crash randomly.
-| [parsec-vdd-0.41] | Windows 10 19H2 | 1.4    | Stable.
-| [parsec-vdd-0.45] | Windows 10 21H2 | 1.5    | Better streaming color, but may not work on some Windows.
+| Version           | Minimum OS      | IddCx | Notes                                                     |
+| :---------------- | :-------------- | :---: | :-------------------------------------------------------- |
+| [parsec-vdd-0.38] | Windows 10 1607 |  1.0  | Obsolete, may crash randomly.                             |
+| [parsec-vdd-0.41] | Windows 10 19H2 |  1.4  | Stable.                                                   |
+| [parsec-vdd-0.45] | Windows 10 21H2 |  1.5  | Better streaming color, but may not work on some Windows. |
 
 [parsec-vdd-0.38]: https://builds.parsec.app/vdd/parsec-vdd-0.38.0.0.exe
 [parsec-vdd-0.41]: https://builds.parsec.app/vdd/parsec-vdd-0.41.0.0.exe
@@ -80,8 +108,8 @@ You have to install the driver to make them work.
 
 > All of them also work on Windows Server 2019 or higher.
 
-You can unzip (using 7z) the driver setup above to obtain the driver files and `nefconw`
-CLI.
+You can unzip (using 7z) the driver setup above to obtain the driver files and
+`nefconw` CLI.
 
 ```
 vdd-0.45/
@@ -100,7 +128,8 @@ start /wait .\nefconw.exe --create-device-node --class-name Display --class-guid
 start /wait .\nefconw.exe --install-driver --inf-path ".\driver\mm.inf"
 ```
 
-In additional, you can run the driver setup in silent mode to install it quickly.
+In additional, you can run the driver setup in silent mode to install it
+quickly.
 
 ```
 .\parsec-vdd-0.45.0.0.exe /S
