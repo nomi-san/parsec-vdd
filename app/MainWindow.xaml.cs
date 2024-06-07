@@ -37,6 +37,10 @@ namespace ParsecVDisplay
 
             Handle = new WindowInteropHelper(this).EnsureHandle();
             Helper.EnableDropShadow(Handle);
+
+            var source = HwndSource.FromHwnd(Handle);
+            source.AddHook(new HwndSourceHook(WndProc));
+
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -98,14 +102,15 @@ namespace ParsecVDisplay
             SystemEvents.DisplaySettingsChanged -= DisplayChanged;
         }
 
-        private void DisplayChanged(object sender, EventArgs  e)
+        private void DisplayChanged(object sender, EventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
                 var displays = ParsecVDD.GetDisplays(out bool noMonitors);
 
                 xDisplays.Children.Clear();
-                xNoDisplay.Visibility = displays.Count <= 0 ? Visibility.Visible : Visibility.Hidden;
+                xNoDisplay.Visibility = displays.Count > 0
+                    ? Visibility.Hidden : Visibility.Visible;
 
                 foreach (var display in displays)
                 {
@@ -205,6 +210,16 @@ namespace ParsecVDisplay
                     }
                 }
             }
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == 0x0219 && unchecked((int)wParam) == 0x7)
+            {
+                DisplayChanged(this, EventArgs.Empty);
+            }
+
+            return IntPtr.Zero;
         }
     }
 }
