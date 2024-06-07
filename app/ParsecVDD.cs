@@ -24,7 +24,13 @@ namespace ParsecVDisplay
 
         public static bool Init()
         {
-            return Device.OpenHandle(ADAPTER_GUID, out VddHandle);
+            if (Device.OpenHandle(ADAPTER_GUID, out VddHandle))
+            {
+                Ping();
+                return true;
+            }
+
+            return false;
         }
 
         public static void Uninit()
@@ -86,7 +92,7 @@ namespace ParsecVDisplay
             var input = new byte[2];
             input[1] = (byte)(index & 0xFF);
 
-            if (Core.IoControl(VddHandle, Core.IOCTL_REMOVE, input, out var _, 1000))
+            if (Core.IoControl(VddHandle, Core.IOCTL_REMOVE, input, 1000))
             {
                 Ping();
                 return true;
@@ -97,7 +103,7 @@ namespace ParsecVDisplay
 
         public static void Ping()
         {
-            Core.IoControl(VddHandle, Core.IOCTL_UPDATE, null, out var _, 1000);
+            Core.IoControl(VddHandle, Core.IOCTL_UPDATE, null, 1000);
         }
 
         static unsafe class Core
@@ -112,11 +118,10 @@ namespace ParsecVDisplay
             // but unused in Parsec app
             public const uint IOCTL_UNKNOWN1 = 0x22A014;
 
-            public static bool IoControl(IntPtr handle, uint code, byte[] input, out int result, int timeout)
+            static bool IoControl(IntPtr handle, uint code, byte[] input, int* result, int timeout)
             {
                 var InBuffer = new byte[32];
                 var Overlapped = new Native.OVERLAPPED();
-                int OutBuffer = 0;
 
                 if (input != null && input.Length > 0)
                 {
@@ -125,11 +130,12 @@ namespace ParsecVDisplay
 
                 fixed (byte* buffer = InBuffer)
                 {
+                    int outputLength = result != null ? sizeof(int) : 0;
                     Overlapped.hEvent = Native.CreateEvent(null, false, false, null);
 
                     Native.DeviceIoControl(handle, code,
                         buffer, InBuffer.Length,
-                        &OutBuffer, sizeof(uint),
+                        result, outputLength,
                         null, ref Overlapped);
 
                     bool success = Native.GetOverlappedResultEx(handle, ref Overlapped,
@@ -138,9 +144,21 @@ namespace ParsecVDisplay
                     if (Overlapped.hEvent != IntPtr.Zero)
                         Native.CloseHandle(Overlapped.hEvent);
 
-                    result = OutBuffer;
                     return success;
                 }
+            }
+
+            public static bool IoControl(IntPtr handle, uint code, byte[] input, int timeout)
+            {
+                return IoControl(handle, code, input, null, timeout);
+            }
+
+            public static bool IoControl(IntPtr handle, uint code, byte[] input, out int result, int timeout)
+            {
+                int output;
+                bool success = IoControl(handle, code, input, &output, timeout);
+                result = output;
+                return success;
             }
         }
 

@@ -115,6 +115,7 @@ namespace ParsecVDisplay
 
         void RestoreDisplays()
         {
+            ParsecVDD.Ping();
             var savedCount = Config.DisplayCount;
 
             if (savedCount > 0)
@@ -256,17 +257,20 @@ namespace ParsecVDisplay
 
         void Exit(object sender, EventArgs e)
         {
-            SystemEvents.SessionEnding -= SaveDisplayCount;
-            SystemEvents.SessionSwitch -= SaveDisplayCount;
-            SystemEvents.DisplaySettingsChanged -= SaveDisplayCount;
-
             var displays = ParsecVDD.GetDisplays();
             if (displays.Count > 0)
             {
                 if (MessageBox.Show(Owner, App.GetTranslation("t_msg_prompt_leave_all"),
                     Program.AppName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                     return;
+            }
 
+            SystemEvents.SessionEnding -= SaveDisplayCount;
+            SystemEvents.SessionSwitch -= SaveDisplayCount;
+            SystemEvents.DisplaySettingsChanged -= SaveDisplayCount;
+
+            if (displays.Count > 0)
+            {
                 for (int i = displays.Count - 1; i >= 0; i--)
                 {
                     var index = displays[i].DisplayIndex;
