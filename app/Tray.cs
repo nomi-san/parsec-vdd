@@ -103,13 +103,7 @@ namespace ParsecVDisplay
             {
                 await Task.Delay(1000);
 
-                var savedCount = Config.DisplayCount;
-                if (savedCount >= 0)
-                {
-                    for (int i = 0; i < savedCount; i++)
-                        ParsecVDD.AddDisplay(out var _);
-                }
-
+                RestoreDisplays();
                 CheckUpdate(null, null);
             });
         }
@@ -117,6 +111,20 @@ namespace ParsecVDisplay
         void VddTimer_Tick(object sender, EventArgs e)
         {
             ParsecVDD.Ping();
+        }
+
+        void RestoreDisplays()
+        {
+            var savedCount = Config.DisplayCount;
+
+            if (savedCount > 0)
+            {
+                var displays = ParsecVDD.GetDisplays();
+                var amount = savedCount - displays.Count;
+
+                for (int i = 0; i < amount; i++)
+                    ParsecVDD.AddDisplay(out var _);
+            }
         }
 
         public void AddDisplay(object sender, EventArgs e)
