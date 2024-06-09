@@ -88,6 +88,7 @@
     <Compile Include="Device.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="PowerEvents.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Tray.cs" />
     <Compile Include="ParsecVDD.cs" />
