@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,7 +14,7 @@ namespace ParsecVDisplay
         public const string GitHubRepo = "nomi-san/parsec-vdd";
 
         [STAThread]
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             if (args.Length >= 2 && args[0] == "-custom")
             {
@@ -28,7 +29,13 @@ namespace ParsecVDisplay
                     }
                 }
 
-                return;
+                return 0;
+            }
+
+            if (args.Length > 0 && args[0] == "-cli")
+            {
+                args = args.Skip(1).ToArray();
+                return CLI.Execute(args);
             }
 
             if (SingleInstance())
@@ -42,6 +49,8 @@ namespace ParsecVDisplay
                     ParsecVDD.Uninit();
                 }
             }
+
+            return 0;
         }
 
         static bool SingleInstance()

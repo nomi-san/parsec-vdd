@@ -48,6 +48,9 @@
   <PropertyGroup>
     <StartupObject>ParsecVDisplay.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -72,6 +75,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CLI.cs" />
     <Compile Include="Components\Button.xaml.cs">
       <DependentUpon>Button.xaml</DependentUpon>
     </Compile>

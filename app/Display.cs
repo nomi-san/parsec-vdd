@@ -12,10 +12,10 @@ namespace ParsecVDisplay
     {
         public enum Orientation
         {
-            Angle0 = 0, // landscape
-            Angle90,    // portrait
-            Angle180,   // landscape (flipped)
-            Angle270    // portrait (flipped)
+            Landscape = 0,      // Angle0
+            Portrait,           // Angle90
+            Landscape_Flipped,  // Angle180
+            Portrait_Flipped    // Angle270
         }
 
         public class Mode
@@ -81,7 +81,7 @@ namespace ParsecVDisplay
         Display()
         {
             ModeList = new List<Mode>();
-            CurrentOrientation = Orientation.Angle0;
+            CurrentOrientation = Orientation.Landscape;
             SupportedResolutions = new List<ModeSet>();
         }
 
