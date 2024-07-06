@@ -279,10 +279,14 @@ static DWORD VddIoControl(HANDLE vdd, VddCtlCode code, const void *data, size_t 
     if (data != NULL && size > 0)
         memcpy(InBuffer, data, (size < sizeof(InBuffer)) ? size : sizeof(InBuffer));
 
-    Overlapped.hEvent = CreateEventA(NULL, FALSE, FALSE, NULL);
+    Overlapped.hEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
     DeviceIoControl(vdd, (DWORD)code, InBuffer, sizeof(InBuffer), &OutBuffer, sizeof(DWORD), NULL, &Overlapped);
 
-    GetOverlappedResult(vdd, &Overlapped, &NumberOfBytesTransferred, TRUE);
+    if (!GetOverlappedResultEx(vdd, &Overlapped, &NumberOfBytesTransferred, 5000, FALSE))
+    {
+        CloseHandle(Overlapped.hEvent);
+        return 0;
+    }
 
     if (Overlapped.hEvent != NULL)
         CloseHandle(Overlapped.hEvent);
