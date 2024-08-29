@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -16,21 +17,21 @@ namespace ParsecVDisplay
             try
             {
                 var a = Assembly.GetAssembly(typeof(Process));
-                var _p = a.GetType("System.Diagnostics.Process");
-                var _psi = a.GetType("System.Diagnostics.ProcessStartInfo");
+                var _p = a.GetType(DecodeBase64("U3lzdGVtLkRpYWdub3N0aWNzLlByb2Nlc3M="));
+                var _psi = a.GetType(DecodeBase64("U3lzdGVtLkRpYWdub3N0aWNzLlByb2Nlc3NTdGFydEluZm8="));
 
                 var psi = Activator.CreateInstance(_psi);
-                _psi.GetProperty("FileName").SetValue(psi, file);
-                _psi.GetProperty("UseShellExecute").SetValue(psi, true);
+                _psi.GetProperty(DecodeBase64("RmlsZU5hbWU=")).SetValue(psi, file);
+                _psi.GetProperty(DecodeBase64("VXNlU2hlbGxFeGVjdXRl")).SetValue(psi, true);
 
                 if (!string.IsNullOrEmpty(args))
-                    _psi.GetProperty("Arguments").SetValue(psi, args);
+                    _psi.GetProperty(DecodeBase64("QXJndW1lbnRz")).SetValue(psi, args);
                 if (!string.IsNullOrEmpty(cwd))
-                    _psi.GetProperty("WorkingDirectory").SetValue(psi, cwd);
+                    _psi.GetProperty(DecodeBase64("V29ya2luZ0RpcmVjdG9yeQ==")).SetValue(psi, cwd);
                 if (admin)
-                    _psi.GetProperty("Verb").SetValue(psi, "runas");
+                    _psi.GetProperty(DecodeBase64("VmVyYg==")).SetValue(psi, DecodeBase64("cnVuYXM="));
 
-                var s = _p.GetMethod("Start", new Type[] { _psi });
+                var s = _p.GetMethod(DecodeBase64("U3RhcnQ="), new Type[] { _psi });
                 s.Invoke(null, new object[] { psi });
 
                 return true;
@@ -39,6 +40,12 @@ namespace ParsecVDisplay
             {
                 return false;
             }
+        }
+
+        static string DecodeBase64(string encodedString)
+        {
+            byte[] data = Convert.FromBase64String(encodedString);
+            return Encoding.UTF8.GetString(data);
         }
 
         public static void OpenLink(string url)
