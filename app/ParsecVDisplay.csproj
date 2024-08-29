@@ -89,6 +89,7 @@
       <DependentUpon>DisplayItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="Config.cs" />
+    <Compile Include="Daemon.cs" />
     <Compile Include="Device.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Helper.cs" />

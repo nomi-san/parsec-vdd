@@ -16,7 +16,6 @@ namespace ParsecVDisplay
         static System.Windows.Controls.ContextMenu Menu;
 
         Thread AppThread;
-        System.Windows.Forms.Timer VddTimer;
 
         ToolStripMenuItem MI_RunOnStartup;
         ToolStripMenuItem MI_RestoreDisplays;
@@ -45,11 +44,6 @@ namespace ParsecVDisplay
             AppThread.IsBackground = true;
             AppThread.SetApartmentState(ApartmentState.STA);
             AppThread.Start();
-
-            VddTimer = new System.Windows.Forms.Timer();
-            VddTimer.Interval = 50;
-            VddTimer.Tick += VddTimer_Tick;
-            VddTimer.Start();
 
             var appName = Program.AppName;
             var appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -281,9 +275,6 @@ namespace ParsecVDisplay
                     Config.DisplayCount = displays.Count;
             }
 
-            VddTimer.Tick -= VddTimer_Tick;
-            VddTimer.Stop();
-
             App.Current?.Dispatcher.Invoke(App.Current.Shutdown);
             AppThread.Join();
 
@@ -295,7 +286,6 @@ namespace ParsecVDisplay
         {
             if (disposing)
             {
-                VddTimer.Dispose();
                 TrayIcon.Dispose();
             }
 
