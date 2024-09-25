@@ -255,17 +255,22 @@ static const int VDD_MAX_DISPLAYS = 8;
 
 // Core IoControl codes, see usage below.
 typedef enum {
-    VDD_IOCTL_ADD = 0x0022e004,
-    VDD_IOCTL_REMOVE = 0x0022a008,
-    VDD_IOCTL_UPDATE = 0x0022a00c,
-    VDD_IOCTL_VERSION = 0x0022e010,
+    VDD_IOCTL_ADD     = 0x0022e004, // CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800 + 1, METHOD_BUFFERED, FILE_READ_ACCESS | FILE_WRITE_ACCESS)
+    VDD_IOCTL_REMOVE  = 0x0022a008, // CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800 + 2, METHOD_BUFFERED, FILE_WRITE_ACCESS)
+    VDD_IOCTL_UPDATE  = 0x0022a00c, // CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800 + 3, METHOD_BUFFERED, FILE_WRITE_ACCESS)
+    VDD_IOCTL_VERSION = 0x0022e010, // CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800 + 4, METHOD_BUFFERED, FILE_READ_ACCESS | FILE_WRITE_ACCESS)
+
+    // new code in driver v0.45
+    // relates to IOCTL_UPDATE and per display state
+    // but unused in Parsec app
+    VDD_IOCTL_UNKONWN = 0x0022a00c, // CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800 + 5, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 } VddCtlCode;
 
 // Generic DeviceIoControl for all IoControl codes.
 static DWORD VddIoControl(HANDLE vdd, VddCtlCode code, const void *data, size_t size)
 {
     if (vdd == NULL || vdd == INVALID_HANDLE_VALUE)
-        return 0;
+        return -1;
 
     BYTE InBuffer[32];
     ZeroMemory(InBuffer, sizeof(InBuffer));
@@ -285,7 +290,7 @@ static DWORD VddIoControl(HANDLE vdd, VddCtlCode code, const void *data, size_t 
     if (!GetOverlappedResultEx(vdd, &Overlapped, &NumberOfBytesTransferred, 5000, FALSE))
     {
         CloseHandle(Overlapped.hEvent);
-        return 0;
+        return -1;
     }
 
     if (Overlapped.hEvent != NULL)
