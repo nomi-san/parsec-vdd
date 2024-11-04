@@ -7,7 +7,7 @@
     <ProjectGuid>{2D44934F-B4CF-4F2C-BD03-AE60B71AD045}</ProjectGuid>
     <RootNamespace>ParsecVDisplay</RootNamespace>
     <AssemblyName>ParsecVDisplay</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -98,6 +98,8 @@
     <Compile Include="Tray.cs" />
     <Compile Include="ParsecVDD.cs" />
     <Compile Include="Updater.cs" />
+    <Compile Include="Vdd\Core.cs" />
+    <Compile Include="Vdd\Utils.cs" />
     <Page Include="Components\Button.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -162,5 +164,6 @@
     <Resource Include="Resources\*.png" />
     <Resource Include="Resources\*.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
