@@ -59,7 +59,7 @@
         <StackPanel Margin="25,0,0,20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="230">
             <StackPanel Orientation="Horizontal">
                 <Image Source="./Resources/icon.ico" Width="20" Height="18" Margin="0,0,5,0" />
-                <Label x:Name="xAppName" Content="ParsecVDisplay" FontSize="14" Cursor="Hand" MouseDown="QueryStatus">
+                <Label x:Name="xDriver" Content="Parsec Virtual Display" FontSize="14" Cursor="Hand" MouseDown="QueryStatus">
                     <Label.Style>
                         <Style TargetType="Label">
                             <Setter Property="Foreground" Value="White" />

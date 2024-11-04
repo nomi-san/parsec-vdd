@@ -21,7 +21,6 @@ namespace ParsecVDisplay
         {
             Instance = this;
             InitializeComponent();
-            xAppName.Content += $" v{Program.AppVersion}";
 
             // prevent frame history
             xFrame.Navigating += (_, e) => e.Cancel = e.NavigationMode != NavigationMode.New;
@@ -29,6 +28,8 @@ namespace ParsecVDisplay
 
             xDisplays.Children.Clear();
             xNoDisplay.Visibility = Visibility.Hidden;
+
+            this.IsVisibleChanged += delegate { UpdateDriverLabel(); };
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -40,7 +41,6 @@ namespace ParsecVDisplay
 
             var source = HwndSource.FromHwnd(Handle);
             source.AddHook(new HwndSourceHook(WndProc));
-
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -72,11 +72,20 @@ namespace ParsecVDisplay
 
             SystemEvents.DisplaySettingsChanged += DisplayChanged;
             DisplayChanged(null, EventArgs.Empty);
+
+            UpdateDriverLabel();
         }
 
         private void Window_Unloaded(object sender, RoutedEventArgs e)
         {
             SystemEvents.DisplaySettingsChanged -= DisplayChanged;
+        }
+
+        int count = 0;
+        private void UpdateDriverLabel()
+        {
+            ParsecVDD.QueryVersion(out var dver);
+            xDriver.Content = $"{ParsecVDD.NAME} v{dver}";
         }
 
         private void DisplayChanged(object sender, EventArgs e)
@@ -128,14 +137,14 @@ namespace ParsecVDisplay
             xDisplays.Children.Clear();
 
             DisplayChanged(null, null);
+            UpdateDriverLabel();
         }
 
-        private void QueryStatus(object sender, EventArgs e)
+        private void QueryStatus(object sender, MouseButtonEventArgs e)
         {
-            if (e is MouseEventArgs mbe)
-                mbe.Handled = true;
-
-            Tray.Instance.Invoke(() => Tray.Instance.QueryDriver(null, null));
+            e.Handled = true;
+            UpdateDriverLabel();
+            Tray.Instance?.QueryDriver(null, null);
         }
 
         private void OpenRepoLink(object sender, MouseButtonEventArgs e)
