@@ -87,22 +87,6 @@
                     </Label.Style>
                 </Label>
             </StackPanel>
-            <TextBlock FontSize="14" Margin="5" Cursor="Hand" MouseDown="LanguageText_MouseEvent" MouseUp="LanguageText_MouseEvent" HorizontalAlignment="Left">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="White" />
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="#66b3ff" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-                <TextBlock.ContextMenu>
-                    <ContextMenu x:Name="xLanguageMenu" />
-                </TextBlock.ContextMenu>
-                <TextBlock Text="{DynamicResource t_language}" />: <TextBlock Text="{DynamicResource lang_name}" />
-            </TextBlock>
         </StackPanel>
 
         <Frame Visibility="Hidden" NavigationUIVisibility="Hidden" Background="#C222" x:Name="xFrame" />

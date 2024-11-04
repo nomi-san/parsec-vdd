@@ -36,17 +36,6 @@ namespace ParsecVDisplay
             SetLanguage(Config.Language, false);
         }
 
-        public static class BamlReader
-        {
-            public static object Load(Stream stream)
-            {
-                ParserContext pc = new ParserContext();
-                MethodInfo loadBamlMethod = typeof(XamlReader).GetMethod("LoadBaml",
-                    BindingFlags.NonPublic | BindingFlags.Static);
-                return loadBamlMethod.Invoke(null, new object[] { stream, pc, null, false });
-            }
-        }
-
         public static void LoadTranslations()
         {
             LanguageDicts = new Dictionary<string, ResourceDictionary>();
@@ -69,7 +58,7 @@ namespace ParsecVDisplay
                                 .Replace(".baml", ".xaml");
 
                             var sri = GetResourceStream(new Uri(source, UriKind.Relative));
-                            var resources = (ResourceDictionary)BamlReader.Load(sri.Stream);
+                            var resources = LoadBaml<ResourceDictionary>(sri.Stream);
 
                             var name = resources["lang_name"].ToString();
                             LanguageDicts.Add(name, resources);
@@ -123,6 +112,14 @@ namespace ParsecVDisplay
             }
 
             return string.Format("{{{{{0}}}}}", key);
+        }
+
+        static T LoadBaml<T>(Stream stream)
+        {
+            ParserContext pc = new ParserContext();
+            MethodInfo loadBamlMethod = typeof(XamlReader).GetMethod("LoadBaml",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            return (T)loadBamlMethod.Invoke(null, new object[] { stream, pc, null, false });
         }
     }
 }

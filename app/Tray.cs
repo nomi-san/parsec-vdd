@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
+using System.Linq;
 
 namespace ParsecVDisplay
 {
@@ -16,6 +17,8 @@ namespace ParsecVDisplay
         static System.Windows.Controls.ContextMenu Menu;
 
         Thread AppThread;
+
+        ToolStripMenuItem MI_Language;
 
         ToolStripMenuItem MI_RunOnStartup;
         ToolStripMenuItem MI_RestoreDisplays;
@@ -32,6 +35,9 @@ namespace ParsecVDisplay
         //                 |   --------------
         //                 |   Fallback display
         //                 |   Keep screen on
+        //  Language       >   [lang_1]
+        //                 |   [lang_2]
+        //                 |   ...
         //  Check update
         //  --------------
         //  Exit
@@ -77,12 +83,22 @@ namespace ParsecVDisplay
                                     null, OptionsCheck) { CheckOnClick = true, Checked = Config.KeepScreenOn }),
                             }
                         },
+                        (MI_Language = new ToolStripMenuItem("t_language")),
                         new ToolStripMenuItem("t_check_for_update", null, CheckUpdate),
                         new ToolStripSeparator(),
                         new ToolStripMenuItem("t_exit", null, Exit),
                     }
                 }
             };
+
+            var selectedLanguage = Config.Language;
+            foreach (var lang in App.Languages)
+            {
+                var item = new ToolStripMenuItem(lang, null, SetLanguage);
+                if (selectedLanguage == lang)
+                    item.Checked = true;
+                MI_Language.DropDownItems.Add(item);
+            }
 
             UpdateContent();
 
@@ -230,13 +246,17 @@ namespace ParsecVDisplay
                         t = mi.Text;
                         mi.Tag = t;
                     }
-                    mi.Text = App.GetTranslation(t);
 
-                    if (submenu && mi.HasDropDownItems)
+                    if (!string.IsNullOrEmpty(t) && t.StartsWith("t_"))
                     {
-                        foreach (ToolStripItem sub in mi.DropDownItems)
+                        mi.Text = App.GetTranslation(t);
+
+                        if (submenu && mi.HasDropDownItems)
                         {
-                            UpdateItem(sub, false);
+                            foreach (ToolStripItem sub in mi.DropDownItems)
+                            {
+                                UpdateItem(sub, false);
+                            }
                         }
                     }
                 }
@@ -295,6 +315,21 @@ namespace ParsecVDisplay
         public void Invoke(Action action)
         {
             TrayIcon.ContextMenuStrip.Invoke(action);
+        }
+
+        private void SetLanguage(object sender, EventArgs e)
+        {
+            if (sender is ToolStripMenuItem mi)
+            {
+                // Recheck options
+                foreach (ToolStripMenuItem item in MI_Language.DropDownItems)
+                    item.Checked = mi == item;
+
+                // Update language
+                var lang = mi.Text;
+                App.SetLanguage(lang);
+                UpdateContent();
+            }
         }
     }
 }

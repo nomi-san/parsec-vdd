@@ -70,29 +70,6 @@ namespace ParsecVDisplay
         {
             Loaded -= Window_Loaded;
 
-            var defaultLang = Config.Language;
-            foreach (var item in App.Languages)
-            {
-                var mi = new MenuItem
-                {
-                    Header = item,
-                    IsCheckable = true,
-                    IsChecked = item == defaultLang
-                };
-
-                mi.Click += delegate
-                {
-                    foreach (MenuItem item2 in xLanguageMenu.Items)
-                        item2.IsChecked = false;
-
-                    mi.IsChecked = true;
-                    App.SetLanguage(mi.Header.ToString());
-                    Tray.Instance?.Invoke(Tray.Instance.UpdateContent);
-                };
-
-                xLanguageMenu.Items.Add(mi);
-            }
-
             SystemEvents.DisplaySettingsChanged += DisplayChanged;
             DisplayChanged(null, EventArgs.Empty);
         }
@@ -165,14 +142,6 @@ namespace ParsecVDisplay
         {
             e.Handled = true;
             Helper.OpenLink($"https://github.com/{Program.GitHubRepo}");
-        }
-
-        private void LanguageText_MouseEvent(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-
-            if (e.LeftButton == MouseButtonState.Released)
-                (sender as TextBlock).ContextMenu.IsOpen = true;
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
