@@ -10,7 +10,7 @@ namespace ParsecVDisplay
     {
         public const string AppId = "QpHOX8IBUHBznGtqk9xm1";
         public const string AppName = "ParsecVDisplay";
-        public const string AppVersion = "0.45.2";
+        public const string AppVersion = "1.0.2";
         public const string GitHubRepo = "nomi-san/parsec-vdd";
 
         [STAThread]

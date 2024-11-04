@@ -25,7 +25,7 @@ namespace ParsecVDisplay
         ToolStripMenuItem MI_FallbackDisplay;
         ToolStripMenuItem MI_KeepScreenOn;
 
-        //  ParsecVDisplay
+        //  ParsecVDisplay v{version}
         //  ______________
         //  Add display
         //  Remove last display
@@ -35,8 +35,8 @@ namespace ParsecVDisplay
         //                 |   --------------
         //                 |   Fallback display
         //                 |   Keep screen on
-        //  Language       >   [lang_1]
-        //                 |   [lang_2]
+        //  Language       >   {lang_1}
+        //                 |   {lang_2}
         //                 |   ...
         //  Check update
         //  --------------
@@ -51,7 +51,7 @@ namespace ParsecVDisplay
             AppThread.SetApartmentState(ApartmentState.STA);
             AppThread.Start();
 
-            var appName = Program.AppName;
+            var appName = $"{Program.AppName} v{Program.AppVersion}";
             var appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
             TrayIcon = new NotifyIcon()
@@ -168,9 +168,11 @@ namespace ParsecVDisplay
             var status = ParsecVDD.QueryStatus();
             ParsecVDD.QueryVersion(out string version);
 
+            var caption = $"{Program.AppName} v{Program.AppVersion}";
+
             MessageBox.Show(Owner, $"Parsec Virtual Display v{version}\n" +
                 $"{App.GetTranslation("t_msg_driver_status")}: {status}",
-                Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         async void CheckUpdate(object sender, EventArgs e)

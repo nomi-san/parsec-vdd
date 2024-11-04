@@ -7,6 +7,8 @@ namespace ParsecVDisplay
 {
     internal static class ParsecVDD
     {
+        public const string NAME = "Parsec Virtual Display";
+
         public const string DISPLAY_ID = "PSCCDD0";
         public const string DISPLAY_NAME = "ParsecVDA";
 
