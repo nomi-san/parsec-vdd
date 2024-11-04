@@ -36,8 +36,6 @@ int main()
         }
     });
 
-    updater.detach();
-
     // Print out guide.
     printf("Press A to add a virtual display.\n");
     printf("Press R to remove the last added.\n");
@@ -53,8 +51,13 @@ int main()
             case 'a':
                 if (displays.size() < VDD_MAX_DISPLAYS) {
                     int index = VddAddDisplay(vdd);
-                    displays.push_back(index);
-                    printf("Added a new virtual display, index: %d.\n", index);
+                    if (index != -1) {
+                        displays.push_back(index);
+                        printf("Added a new virtual display, index: %d.\n", index);
+                    }
+                    else {
+                        printf("Add virtual display failed.");
+                    }
                 }
                 else {
                     printf("Limit exceeded (%d), could not add more virtual displays.\n", VDD_MAX_DISPLAYS);
