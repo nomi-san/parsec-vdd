@@ -24,8 +24,8 @@ jobs:
 
       - name: Patch project files
         run: |
-          (Get-Content app\ParsecVDisplay.csproj) -replace "FrameworkVersion>v4.6.2", "FrameworkVersion>v4.8" | Out-File app\ParsecVDisplay.csproj
-          (Get-Content app\App.config) -replace "Version=v4.6.2", "Version=v4.8" | Out-File app\App.config
+          (Get-Content app\ParsecVDisplay.csproj) -replace "FrameworkVersion>v4.7.2", "FrameworkVersion>v4.8" | Out-File app\ParsecVDisplay.csproj
+          (Get-Content app\App.config) -replace "Version=v4.7.2", "Version=v4.8" | Out-File app\App.config
 
       - name: Setup msbuild
         uses: microsoft/setup-msbuild@v2
