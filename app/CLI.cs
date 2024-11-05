@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace ParsecVDisplay
@@ -44,6 +45,9 @@ namespace ParsecVDisplay
                 catch (Exception ex)
                 {
                     Console.WriteLine("Error: {0}", ex.Message);
+#if DEBUG
+                    Console.Error.WriteLine(ex.StackTrace);
+#endif
                     return -1;
                 }
                 finally
@@ -188,8 +192,55 @@ namespace ParsecVDisplay
 
         static int SetDisplayMode(string[] args)
         {
-            // todo
-            throw new NotImplementedException();
+            if (args.Length < 2)
+                throw new Exception("Missing display index.");
+            if (args.Length < 3)
+                throw new Exception("Missing resolution and/or refresh rate.");
+
+            var argIndex = args[1];
+            var argDMode = string.Join(" ", args.Skip(2));
+
+            if (int.TryParse(argIndex, out int index))
+            {
+                var displays = ParsecVDD.GetDisplays();
+
+                if (displays.Count == 0)
+                {
+                    Console.WriteLine("No Parsec Display available.");
+                    return 0;
+                }
+                else
+                {
+                    var display = displays.Find(di => di.DisplayIndex == index);
+
+                    if (display == null)
+                        throw new Exception(string.Format("Display index {0} is not found.", index));
+
+                    int? width, height, hz;
+                    ParseDisplayModeArg(argDMode, out width, out height, out hz);
+
+                    if ((width != null && height != null) || hz != null)
+                    {
+                        if (display.ChangeMode(width, height, hz, null))
+                        {
+                            Console.WriteLine($"Display index {index} is set to '{argDMode}'.");
+                            return 0;
+                        }
+                        else
+                        {
+                            throw new Exception($"Failed to set, display mode '{argDMode}' is not supported.");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Nothing to do, recheck your syntax.");
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception(string.Format("Invalid display index '{0}'.", argIndex));
+            }
         }
 
         static int QueryDriverStatus()
@@ -226,10 +277,48 @@ namespace ParsecVDisplay
             Console.WriteLine("  set    X WxH    - Set resolution for a virtual display");
             Console.WriteLine("                    where X is index number, WxH is size, e.g 1920x1080");
             Console.WriteLine("         X @R     - Set only the refresh rate R, e.g @60, @120 (hz)");
+            Console.WriteLine("                    on Powershell, you should replace '@' with 'r'");
             Console.WriteLine("         X WxH@R  - Set full display mode as above, e.g 1920x1080@144");
             Console.WriteLine("  status          - Query the driver status");
             Console.WriteLine("  version         - Query the driver version");
             Console.WriteLine("  help            - Show this help");
+        }
+
+        static void ParseDisplayModeArg(string arg, out int? width, out int? height, out int? hz)
+        {
+            Match match;
+            arg = arg.Trim();
+
+            width = null;
+            height = null;
+            hz = null;
+
+            const string regexSize = @"^(\d+)\s*[xX]\s*(\d+)$";
+            if (Regex.IsMatch(arg, regexSize))
+            {
+                match = Regex.Match(arg, regexSize);
+                width = int.Parse(match.Groups[1].Value);
+                height = int.Parse(match.Groups[2].Value);
+                return;
+            }
+
+            const string regexHz = @"^[r@](\d+)$";
+            if (Regex.IsMatch(arg, regexHz))
+            {
+                match = Regex.Match(arg, regexHz);
+                hz = int.Parse(match.Groups[1].Value);
+                return;
+            }
+
+            const string regexAll = @"^(\d+)\s*[xX]\s*(\d+)\s*[r@](\d+)$";
+            if (Regex.IsMatch(arg, regexAll))
+            {
+                match = Regex.Match(arg, regexAll);
+                width = int.Parse(match.Groups[1].Value);
+                height = int.Parse(match.Groups[2].Value);
+                hz = int.Parse(match.Groups[3].Value);
+                return;
+            }
         }
 
         [DllImport("kernel32.dll")]
