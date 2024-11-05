@@ -11,7 +11,8 @@
 >
     <Grid Margin="5" MouseDown="UserControl_MouseDown" MouseUp="UserControl_MouseUp">
         <Rectangle StrokeThickness="2" Stroke="#FFF" />
-        <TextBlock Text="{Binding DisplayNum}" d:Text="1" FontSize="24" FontWeight="SemiBold" Foreground="#FFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,5" />
+        <TextBlock x:Name="xDeg" d:Text="90°" Foreground="White" Margin="8,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <TextBlock Text="{Binding DisplayNum}" d:Text="1" FontSize="24" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,5" />
         <TextBlock Grid.Row="1" Text="{Binding DisplayMode}" d:Text="1920 x 1080 @ 60 Hz" FontSize="12" Foreground="White" TextAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8" />
         <Grid.Style>
             <Style TargetType="{x:Type Grid}">

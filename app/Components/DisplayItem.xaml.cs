@@ -38,6 +38,10 @@ namespace ParsecVDisplay.Components
             DisplayName = $"Display [{display.Identifier}]";
             DisplayPath = display.DeviceName;
 
+            xDeg.Visibility = display.CurrentOrientation == Display.Orientation.Landscape
+                ? Visibility.Hidden : Visibility.Visible;
+            xDeg.Text = string.Format("{0}°", ((int)display.CurrentOrientation * 90));
+
             if (display.Active)
             {
                 DisplayMode = display.CurrentMode.ToString();
