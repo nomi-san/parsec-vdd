@@ -13,9 +13,7 @@ namespace ParsecVDisplay
         static IWin32Window Owner => new Helper.ArbitraryWindow(MainWindow.Handle);
 
         NotifyIcon TrayIcon;
-        static System.Windows.Controls.ContextMenu Menu;
-
-        Thread AppThread;
+        Thread GuiThread;
 
         ToolStripMenuItem MI_Language;
 
@@ -45,10 +43,10 @@ namespace ParsecVDisplay
         {
             Instance = this;
 
-            AppThread = new Thread(App.Main);
-            AppThread.IsBackground = true;
-            AppThread.SetApartmentState(ApartmentState.STA);
-            AppThread.Start();
+            GuiThread = new Thread(App.Main);
+            GuiThread.IsBackground = true;
+            GuiThread.SetApartmentState(ApartmentState.STA);
+            GuiThread.Start();
 
             var appName = $"{Program.AppName} v{Program.AppVersion}";
             var appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -115,11 +113,6 @@ namespace ParsecVDisplay
                 RestoreDisplays();
                 CheckUpdate(null, null);
             });
-        }
-
-        void VddTimer_Tick(object sender, EventArgs e)
-        {
-            ParsecVDD.Ping();
         }
 
         void RestoreDisplays()
@@ -297,7 +290,7 @@ namespace ParsecVDisplay
             }
 
             App.Current?.Dispatcher.Invoke(App.Current.Shutdown);
-            AppThread.Join();
+            GuiThread.Join();
 
             TrayIcon.Visible = false;
             Application.Exit();

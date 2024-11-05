@@ -9,8 +9,6 @@ namespace ParsecVDisplay
 {
     internal static class CLI
     {
-        static StreamWriter _stdOutWriter;
-
         public static int Execute(string[] args)
         {
             AttachConsole(-1);

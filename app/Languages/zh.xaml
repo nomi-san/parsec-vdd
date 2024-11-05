@@ -36,19 +36,19 @@
     
     <!--Dialog messages-->
     <system:String x:Key="t_msg_up_to_date">您的应用程序版本已经是最新的。</system:String>
-    <system:String x:Key="t_msg_update_available">有新的更新可用 — v{0} 。\n为了保持您的最佳体验，请立即更新。"</system:String>
+    <system:String x:Key="t_msg_update_available">有新的更新可用 — v{0}。\n为了保持您的最佳体验，请立即更新。"</system:String>
     
     <system:String x:Key="t_msg_custom_access_denied">无法应用自定义分辨率，访问被拒绝！</system:String>
     <system:String x:Key="t_msg_custom_invalid_slot">插槽 #{0} 中的值无效。</system:String>
 
-    <system:String x:Key="t_msg_exceeded_display_limit">到达最大虚拟显示器限额，无法添加更多的虚拟显示器。 ({0}).</system:String>
+    <system:String x:Key="t_msg_exceeded_display_limit">到达最大虚拟显示器限额，无法添加更多的虚拟显示器 ({0})。</system:String>
     <system:String x:Key="t_msg_prompt_leave_all">即将删除全部的虚拟显示器。\n您是否仍然要退出？</system:String>
 
     <system:String x:Key="t_msg_driver_status">驱动状态</system:String>
     <system:String x:Key="t_msg_must_restart_pc">你需要重新启动计算机才能使驱动程序正常工作</system:String>
     <system:String x:Key="t_msg_driver_is_disabled">{0} 已禁用，请在设备管理器中启用它。</system:String>
     <system:String x:Key="t_msg_please_install_driver">请先安装驱动程序。</system:String>
-    <system:String x:Key="t_msg_driver_status_not_ok">驱动程序不正常，请重新检查。当前状态： {0}.</system:String>
+    <system:String x:Key="t_msg_driver_status_not_ok">驱动程序不正常，请重新检查。当前状态： {0}。</system:String>
     <system:String x:Key="t_msg_failed_to_obtain_handle">无法获取设备句柄，请重新检查驱动程序安装。</system:String>
     
 </ResourceDictionary>
