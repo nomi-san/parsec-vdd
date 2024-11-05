@@ -10,8 +10,8 @@ namespace ParsecVDisplay
         {
             OK,
             INACCESSIBLE,
-            UNKNOW,
-            UNKNOW_PROBLEM,
+            UNKNOWN,
+            UNKNOWN_PROBLEM,
             DISABLED,
             DRIVER_ERROR,
             RESTART_REQUIRED,
@@ -102,13 +102,13 @@ namespace ParsecVDisplay
                                             if (devProblemNum == Native.CM_PROB_FAILED_POST_START)
                                                 status = Status.DRIVER_ERROR;
                                             else
-                                                status = Status.UNKNOW_PROBLEM;
+                                                status = Status.UNKNOWN_PROBLEM;
                                             break;
                                     }
                                 }
                                 else
                                 {
-                                    status = Status.UNKNOW;
+                                    status = Status.UNKNOWN;
                                 }
                             }
                         }

@@ -33,7 +33,7 @@ jobs:
       - name: Build app
         run: |
           cd app
-          msbuild ParsecVDisplay.csproj /t:Build /p:Configuration=Debug /p:Platform=AnyCPU
+          msbuild ParsecVDisplay.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU
 
       - uses: actions/upload-artifact@v4
         with:

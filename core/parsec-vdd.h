@@ -48,8 +48,8 @@ namespace parsec_vdd
 typedef enum {
     DEVICE_OK = 0,             // Ready to use
     DEVICE_INACCESSIBLE,       // Inaccessible
-    DEVICE_UNKNOW,             // Unknow status
-    DEVICE_UNKNOW_PROBLEM,     // Unknow problem
+    DEVICE_UNKNOWN,            // Unknown status
+    DEVICE_UNKNOWN_PROBLEM,    // Unknown problem
     DEVICE_DISABLED,           // Device is disabled
     DEVICE_DRIVER_ERROR,       // Device encountered error
     DEVICE_RESTART_REQUIRED,   // Must restart PC to use (could ignore but would have issue)
@@ -147,13 +147,13 @@ static DeviceStatus QueryDeviceStatus(const GUID *classGuid, const char *deviceI
                                 if (devProblemNum == CM_PROB_FAILED_POST_START)
                                     status = DEVICE_DRIVER_ERROR;
                                 else
-                                    status = DEVICE_UNKNOW_PROBLEM;
+                                    status = DEVICE_UNKNOWN_PROBLEM;
                                 break;
                             }
                         }
                         else
                         {
-                            status = DEVICE_UNKNOW;
+                            status = DEVICE_UNKNOWN;
                         }
                     }
                 }

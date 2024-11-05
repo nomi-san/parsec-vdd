@@ -1,12 +1,10 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Navigation;
+using Microsoft.Win32;
 
 namespace ParsecVDisplay
 {
@@ -81,7 +79,6 @@ namespace ParsecVDisplay
             SystemEvents.DisplaySettingsChanged -= DisplayChanged;
         }
 
-        int count = 0;
         private void UpdateDriverLabel()
         {
             ParsecVDD.QueryVersion(out var dver);
