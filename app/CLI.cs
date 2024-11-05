@@ -111,14 +111,11 @@ namespace ParsecVDisplay
 
         static int RemoveDisplay(string[] args)
         {
-            if (args.Length < 2)
-                throw new Exception("Missing display index.");
-
-            var arg1 = args[1];
+            var arg1 = args.Length >= 2 ? args[1] : "";
             bool removeAll = arg1 == "all" || arg1 == "*";
             int index = -1;
 
-            if (removeAll || int.TryParse(arg1, out index))
+            if (args.Length == 1 || removeAll || int.TryParse(arg1, out index))
             {
                 var displays = ParsecVDD.GetDisplays();
 
@@ -135,17 +132,22 @@ namespace ParsecVDisplay
                         if (!ParsecVDD.RemoveDisplay(di.DisplayIndex))
                             throw new Exception(string.Format("Failed to remove the display at index {0}.", index));
                     }
+
+                    Console.WriteLine("Removed all added displays.");
                     return 0;
                 }
                 else
                 {
-                    var display = index == -1 ? displays.LastOrDefault()
+                    var display = index < 0 ? displays.LastOrDefault()
                         : displays.FirstOrDefault(di => di.DisplayIndex == index);
+
                     if (display != null)
                     {
                         PrepareVdd();
-                        if (!ParsecVDD.RemoveDisplay(index))
-                            throw new Exception(string.Format("Failed to remove the display at index {0}.", index));
+                        if (!ParsecVDD.RemoveDisplay(display.DisplayIndex))
+                            throw new Exception(string.Format("Failed to remove the display at index {0}.", display.DisplayIndex));
+
+                        Console.WriteLine("Removed display at index {0}.", display.DisplayIndex);
                         return 0;
                     }
                     else
@@ -200,9 +202,11 @@ namespace ParsecVDisplay
 
         static int QueryDriverVersion()
         {
+            PrepareVdd();
+
             if (ParsecVDD.QueryVersion(out var version))
             {
-                Console.WriteLine("{0} - v{1}", ParsecVDD.ADAPTER, version);
+                Console.WriteLine("{0} v{1}", ParsecVDD.ADAPTER, version);
                 return 0;
             }
             else
@@ -215,8 +219,8 @@ namespace ParsecVDisplay
         {
             Console.WriteLine("vdd-cli [command] [args...]");
             Console.WriteLine("  add             - Add a virtual display");
-            Console.WriteLine("  remove X        - Remove the virtual display at index X (number)");
-            Console.WriteLine("         -1       - Remove the last added virtual display");
+            Console.WriteLine("  remove          - Remove the last added virtual display");
+            Console.WriteLine("         X        - Remove the virtual display at index X (number)");
             Console.WriteLine("         all      - Remove all the added virtual displays");
             Console.WriteLine("  list            - Show all the added virtual displays and specs");
             Console.WriteLine("  set    X WxH    - Set resolution for a virtual display");
