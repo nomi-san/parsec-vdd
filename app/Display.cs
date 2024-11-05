@@ -154,9 +154,23 @@ namespace ParsecVDisplay
             
             if (Native.EnumDisplaySettings(DeviceName, -1, ref mode))
             {
-                if (width.HasValue) mode.dmPelsWidth = width.Value;
-                if (height.HasValue) mode.dmPelsHeight = height.Value;
-                if (hz.HasValue) mode.dmDisplayFrequency = hz.Value;
+                if (width.HasValue)
+                {
+                    mode.dmPelsWidth = width.Value;
+                    mode.dmFields |= /*DM_PELSWIDTH*/ 0x80000;
+                }
+
+                if (height.HasValue)
+                {
+                    mode.dmPelsHeight = height.Value;
+                    mode.dmFields |= /*DM_PELSHEIGHT*/ 0x100000;
+                }
+
+                if (hz.HasValue)
+                {
+                    mode.dmDisplayFrequency = hz.Value;
+                    mode.dmFields |= /*DM_DISPLAYFREQUENCY*/ 0x400000;
+                }
 
                 if (orientation.HasValue)
                 {
@@ -172,7 +186,7 @@ namespace ParsecVDisplay
                 }
 
                 return Native.ChangeDisplaySettingsEx(DeviceName,
-                    ref mode, IntPtr.Zero, 1, IntPtr.Zero) == 0;
+                    ref mode, IntPtr.Zero, /*CDS_UPDATEREGISTRY*/ 0x1 | /*CDS_GLOBAL*/ /*0x8*/ 0, IntPtr.Zero) == 0;
             }
 
             return false;
