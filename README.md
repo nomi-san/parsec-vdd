@@ -18,36 +18,19 @@
 
 ## ℹ About
 
-This project demonstrates a standalone solution to create virtual displays by
-using
-[Parsec VDD](https://support.parsec.app/hc/en-us/articles/4422939339789-Overview-Prerequisites-and-Installation),
-without relying on the [Parsec app](https://parsec.app/).
+This project provides a **standalone solution for creating virtual displays** on a Windows host using the **Parsec Virtual Display Driver** (VDD), independent of the **Parsec app**.
 
-> The Virtual Display Driver (VDD) is required to enable virtual displays on a
-> Windows host. Virtual displays is a feature available for **Teams** and
-> **Warp** customers that lets you add up to 3 additional virtual displays to
-> the host while connecting to a machine you own through Parsec.
+The Parsec VDD enables virtual displays on Windows 10+ systems, a feature available to Parsec Teams and Warp customers.
+With VDD, users can add up to three virtual displays to a host machine they connect to, ideal for setups where physical monitors may be unavailable or when additional displays are beneficial.
 
-> **Parsec VDD** is a perfect software driver developed by Parsec. It utilizes
-> the
-> [IddCx API](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/indirect-display-driver-model-overview)
-> (Indirect Display Driver) to create virtual displays on Windows 10+. This
-> virtual display is particularly useful in situations where a physical monitor
-> may not be available or when additional screens are desired.
-
-> One of the notable features of Parsec VDD is its support for a wide range of
-> [resolutions and refresh rates](#preset-display-modes), including up to 4K and
-> 240 Hz. This makes it well-suited for gaming, as it can provide a high-quality
-> visual experience. It enables users to simulate the presence of additional
-> screens or work without a physical monitor, enhancing flexibility and
-> customization in display management.
+Built by Parsec, the VDD leverages the IddCx API (Indirect Display Driver) to generate virtual displays with support for high resolutions and refresh rates, including up to 4K and 240 Hz.
+This capability makes it a versatile tool for gaming, streaming, or remote work, allowing users to simulate multiple screens for an enhanced, flexible visual experience.
 
 ## 📺 ParsecVDisplay App
 
-This is a complete driver application to control the Parsec VDD, written in C#
-and WPF. It can show the number of virtual displays added, allows adding
-multiple virtual displays and removing a specific selected one. Also allows to
-change resolution and take screenshot, and more..
+ParsecVDisplay is a comprehensive virtual display manager for Parsec VDD, built with C# and WPF.
+The app provides an intuitive interface to manage virtual displays, showing the number of active displays and allowing users to add or remove specific virtual displays.
+It also supports features like changing display resolution, capturing screenshots, and more, making it a versatile tool for flexible display management.
 
 👉 Check out [Releases](https://github.com/nomi-san/parsec-vdd/releases) to
 download it.
@@ -55,8 +38,6 @@ download it.
 <p align="center">
   <img src="https://github.com/nomi-san/parsec-vdd/assets/38210249/71b25bc6-eee1-4d80-94e0-e39eab7f8fb9" />
 </p>
-
-Full source code of this application is located in the [app](./app) folder.
 
 ## 🚀 Using Core API
 
@@ -252,7 +233,7 @@ All of the following display modes are set by driver default.
 
 Notes:
 
-- Low GPUs, e.g GTX 1650 will not support the highest DCI 4K.
+- Low GPUs, e.g GTX 1650 may get bugged when streaming with DCI 4K.
 - All resolutions are compatible with 60 Hz refresh rates.
 
 ### Adapter info
@@ -289,3 +270,8 @@ E0 0E 11 00 00 1E A4 9C  80 A0 70 38 59 40 30 20
 
 Visit http://www.edidreader.com/ to view it online or use an advanced tool
 [AW EDID Editor](https://www.analogway.com/apac/products/software-tools/aw-edid-editor/)
+
+## 🍻 Credits
+
+- Thanks to Parsec for the driver
+- The app's background was from old parsecgaming.com
