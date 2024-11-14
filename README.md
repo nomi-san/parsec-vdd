@@ -271,6 +271,15 @@ E0 0E 11 00 00 1E A4 9C  80 A0 70 38 59 40 30 20
 Visit http://www.edidreader.com/ to view it online or use an advanced tool
 [AW EDID Editor](https://www.analogway.com/apac/products/software-tools/aw-edid-editor/)
 
+## 🤝 Sponsors
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/58e9a6f4-6630-437d-a758-b284c0ed41e7" /></td>
+    <td>Free code signing on Windows provided by <a href="https://signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a></td>
+  </tr>
+</table>
+
 ## 🍻 Credits
 
 - Thanks to Parsec for the driver
