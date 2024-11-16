@@ -4,12 +4,11 @@ on:
   push:
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   build:
     runs-on: windows-2022
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repo
@@ -36,7 +35,29 @@ jobs:
           msbuild ParsecVDisplay.csproj /t:Restore
           msbuild ParsecVDisplay.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        id: artifact-upload-step
+        with:
+          name: ParsecVDisplay
+          path: app/bin/net480/ParsecVDisplay.exe
+
+      - name: Sign the build
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: b57f6752-7123-475c-9185-6bfea1032f02
+          project-slug: parsec-vdd
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: portable-app
+          github-artifact-id: "${{steps.artifact-upload-step.outputs.artifact-id}}"
+          wait-for-completion: true
+          output-artifact-directory: "bin"
+          parameters: |
+            Version: "${{ github.ref_name }}"
+
+      - name: Upload signed build
+        uses: actions/upload-artifact@v4
         with:
           name: ParsecVDisplay-v${{ env.APP_VERSION }}-${{ env.SHORT_SHA }}
-          path: app/bin
+          path: bin/
