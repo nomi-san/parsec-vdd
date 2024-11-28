@@ -37,7 +37,7 @@ List all added virtual displays.
 
 ### `vdd set`
 
-Set display mode (aka resolutiion and refresh rate) for a virtual display.
+Set display mode (aka resolution and refresh rate) for a virtual display.
 
 - #### `vdd set X WxH`
   Set resolution `W x H` for the virtual display at index `X`.
