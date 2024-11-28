@@ -22,27 +22,27 @@
         <system:String x:Key="t_landscape_flipped">水平 (翻转)</system:String>
         <system:String x:Key="t_portrait_flipped">纵向 (翻转)</system:String>
     <system:String x:Key="t_take_screenshot">屏幕截图</system:String>
-    <system:String x:Key="t_remove">删除</system:String>
+    <system:String x:Key="t_remove">移除</system:String>
     
     <!--Tray menu-->
-    <system:String x:Key="t_remove_last_display">删除最后一个虚拟显示器</system:String>
+    <system:String x:Key="t_remove_last_display">移除最后一个虚拟显示器</system:String>
     <system:String x:Key="t_options">选项</system:String>
     <system:String x:Key="t_run_on_startup">开机启动</system:String>
-    <system:String x:Key="t_restore_displays">恢复上次关闭的显示</system:String>
+    <system:String x:Key="t_restore_displays">恢复上次关闭的显示器</system:String>
     <system:String x:Key="t_fallback_display">备用显示</system:String>
     <system:String x:Key="t_keep_screen_on">保持屏幕开启</system:String>
     <system:String x:Key="t_check_for_update">检查更新</system:String>
     <system:String x:Key="t_exit">退出</system:String>
     
     <!--Dialog messages-->
-    <system:String x:Key="t_msg_up_to_date">您的应用程序版本已经是最新的。</system:String>
+    <system:String x:Key="t_msg_up_to_date">应用程序版本已是最新。</system:String>
     <system:String x:Key="t_msg_update_available">有新的更新可用 — v{0}。\n为了保持您的最佳体验，请立即更新。"</system:String>
     
     <system:String x:Key="t_msg_custom_access_denied">无法应用自定义分辨率，访问被拒绝！</system:String>
     <system:String x:Key="t_msg_custom_invalid_slot">插槽 #{0} 中的值无效。</system:String>
 
-    <system:String x:Key="t_msg_exceeded_display_limit">到达最大虚拟显示器限额，无法添加更多的虚拟显示器 ({0})。</system:String>
-    <system:String x:Key="t_msg_prompt_leave_all">即将删除全部的虚拟显示器。\n您是否仍然要退出？</system:String>
+    <system:String x:Key="t_msg_exceeded_display_limit">达到最大虚拟显示器限额，无法添加更多的虚拟显示器 ({0})。</system:String>
+    <system:String x:Key="t_msg_prompt_leave_all">即将移除全部的虚拟显示器。\n您是否仍然要退出？</system:String>
 
     <system:String x:Key="t_msg_driver_status">驱动状态</system:String>
     <system:String x:Key="t_msg_must_restart_pc">你需要重新启动计算机才能使驱动程序正常工作</system:String>
