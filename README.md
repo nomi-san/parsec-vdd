@@ -43,11 +43,11 @@ download it.
 
 ### Design notes
 
-Parsec VDD is designed to work with Parsec client-connection session. When user
+Parsec VDD is designed to work with Parsec client-connection sessions. When the user
 connects to the host, the app will start controlling the driver, it sends IO
-control codes and gets result. When adding a virtual display, you will get its
+control codes and gets results. When adding a virtual display, you will get its
 index to be used for unplugging, the maximum number of displays could be added
-up to 16 per adapter. You have to ping to the driver periodically to keep added
+up to 16 per adapter. You have to ping the driver periodically to keep added
 displays alive, otherwise all of them will be unplugged after a second. There's
 no direct way to manipulate added displays, you should call Win32 Display API to
 change their display mode (see the ParsecVDisplay source).
@@ -109,7 +109,7 @@ start /wait .\nefconw.exe --create-device-node --class-name Display --class-guid
 start /wait .\nefconw.exe --install-driver --inf-path ".\driver\mm.inf"
 ```
 
-In additional, you can run the driver setup in silent mode to install it
+In addition, you can run the driver setup in silent mode to install it
 quickly.
 
 ```
@@ -154,7 +154,7 @@ but **5 is enough** for personal use.
 ![Alt text](https://i.imgur.com/C74IRgC.png)
 
 If you have enabled "Privacy Mode" in Parsec Host settings, please disable it
-and clear the connected display configruations in the following Registry path.
+and clear the connected display configurations in the following Registry path.
 
 ```
 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Connectivity
@@ -189,7 +189,7 @@ projects.
 [Virtual-Display-Driver (HDR)]: https://github.com/itsmikethetech/Virtual-Display-Driver
 
 **Signed** means that the driver files have a valid digital signature.
-**H-Cursor** means hardware cursor support, without it you will get double
+**H-Cursor** means hardware cursor support, without it, you will get a double
 cursor on some remote desktop apps. **Tweakable** is the ability to customize
 display modes. Visit
 [MSDN IddCx versions](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/iddcx-versions)
@@ -269,7 +269,7 @@ E0 0E 11 00 00 1E A4 9C  80 A0 70 38 59 40 30 20
 ```
 
 Visit http://www.edidreader.com/ to view it online or use an advanced tool
-[AW EDID Editor](https://www.analogway.com/apac/products/software-tools/aw-edid-editor/)
+[AW EDID Editor](https://www.analogway.com/apac/products/software-tools/aw-edid-editor/).
 
 ## 🤝 Sponsors
 
