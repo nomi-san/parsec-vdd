@@ -1,4 +1,4 @@
-name: auto-build
+name: Build
 
 on:
   push:
@@ -6,14 +6,13 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2022
-    permissions:
-      contents: write
+    runs-on: windows-2019
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Prepare envars
@@ -21,12 +20,12 @@ jobs:
           echo "SHORT_SHA=$("${{ github.sha }}" | cut -c1-8)" >> $env:GITHUB_ENV
           echo "APP_VERSION=$((Get-Content -Path "app\Program.cs" | Select-String -Pattern 'AppVersion\s=\s"(.+)"' -AllMatches).Matches.Groups[1].Value)" >> $env:GITHUB_ENV
 
-      - name: Patch project files
-        run: |
-          (Get-Content app\ParsecVDisplay.csproj) -replace "TargetFramework>net472", "TargetFramework>net480" | Out-File app\ParsecVDisplay.csproj
-          (Get-Content app\App.config) -replace "Version=v4.7.2", "Version=v4.8" | Out-File app\App.config
+      # - name: Target .NET 4.8
+      #   run: |
+      #     (Get-Content app\ParsecVDisplay.csproj) -replace "TargetFramework>net472", "TargetFramework>net480" | Out-File app\ParsecVDisplay.csproj
+      #     (Get-Content app\App.config) -replace "Version=v4.7.2", "Version=v4.8" | Out-File app\App.config
 
-      - name: Setup msbuild
+      - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
       - name: Build app
@@ -34,30 +33,13 @@ jobs:
           cd app
           msbuild ParsecVDisplay.csproj /t:Restore
           msbuild ParsecVDisplay.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU
+          echo "${{ env.APP_VERSION }}+${{ env.SHORT_SHA }}" > bin\.version
 
       - name: Upload build output
         uses: actions/upload-artifact@v4
-        id: artifact-upload-step
-        with:
-          name: ParsecVDisplay
-          path: app/bin/net480/ParsecVDisplay.exe
-
-      - name: Sign the build
-        uses: signpath/github-action-submit-signing-request@v1
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: b57f6752-7123-475c-9185-6bfea1032f02
-          project-slug: parsec-vdd
-          signing-policy-slug: release-signing
-          artifact-configuration-slug: portable-app
-          github-artifact-id: "${{steps.artifact-upload-step.outputs.artifact-id}}"
-          wait-for-completion: true
-          output-artifact-directory: "bin"
-          parameters: |
-            Version: "${{ github.ref_name }}"
-
-      - name: Upload signed build
-        uses: actions/upload-artifact@v4
         with:
           name: ParsecVDisplay-v${{ env.APP_VERSION }}-${{ env.SHORT_SHA }}
-          path: bin/
+          path: |
+            app/bin/.version
+            app/bin/ParsecVDisplay.exe
+            app/bin/ParsecVDisplay.exe.config
