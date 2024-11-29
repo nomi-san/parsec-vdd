@@ -57,4 +57,29 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
 
+  <Target Name="CreateBatchFile" AfterTargets="Build">
+    <PropertyGroup>
+      <CLICode>
+<![CDATA[
+@echo off
+setlocal
+
+set app_exe=%~dp0ParsecVDisplay.exe
+set parent_exe=%~dp0..\ParsecVDisplay.exe
+
+if exist "%app_exe%" (
+    start /wait "" "%app_exe%" -cli %*
+) else if exist "%parent_exe%" (
+    start /wait "" "%parent_exe%" -cli %*
+) else (
+    echo ParsecVDisplay.exe does not exist.
+)
+
+endlocal
+]]>
+      </CLICode>
+    </PropertyGroup>
+	<WriteLinesToFile File="$(OutputPath)vdd.cmd" Lines="$(CLICode)" Overwrite="true" />
+  </Target>
+
 </Project>

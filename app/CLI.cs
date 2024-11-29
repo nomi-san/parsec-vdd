@@ -266,20 +266,20 @@ namespace ParsecVDisplay
 
         static void ShowHelp()
         {
-            Console.WriteLine("vdd-cli [command] [args...]");
-            Console.WriteLine("  add             - Add a virtual display");
-            Console.WriteLine("  remove          - Remove the last added virtual display");
-            Console.WriteLine("         X        - Remove the virtual display at index X (number)");
-            Console.WriteLine("         all      - Remove all the added virtual displays");
-            Console.WriteLine("  list            - Show all the added virtual displays and specs");
-            Console.WriteLine("  set    X WxH    - Set resolution for a virtual display");
-            Console.WriteLine("                    where X is index number, WxH is size, e.g 1920x1080");
-            Console.WriteLine("         X @R     - Set only the refresh rate R, e.g @60, @120 (hz)");
-            Console.WriteLine("                    on Powershell, you should replace '@' with 'r'");
-            Console.WriteLine("         X WxH@R  - Set full display mode as above, e.g 1920x1080@144");
-            Console.WriteLine("  status          - Query the driver status");
-            Console.WriteLine("  version         - Query the driver version");
-            Console.WriteLine("  help            - Show this help");
+            Console.WriteLine("vdd command [args...]");
+            Console.WriteLine("    add             - Add a virtual display");
+            Console.WriteLine("    remove          - Remove the last added virtual display");
+            Console.WriteLine("           X        - Remove the virtual display at index X (number)");
+            Console.WriteLine("           all      - Remove all the added virtual displays");
+            Console.WriteLine("    list            - Show all the added virtual displays and specs");
+            Console.WriteLine("    set    X WxH    - Set resolution for a virtual display");
+            Console.WriteLine("                      where X is index number, WxH is size, e.g 1920x1080");
+            Console.WriteLine("           X @R     - Set only the refresh rate R, e.g @60, @120 (hz)");
+            Console.WriteLine("                      on Powershell, you should replace '@' with 'r'");
+            Console.WriteLine("           X WxH@R  - Set full display mode as above, e.g 1920x1080@144");
+            Console.WriteLine("    status          - Query the driver status");
+            Console.WriteLine("    version         - Query the driver version");
+            Console.WriteLine("    help            - Show this help");
         }
 
         static void ParseDisplayModeArg(string arg, out int? width, out int? height, out int? hz)
