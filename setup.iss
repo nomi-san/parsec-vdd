@@ -44,12 +44,12 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Dirs]
 Name: "{app}"; Permissions: everyone-full
 Name: "{app}\cli"; Permissions: everyone-full
-Name: "{app}\driver"; Permissions: everyone-full
+Name: "{app}\drivers"; Permissions: everyone-full
 
 [Files]
-Source: "..\bin\version"; DestDir: "{app}"; Flags: skipifsourcedoesntexist
+Source: "..\bin\version"; DestDir: "{app}"; Flags: skipifsourcedoesntexist ignoreversion
 Source: "..\bin\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\{#MyAppExeName}.config"; DestDir: "{app}"; Flags: skipifsourcedoesntexist
+Source: "..\bin\{#MyAppExeName}.config"; DestDir: "{app}"; Flags: skipifsourcedoesntexist ignoreversion
 Source: "..\bin\vdd.cmd"; DestDir: "{app}\cli"; Flags: ignoreversion
 Source: ".\drivers\parsec-vdd-0.41.0.0.exe"; DestDir: "{app}\drivers"; Flags: ignoreversion
 Source: ".\drivers\parsec-vdd-0.45.0.0.exe"; DestDir: "{app}\drivers"; Flags: ignoreversion
