@@ -57,6 +57,7 @@ jobs:
             app/bin/ParsecVDisplay.exe.config
 
       - name: Sign the build
+        if: ${{ inputs.release }}
         uses: signpath/github-action-submit-signing-request@v1
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -71,11 +72,13 @@ jobs:
             Version: "${{ github.ref_name }}"
 
       - name: Delete unwanted artifacts
+        if: ${{ inputs.release }}
         uses: geekyeggo/delete-artifact@v5
         with:
           name: '*'
 
       - name: Upload signed build
+        if: ${{ inputs.release }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
