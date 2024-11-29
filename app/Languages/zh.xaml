@@ -29,7 +29,7 @@
     <system:String x:Key="t_options">选项</system:String>
     <system:String x:Key="t_run_on_startup">开机启动</system:String>
     <system:String x:Key="t_restore_displays">恢复上次关闭的显示器</system:String>
-    <system:String x:Key="t_fallback_display">无屏时启用虚拟显示</system:String>
+    <system:String x:Key="t_fallback_display">无屏时启用虚拟显示器</system:String>
     <system:String x:Key="t_keep_screen_on">保持屏幕开启</system:String>
     <system:String x:Key="t_check_for_update">检查更新</system:String>
     <system:String x:Key="t_exit">退出</system:String>
