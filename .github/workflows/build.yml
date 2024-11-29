@@ -53,6 +53,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: |
             app/bin/version
+            app/bin/vdd.cmd
             app/bin/ParsecVDisplay.exe
             app/bin/ParsecVDisplay.exe.config
 
@@ -64,10 +65,50 @@ jobs:
           organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
           project-slug: parsec-vdd
           signing-policy-slug: release-signing
-          artifact-configuration-slug: portable-app
+          artifact-configuration-slug: zipped-exe
           github-artifact-id: "${{steps.artifact-upload-step.outputs.artifact-id}}"
           wait-for-completion: true
-          output-artifact-directory: "release"
+          output-artifact-directory: bin
+          parameters: |
+            Version: "${{ github.ref_name }}"
+
+      - name: Fetch distro branch
+        if: ${{ inputs.release }}
+        uses: actions/checkout@v4
+        with:
+          ref: distro
+          fetch-depth: 0
+          path: distro
+
+      - name: Make setup installer & portable app
+        if: ${{ inputs.release }}
+        run: |
+          mkdir distro\final
+          Compress-Archive -Path bin\* -DestinationPath distro\final\ParsecVDisplay-v${{ env.APP_VERSION }}-portable.zip -Force
+          cd distro
+          & "$env:ProgramFiles (x86)\Inno Setup 6\iscc.exe" setup.iss
+
+      - name: Upload installer output
+        if: ${{ inputs.release }}
+        uses: actions/upload-artifact@v4
+        id: artifact-upload-installer-step
+        with:
+          name: setup-installer
+          path: |
+            distro/out/*.exe
+
+      - name: Sign the installer
+        if: ${{ inputs.release }}
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
+          project-slug: parsec-vdd
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: zipped-exe
+          github-artifact-id: "${{steps.artifact-upload-installer-step.outputs.artifact-id}}"
+          wait-for-completion: true
+          output-artifact-directory: distro/final
           parameters: |
             Version: "${{ github.ref_name }}"
 
@@ -77,9 +118,9 @@ jobs:
         with:
           name: '*'
 
-      - name: Upload signed build
+      - name: Upload signed output
         if: ${{ inputs.release }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: release/
+          path: distro/final/
