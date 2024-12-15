@@ -68,9 +68,9 @@ set app_exe=%~dp0ParsecVDisplay.exe
 set parent_exe=%~dp0..\ParsecVDisplay.exe
 
 if exist "%app_exe%" (
-    start /wait "" "%app_exe%" -cli %*
+    start /b /wait "" "%app_exe%" -cli %*
 ) else if exist "%parent_exe%" (
-    start /wait "" "%parent_exe%" -cli %*
+    start /b /wait "" "%parent_exe%" -cli %*
 ) else (
     echo ParsecVDisplay.exe does not exist.
 )
