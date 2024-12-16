@@ -51,6 +51,7 @@ namespace ParsecVDisplay
 
             var appName = $"{Program.AppName} v{Program.AppVersion}";
             var appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            var translateIcon = (Image)Properties.Resources.ResourceManager.GetObject("translate_icon");
 
             TrayIcon = new NotifyIcon()
             {
@@ -81,7 +82,7 @@ namespace ParsecVDisplay
                                     null, OptionsCheck) { CheckOnClick = true, Checked = Config.KeepScreenOn }),
                             }
                         },
-                        (MI_Language = new ToolStripMenuItem("t_language")),
+                        (MI_Language = new ToolStripMenuItem("t_language", translateIcon)),
                         new ToolStripMenuItem("t_check_for_update", null, CheckUpdate),
                         new ToolStripSeparator(),
                         new ToolStripMenuItem("t_exit", null, Exit),
