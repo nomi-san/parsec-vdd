@@ -194,20 +194,26 @@ namespace ParsecVDisplay
 
         public void TakeScreenshot(string saveFile)
         {
-            int width = CurrentMode.Width;
-            int height = CurrentMode.Height;
+            var devMode = new Native.DEVMODE();
+            devMode.dmSize = (short)Marshal.SizeOf(typeof(Native.DEVMODE));
+            Native.EnumDisplaySettings(DeviceName, -1, ref devMode);
+
+            int x = devMode.dmPositionX;
+            int y = devMode.dmPositionY;
+            int width = devMode.dmPelsWidth;
+            int height = devMode.dmPelsHeight;
 
             using (var bmp = new Bitmap(width, height))
             using (var gfx = Graphics.FromImage(bmp))
             {
-                var hdc = Native.CreateDC(IntPtr.Zero, DeviceName, IntPtr.Zero, IntPtr.Zero);
+                var hdcSrc = Native.GetDC(IntPtr.Zero);
+                var hdcDest = gfx.GetHdc();
 
-                var dstHdc = gfx.GetHdc();
-                Native.BitBlt(dstHdc, 0, 0, width, height, hdc, 0, 0, 0x00CC0020);
-                gfx.ReleaseHdc(dstHdc);
+                Native.BitBlt(hdcDest, 0, 0, width, height, hdcSrc, x, y, 0x00CC0020);
+                gfx.ReleaseHdc(hdcDest);
 
                 bmp.Save(saveFile, System.Drawing.Imaging.ImageFormat.Png);
-                Native.DeleteDC(hdc);
+                Native.ReleaseDC(IntPtr.Zero, hdcSrc);
             }
         }
 
@@ -426,6 +432,12 @@ namespace ParsecVDisplay
 
             [DllImport("gdi32.dll")]
             public static extern int DeleteDC(IntPtr hdc);
+
+            [DllImport("user32.dll")]
+            public static extern IntPtr GetDC(IntPtr hwnd);
+
+            [DllImport("user32.dll")]
+            public static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);
         }
     }
 }
