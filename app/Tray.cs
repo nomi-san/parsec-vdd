@@ -406,7 +406,7 @@ namespace ParsecVDisplay
 
         public void Invoke(Action action)
         {
-            TrayIcon.ContextMenuStrip.Invoke(action);
+            TrayIcon.ContextMenuStrip.BeginInvoke(action);
         }
 
         private void SetLanguage(object sender, EventArgs e)

@@ -142,7 +142,7 @@ namespace ParsecVDisplay
         {
             e.Handled = true;
             UpdateDriverLabel();
-            Tray.Instance?.QueryDriver(null, null);
+            Tray.Instance.Invoke(() => Tray.Instance.QueryDriver(null, null));
         }
 
         private void OpenRepoLink(object sender, MouseButtonEventArgs e)
