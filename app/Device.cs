@@ -19,9 +19,10 @@ namespace ParsecVDisplay
             NOT_INSTALLED
         }
 
-        public static Status QueryStatus(string guid, string devId)
+        public static Status QueryStatus(string guid, string devId, out Version driverVersion)
         {
             var status = Status.INACCESSIBLE;
+            driverVersion = new Version(0, 0, 0, 0);
 
             var devInfoData = new Native.SP_DEVINFO_DATA();
             devInfoData.cbSize = sizeof(Native.SP_DEVINFO_DATA);
@@ -38,6 +39,15 @@ namespace ParsecVDisplay
                 {
                     if (!Native.SetupDiEnumDeviceInfo(devInfo, deviceIndex, &devInfoData))
                         break;
+
+                    if (!Native.SetupDiBuildDriverInfoList(devInfo, &devInfoData, Native.SPDIT_COMPATDRIVER))
+                        break;
+
+                    var driverInfoData = new Native.SP_DRVINFO_DATA_V2_A();
+                    driverInfoData.cbSize = Marshal.SizeOf<Native.SP_DRVINFO_DATA_V2_A>();
+
+                    if (Native.SetupDiEnumDriverInfoA(devInfo, &devInfoData, Native.SPDIT_COMPATDRIVER, 0, &driverInfoData))
+                        driverVersion = Parse64BitVersion(driverInfoData.DriverVersion);
 
                     int requiredSize = 0;
                     Native.SetupDiGetDeviceRegistryPropertyA(devInfo, &devInfoData,
@@ -160,8 +170,11 @@ namespace ParsecVDisplay
                             Native.FILE_ATTRIBUTE_NORMAL | Native.FILE_FLAG_NO_BUFFERING | Native.FILE_FLAG_OVERLAPPED | Native.FILE_FLAG_WRITE_THROUGH,
                             null);
 
-                        if (handle != IntPtr.Zero && handle != Native.INVALID_HANDLE_VALUE)
+                        if (handle.IsValidHandle())
+                        {
+                            Marshal.FreeHGlobal((IntPtr)detail);
                             break;
+                        }
                     }
 
                     Marshal.FreeHGlobal((IntPtr)detail);
@@ -170,13 +183,12 @@ namespace ParsecVDisplay
                 Native.SetupDiDestroyDeviceInfoList(devInfo);
             }
 
-            return handle != IntPtr.Zero
-                && handle != Native.INVALID_HANDLE_VALUE;
+            return handle.IsValidHandle();
         }
 
         public static void CloseHandle(IntPtr handle)
         {
-            if (handle != IntPtr.Zero && handle != Native.INVALID_HANDLE_VALUE)
+            if (handle.IsValidHandle())
             {
                 Native.CloseHandle(handle);
             }
@@ -227,6 +239,22 @@ namespace ParsecVDisplay
             return Native.CM_Locate_DevNodeA(out devInst, deviceId, 0) == 0;
         }
 
+        private static Version Parse64BitVersion(ulong value)
+        {
+            var major = (ushort)((value >> 48) & 0xFFFF);
+            var minor = (ushort)((value >> 32) & 0xFFFF);
+            var build = (ushort)((value >> 16) & 0xFFFF);
+            var revision = (ushort)(value & 0xFFFF);
+
+            return new Version(major, minor, build, revision);
+        }
+
+        public static bool IsValidHandle(this IntPtr handle)
+        {
+            return handle != IntPtr.Zero
+                && handle != (IntPtr)(-1);
+        }
+
         static class Native
         {
             public const int MAX_DEVICE_ID_LEN = 200;
@@ -249,6 +277,8 @@ namespace ParsecVDisplay
             public const uint DIGCF_DEVICEINTERFACE = 0x10;
 
             public const uint SPDRP_HARDWAREID = 0x1;
+
+            public const uint SPDIT_COMPATDRIVER = 2;
 
             public const uint REG_SZ = 1;
             public const uint REG_MULTI_SZ = 7;
@@ -351,6 +381,19 @@ namespace ParsecVDisplay
                 public char DevicePath;
             }
 
+            [StructLayout(LayoutKind.Sequential)]
+            public struct SP_DRVINFO_DATA_V2_A
+            {
+                public int cbSize;
+                public uint DriverType;
+                private IntPtr Reserved;
+                public fixed byte Description[256];
+                public fixed byte MfgName[256];
+                public fixed byte ProviderName[256];
+                public ulong DriverDate;
+                public ulong DriverVersion;
+            }
+
             [DllImport("setupapi.dll")]
             public static extern IntPtr SetupDiGetClassDevsA(
                 ref Guid ClassGuid,
@@ -399,6 +442,22 @@ namespace ParsecVDisplay
                 void* PropertyBuffer,
                 int PropertyBufferSize,
                 int* RequiredSize);
+
+            [DllImport("setupapi.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool SetupDiBuildDriverInfoList(
+              IntPtr DeviceInfoSet,
+              SP_DEVINFO_DATA* DeviceInfoData,
+              uint DriverType);
+
+            [DllImport("setupapi.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool SetupDiEnumDriverInfoA(
+                IntPtr DeviceInfoSet,
+                SP_DEVINFO_DATA* DeviceInfoData,
+                uint DriverType,
+                uint MemberIndex,
+                SP_DRVINFO_DATA_V2_A* DriverInfoData);
 
             [DllImport("setupapi.dll")]
             public static extern uint CM_Get_DevNode_Status(
