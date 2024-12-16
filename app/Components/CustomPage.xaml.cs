@@ -16,7 +16,7 @@ namespace ParsecVDisplay.Components
             InitializeComponent();
 
             xParentGPU.Items.Clear();
-            foreach (var item in Enum.GetValues(typeof(ParsecVDD.ParentGPU)))
+            foreach (var item in Enum.GetValues(typeof(Vdd.Utils.ParentGPU)))
             {
                 xParentGPU.Items.Add(item.ToString());
             }
@@ -50,15 +50,15 @@ namespace ParsecVDisplay.Components
                 }
             }
 
-            ParsecVDD.ParentGPU parentGPU;
+            Vdd.Utils.ParentGPU parentGPU;
             bool validParentGPU = Enum.TryParse(xParentGPU.SelectedValue.ToString(), true, out parentGPU);
 
             if (modes.Count > 0 && validParentGPU)
             {
                 if (Helper.IsAdmin())
                 {
-                    ParsecVDD.SetCustomDisplayModes(modes);
-                    ParsecVDD.SetParentGPU(parentGPU);
+                    Vdd.Utils.SetCustomDisplayModes(modes);
+                    Vdd.Utils.SetParentGPU(parentGPU);
                 }
                 else
                 {
@@ -79,7 +79,7 @@ namespace ParsecVDisplay.Components
         {
             TextBoxes = FindVisualChildren<TextBox>(this).ToArray();
 
-            var modes = ParsecVDD.GetCustomDisplayModes();
+            var modes = Vdd.Utils.GetCustomDisplayModes();
 
             for (int i = 0, j = 0; i < 15 && j < modes.Count; i += 3, j++)
             {
@@ -88,7 +88,7 @@ namespace ParsecVDisplay.Components
                 TextBoxes[i + 2].Text = $"{modes[j].Hz}";
             }
 
-            var parentGPU = ParsecVDD.GetParentGPU();
+            var parentGPU = Vdd.Utils.GetParentGPU();
             xParentGPU.SelectedValue = parentGPU.ToString();
         }
 

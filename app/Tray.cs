@@ -42,6 +42,7 @@ namespace ParsecVDisplay
         public Tray()
         {
             Instance = this;
+            Vdd.Controller.Start();
 
             GuiThread = new Thread(App.Main);
             GuiThread.IsBackground = true;
@@ -115,41 +116,135 @@ namespace ParsecVDisplay
             });
         }
 
+        private void WarnVddStatus(Device.Status status)
+        {
+            if (status == Device.Status.OK)
+                return;
+
+            string error = null;
+            switch (status)
+            {
+                case Device.Status.RESTART_REQUIRED:
+                    error = App.GetTranslation("t_msg_must_restart_pc");
+                    break;
+                case Device.Status.DISABLED:
+                    error = App.GetTranslation("t_msg_driver_is_disabled", Vdd.Core.ADAPTER);
+                    break;
+                case Device.Status.NOT_INSTALLED:
+                    error = App.GetTranslation("t_msg_please_install_driver");
+                    break;
+                default:
+                    error = App.GetTranslation("t_msg_driver_status_not_ok", status);
+                    break;
+            }
+
+            if (error != null)
+                MessageBox.Show(Owner, error, Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        public void HandleVddError(Exception ex)
+        {
+            string message = null;
+
+            if (ex is Vdd.ErrorDriverStatus errStatus)
+            {
+                switch (errStatus.Status)
+                {
+                    case Device.Status.RESTART_REQUIRED:
+                        message = App.GetTranslation("t_msg_must_restart_pc");
+                        break;
+                    case Device.Status.DISABLED:
+                        message = App.GetTranslation("t_msg_driver_is_disabled", Vdd.Core.ADAPTER);
+                        break;
+                    case Device.Status.NOT_INSTALLED:
+                        message = App.GetTranslation("t_msg_please_install_driver");
+                        break;
+                    default:
+                        message = App.GetTranslation("t_msg_driver_status_not_ok", errStatus.Status);
+                        break;
+                }
+            }
+            else if (ex is Vdd.ErrorDeviceHandle)
+            {
+                message = App.GetTranslation("t_msg_failed_to_obtain_handle");
+            }
+            else if (ex is Vdd.ErrorExceededLimit errLimit)
+            {
+                message = App.GetTranslation("t_msg_exceeded_display_limit", errLimit.Limit);
+            }
+            else if (ex is Vdd.ErrorOperationFailed errOperation)
+            {
+                switch (errOperation.Type)
+                {
+                    case Vdd.ErrorOperationFailed.Operation.AddDisplay:
+                        message = App.GetTranslation("t_msg_failed_to_add_display");
+                        break;
+                    case Vdd.ErrorOperationFailed.Operation.RemoveDisplay:
+                        message = App.GetTranslation("t_msg_failed_to_remove_display");
+                        break;
+                }
+            }
+            else
+            {
+                message = ex.ToString();
+            }
+
+            if (message != null)
+            {
+                MessageBox.Show(Owner, message,
+                    Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
         void RestoreDisplays()
         {
-            ParsecVDD.Ping();
-            var savedCount = Config.DisplayCount;
+            //var savedCount = Config.DisplayCount;
 
-            if (savedCount > 0)
-            {
-                var displays = ParsecVDD.GetDisplays();
-                var amount = savedCount - displays.Count;
+            //if (savedCount > 0)
+            //{
+            //    var displays = Vdd.Core.GetDisplays();
+            //    var amount = savedCount - displays.Count;
 
-                for (int i = 0; i < amount; i++)
-                    ParsecVDD.AddDisplay(out var _);
-            }
+            //    for (int i = 0; i < amount; i++)
+            //        Controller.AddDisplay(out var _);
+            //}
         }
 
         public void AddDisplay(object sender, EventArgs e)
         {
-            if (ParsecVDD.GetDisplays().Count >= ParsecVDD.MAX_DISPLAYS)
+            try
             {
-                MessageBox.Show(Owner, App.GetTranslation("t_msg_exceeded_display_limit", ParsecVDD.MAX_DISPLAYS),
-                    Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Vdd.Controller.AddDisplay();
             }
-            else
+            catch (Exception ex)
             {
-                ParsecVDD.AddDisplay(out var _);
+                HandleVddError(ex);
+            }
+        }
+
+        public void RemoveDisplay(int index)
+        {
+            try
+            {
+                Vdd.Controller.RemoveDisplay(index);
+            }
+            catch (Vdd.ErrorOperationFailed)
+            {
+                MessageBox.Show(Owner, App.GetTranslation("t_msg_failed_to_remove_display"),
+                    Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
         void RemoveLastDisplay(object sender, EventArgs e)
         {
-            var displays = ParsecVDD.GetDisplays();
-            if (displays.Count > 0)
+            try
             {
-                var last = displays[displays.Count - 1];
-                ParsecVDD.RemoveDisplay(last.DisplayIndex);
+                Vdd.Controller.RemoveLastDisplay();
+            }
+            catch (Vdd.ErrorOperationFailed)
+            {
+                MessageBox.Show(Owner, App.GetTranslation("t_msg_failed_to_remove_display"),
+                    Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -157,12 +252,12 @@ namespace ParsecVDisplay
         {
             ShowApp();
 
-            var status = ParsecVDD.QueryStatus();
-            ParsecVDD.QueryVersion(out string version);
-
+            var status = Vdd.Core.QueryStatus(out var version);
             var caption = $"{Program.AppName} v{Program.AppVersion}";
 
-            MessageBox.Show(Owner, $"Parsec Virtual Display v{version}\n" +
+            MessageBox.Show(Owner,
+                $"{Vdd.Core.ADAPTER}\n" +
+                $"Version: {version}\n" +
                 $"{App.GetTranslation("t_msg_driver_status")}: {status}",
                 caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -206,7 +301,7 @@ namespace ParsecVDisplay
             if (sender == MI_RunOnStartup)
                 Config.RunOnStartup = MI_RunOnStartup.Checked;
             else if (sender == MI_RestoreDisplays)
-                Config.DisplayCount = MI_RestoreDisplays.Checked ? ParsecVDD.GetDisplays().Count : -1;
+                Config.DisplayCount = MI_RestoreDisplays.Checked ? Vdd.Core.GetDisplays().Count : -1;
             else if (sender == MI_FallbackDisplay)
                 Config.FallbackDisplay = MI_FallbackDisplay.Checked;
             else if (sender == MI_KeepScreenOn)
@@ -217,7 +312,7 @@ namespace ParsecVDisplay
         {
             if (Config.DisplayCount >= 0)
             {
-                var displays = ParsecVDD.GetDisplays();
+                var displays = Vdd.Core.GetDisplays();
                 Config.DisplayCount = displays.Count;
             }
         }
@@ -265,7 +360,7 @@ namespace ParsecVDisplay
 
         void Exit(object sender, EventArgs e)
         {
-            var displays = ParsecVDD.GetDisplays();
+            var displays = Vdd.Core.GetDisplays();
             if (displays.Count > 0)
             {
                 if (MessageBox.Show(Owner, App.GetTranslation("t_msg_prompt_leave_all"),
@@ -282,7 +377,7 @@ namespace ParsecVDisplay
                 for (int i = displays.Count - 1; i >= 0; i--)
                 {
                     var index = displays[i].DisplayIndex;
-                    ParsecVDD.RemoveDisplay(index);
+                    Vdd.Controller.RemoveDisplay(index);
                 }
 
                 if (Config.DisplayCount >= 0)
@@ -291,6 +386,8 @@ namespace ParsecVDisplay
 
             App.Current?.Dispatcher.Invoke(App.Current.Shutdown);
             GuiThread.Join();
+
+            Vdd.Controller.Stop();
 
             TrayIcon.Visible = false;
             Application.Exit();

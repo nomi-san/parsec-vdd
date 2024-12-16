@@ -198,10 +198,7 @@ namespace ParsecVDisplay.Components
 
         private void RemoveDisplay(object sender, RoutedEventArgs e)
         {
-            if (Display.DisplayIndex >= 0)
-            {
-                ParsecVDD.RemoveDisplay(Display.DisplayIndex);
-            }
+            Tray.Instance.Invoke(() => Tray.Instance.RemoveDisplay(Display.DisplayIndex));
         }
     }
 }

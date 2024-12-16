@@ -19,13 +19,13 @@ namespace ParsecVDisplay
             if (args.Length >= 2 && args[0] == "-custom")
             {
                 var modes = Display.ParseModes(args[1]);
-                ParsecVDD.SetCustomDisplayModes(modes);
+                Vdd.Utils.SetCustomDisplayModes(modes);
 
                 if (args.Length >= 3)
                 {
-                    if (Enum.TryParse<ParsecVDD.ParentGPU>(args[2], true, out var kind))
+                    if (Enum.TryParse<Vdd.Utils.ParentGPU>(args[2], true, out var kind))
                     {
-                        ParsecVDD.SetParentGPU(kind);
+                        Vdd.Utils.SetParentGPU(kind);
                     }
                 }
 
@@ -41,17 +41,9 @@ namespace ParsecVDisplay
             if (SingleInstance())
             {
                 App.LoadTranslations();
+                Helper.StayAwake(false);
 
-                if (InitDriver())
-                {
-                    Helper.StayAwake(false);
-                    Daemon.Start();
-
-                    Application.Run(new Tray());
-
-                    Daemon.Stop();
-                    ParsecVDD.Uninit();
-                }
+                Application.Run(new Tray());
             }
 
             return 0;
@@ -80,42 +72,6 @@ namespace ParsecVDisplay
             }
 
             return isOwned;
-        }
-
-        static bool InitDriver()
-        {
-            string error = null;
-            var status = ParsecVDD.QueryStatus();
-
-            if (!(status == Device.Status.OK || Config.SkipDriverCheck))
-            {
-                switch (status)
-                {
-                    case Device.Status.RESTART_REQUIRED:
-                        error = App.GetTranslation("t_msg_must_restart_pc");
-                        break;
-                    case Device.Status.DISABLED:
-                        error = App.GetTranslation("t_msg_driver_is_disabled", ParsecVDD.ADAPTER);
-                        break;
-                    case Device.Status.NOT_INSTALLED:
-                        error = App.GetTranslation("t_msg_please_install_driver");
-                        break;
-                    default:
-                        error = App.GetTranslation("t_msg_driver_status_not_ok", status);
-                        break;
-                }
-            }
-            else if (ParsecVDD.Init() != true)
-            {
-                error = App.GetTranslation("t_msg_failed_to_obtain_handle");
-            }
-
-            if (error != null)
-            {
-                MessageBox.Show(error, AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            return error == null;
         }
     }
 }

@@ -27,6 +27,7 @@ namespace ParsecVDisplay
             xDisplays.Children.Clear();
             xNoDisplay.Visibility = Visibility.Hidden;
 
+            this.Title = Program.AppName;
             this.IsVisibleChanged += delegate { UpdateDriverLabel(); };
         }
 
@@ -81,15 +82,15 @@ namespace ParsecVDisplay
 
         private void UpdateDriverLabel()
         {
-            ParsecVDD.QueryVersion(out var dver);
-            xDriver.Content = $"{ParsecVDD.NAME} v{dver}";
+            Vdd.Controller.QueryStatus(out var ver);
+            xDriver.Content = $"{Vdd.Core.NAME} v{ver.Major}.{ver.Minor}";
         }
 
         private void DisplayChanged(object sender, EventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
-                var displays = ParsecVDD.GetDisplays(out bool noMonitors);
+                var displays = Vdd.Core.GetDisplays(out bool noMonitors);
 
                 xDisplays.Children.Clear();
                 xNoDisplay.Visibility = displays.Count > 0

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -9,6 +8,25 @@ namespace ParsecVDisplay
 {
     internal static class CLI
     {
+        static IntPtr VddHandle = IntPtr.Zero;
+
+        static void ShowHelp()
+        {
+            Console.WriteLine("vdd command [args...]");
+            Console.WriteLine("    -a|add           - Add a virtual display");
+            Console.WriteLine("    -r|remove        - Remove the last added virtual display");
+            Console.WriteLine("            X        - Remove the virtual display at index X (number)");
+            Console.WriteLine("            all      - Remove all the added virtual displays");
+            Console.WriteLine("    -l|list          - Show all the added virtual displays and specs");
+            Console.WriteLine("    -s|set  X WxH    - Set resolution for a virtual display");
+            Console.WriteLine("                        where X is index number, WxH is size, e.g 1920x1080");
+            Console.WriteLine("            X @R     - Set only the refresh rate R, e.g @60, @120 (hz)");
+            Console.WriteLine("                        on Powershell, you should replace '@' with 'r'");
+            Console.WriteLine("            X WxH@R  - Set full display mode as above, e.g 1920x1080@144");
+            Console.WriteLine("    -v|version       - Query driver version and status");
+            Console.WriteLine("    -h|help          - Show this help");
+        }
+
         public static int Execute(string[] args)
         {
             AttachConsole(-1);
@@ -19,21 +37,31 @@ namespace ParsecVDisplay
                 {
                     switch (args[0])
                     {
+                        case "-a":
                         case "add":
                             return AddDisplay();
+
+                        case "-r":
                         case "remove":
                             return RemoveDisplay(args);
+
+                        case "-l":
                         case "list":
                             return ListDisplay();
+
+                        case "-s":
                         case "set":
                             return SetDisplayMode(args);
-                        case "status":
-                            return QueryDriverStatus();
+
+                        case "-v":
                         case "version":
-                            return QueryDriverVersion();
+                            return QueryVersion();
+
+                        case "-h":
                         case "help":
                             ShowHelp();
                             return 0;
+
                         default:
                             Console.WriteLine("Invalid command '{0}'", args[0]);
                             ShowHelp();
@@ -50,7 +78,7 @@ namespace ParsecVDisplay
                 }
                 finally
                 {
-                    ParsecVDD.Uninit();
+                    Vdd.Core.CloseHandle(VddHandle);
                 }
             }
             else
@@ -62,7 +90,7 @@ namespace ParsecVDisplay
 
         static Device.Status PrepareVdd()
         {
-            var status = ParsecVDD.QueryStatus();
+            var status = Vdd.Core.QueryStatus(out var _);
 
             if (status == Device.Status.NOT_INSTALLED)
             {
@@ -73,7 +101,7 @@ namespace ParsecVDisplay
                 throw new Exception($"The driver is not OK, got status {status}");
             }
 
-            if (!ParsecVDD.Init())
+            if (!Vdd.Core.OpenHandle(out VddHandle))
             {
                 throw new Exception("Failed to obtain the driver device handle");
             }
@@ -91,16 +119,18 @@ namespace ParsecVDisplay
 
         static int AddDisplay()
         {
-            var displays = ParsecVDD.GetDisplays();
-            if (displays.Count >= ParsecVDD.MAX_DISPLAYS)
+            var displays = Vdd.Core.GetDisplays();
+            int maxCount = Vdd.Core.MAX_DISPLAYS;
+
+            if (displays.Count >= maxCount)
             {
-                throw new Exception(string.Format("Exceeded limit ({0}), could not add more displays", ParsecVDD.MAX_DISPLAYS));
+                throw new Exception(string.Format("Exceeded limit ({0}), could not add more displays", maxCount));
             }
 
             PrepareVdd();
             CheckAppRunning();
 
-            if (ParsecVDD.AddDisplay(out int index))
+            if (Vdd.Core.AddDisplay(VddHandle, out int index))
             {
                 Console.WriteLine($"Added a virtual display with index {0}.", index);
                 return index;
@@ -119,7 +149,7 @@ namespace ParsecVDisplay
 
             if (args.Length == 1 || removeAll || int.TryParse(arg1, out index))
             {
-                var displays = ParsecVDD.GetDisplays();
+                var displays = Vdd.Core.GetDisplays();
 
                 if (displays.Count == 0)
                 {
@@ -131,7 +161,7 @@ namespace ParsecVDisplay
                     PrepareVdd();
                     foreach (var di in displays)
                     {
-                        if (!ParsecVDD.RemoveDisplay(di.DisplayIndex))
+                        if (!Vdd.Core.RemoveDisplay(VddHandle, di.DisplayIndex))
                             throw new Exception(string.Format("Failed to remove the display at index {0}.", index));
                     }
 
@@ -146,7 +176,7 @@ namespace ParsecVDisplay
                     if (display != null)
                     {
                         PrepareVdd();
-                        if (!ParsecVDD.RemoveDisplay(display.DisplayIndex))
+                        if (!Vdd.Core.RemoveDisplay(VddHandle, display.DisplayIndex))
                             throw new Exception(string.Format("Failed to remove the display at index {0}.", display.DisplayIndex));
 
                         Console.WriteLine("Removed display at index {0}.", display.DisplayIndex);
@@ -166,7 +196,7 @@ namespace ParsecVDisplay
 
         static int ListDisplay()
         {
-            var displays = ParsecVDD.GetDisplays();
+            var displays = Vdd.Core.GetDisplays();
 
             if (displays.Count > 0)
             {
@@ -182,7 +212,7 @@ namespace ParsecVDisplay
             }
             else
             {
-                Console.WriteLine("No Parsec Display available.");
+                Console.WriteLine("No virtual displays present.");
             }
 
             return 0;
@@ -200,7 +230,7 @@ namespace ParsecVDisplay
 
             if (int.TryParse(argIndex, out int index))
             {
-                var displays = ParsecVDD.GetDisplays();
+                var displays = Vdd.Core.GetDisplays();
 
                 if (displays.Count == 0)
                 {
@@ -241,45 +271,15 @@ namespace ParsecVDisplay
             }
         }
 
-        static int QueryDriverStatus()
+        static int QueryVersion()
         {
-            var status = ParsecVDD.QueryStatus();
-            Console.WriteLine("The driver status is {0}", status);
+            var status = Vdd.Core.QueryStatus(out var version);
+
+            Console.WriteLine(Vdd.Core.ADAPTER);
+            Console.WriteLine("- Status: {0}", status);
+            Console.WriteLine("- Version: {0}.{1}", version.Major, version.Minor);
 
             return (int)status;
-        }
-
-        static int QueryDriverVersion()
-        {
-            PrepareVdd();
-
-            if (ParsecVDD.QueryVersion(out var version))
-            {
-                Console.WriteLine("{0} v{1}", ParsecVDD.ADAPTER, version);
-                return 0;
-            }
-            else
-            {
-                throw new Exception("Failed to query the driver version.");
-            }
-        }
-
-        static void ShowHelp()
-        {
-            Console.WriteLine("vdd command [args...]");
-            Console.WriteLine("    add             - Add a virtual display");
-            Console.WriteLine("    remove          - Remove the last added virtual display");
-            Console.WriteLine("           X        - Remove the virtual display at index X (number)");
-            Console.WriteLine("           all      - Remove all the added virtual displays");
-            Console.WriteLine("    list            - Show all the added virtual displays and specs");
-            Console.WriteLine("    set    X WxH    - Set resolution for a virtual display");
-            Console.WriteLine("                      where X is index number, WxH is size, e.g 1920x1080");
-            Console.WriteLine("           X @R     - Set only the refresh rate R, e.g @60, @120 (hz)");
-            Console.WriteLine("                      on Powershell, you should replace '@' with 'r'");
-            Console.WriteLine("           X WxH@R  - Set full display mode as above, e.g 1920x1080@144");
-            Console.WriteLine("    status          - Query the driver status");
-            Console.WriteLine("    version         - Query the driver version");
-            Console.WriteLine("    help            - Show this help");
         }
 
         static void ParseDisplayModeArg(string arg, out int? width, out int? height, out int? hz)
