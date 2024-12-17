@@ -49,6 +49,7 @@
     <system:String x:Key="t_msg_driver_is_disabled">{0} is disabled, please enable it in Device Manager.</system:String>
     <system:String x:Key="t_msg_please_install_driver">Please install the driver first.</system:String>
     <system:String x:Key="t_msg_driver_status_not_ok">The driver is not OK, please check again. Current status: {0}.</system:String>
+    
     <system:String x:Key="t_msg_failed_to_obtain_handle">Failed to obtain the device handle, please check the driver installation again.</system:String>
     <system:String x:Key="t_msg_failed_to_add_display">Failed to add virtual display.</system:String>
     <system:String x:Key="t_msg_failed_to_remove_display">Failed to remove virtual display.</system:String>

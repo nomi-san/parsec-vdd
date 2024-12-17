@@ -11,7 +11,6 @@
     <system:String x:Key="t_custom">Tùy chỉnh...</system:String>
     <system:String x:Key="t_apply">Áp dụng</system:String>
     <system:String x:Key="t_parent_gpu">GPU nguồn</system:String>
-    <system:String x:Key="t_driver_status">Trạng thái driver</system:String>
     <system:String x:Key="t_language">Ngôn ngữ</system:String>
 
     <!--Context menu-->
@@ -50,6 +49,9 @@
     <system:String x:Key="t_msg_driver_is_disabled">{0} đã bị vô hiệu, vui lòng bật nó trong Device Manager.</system:String>
     <system:String x:Key="t_msg_please_install_driver">Vui lòng cài đặt driver trước.</system:String>
     <system:String x:Key="t_msg_driver_status_not_ok">Driver không được OK, vui lòng kiểm tra lại. Trạng thái hiện tại: {0}.</system:String>
+    
     <system:String x:Key="t_msg_failed_to_obtain_handle">Không thể lấy 'device handle', vui lòng kiểm tra cài đặt driver và thử lại.</system:String>
-
+    <system:String x:Key="t_msg_failed_to_add_display">Lỗi khi thêm màn hình ảo.</system:String>
+    <system:String x:Key="t_msg_failed_to_remove_display">Lỗi khi gỡ màn hình ảo.</system:String>
+    
 </ResourceDictionary>
