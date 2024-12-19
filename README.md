@@ -1,36 +1,53 @@
-<br>
+<!-- tracking -->
+<img src="https://i.imgur.com/dDUa6GH.png" width="0" height="0" />
 
 <p align="center">
-  <img src="https://i.imgur.com/dDUa6GH.png" width="64" height="64" />
-  <h1 align="center">parsec-vdd</h1>
-  <p align="center">
-    ✨ Standalone <strong>Parsec Virtual Display</strong>
-    <br />
-    Create virtual display up to <strong>4K@240Hz</strong>
-  </p>
-  <p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/74e7db71-6166-49ae-b6c5-7543b15c60eb">
+    <img alt="Parsec Virtual Display Driver" src="https://github.com/user-attachments/assets/57202381-021c-428a-ae38-0fc4b2e0ee0c">
+  </picture>
+</p>
+
+<p align="center">
+  ✨ Perfect <strong>virtual display</strong> for game streaming
+</p>
+
+<p align="center">
+  <a href="#">
     <img src="https://img.shields.io/github/stars/nomi-san/parsec-vdd?style=for-the-badge&logo=github" />
-    <img src="https://img.shields.io/github/downloads/nomi-san/parsec-vdd/total?style=for-the-badge&label=Downloads" />
-  </p>
+  </a>
+  <a href="https://github.com/nomi-san/parsec-vdd/releases">
+    <img src="https://img.shields.io/github/downloads/nomi-san/parsec-vdd/total?style=for-the-badge" />
+  </a>
 </p>
 
 <br>
 
 ## ℹ About
 
-This project provides a **standalone solution for creating virtual displays** on a Windows host using the **Parsec Virtual Display Driver** (VDD), independent of the **Parsec app**.
+This project provides a **standalone solution for creating virtual displays** on
+a Windows host using the **Parsec Virtual Display Driver** (VDD), independent of
+the **Parsec app**.
 
-The Parsec VDD enables virtual displays on Windows 10+ systems, a feature available to Parsec Teams and Warp customers.
-With VDD, users can add up to three virtual displays to a host machine they connect to, ideal for setups where physical monitors may be unavailable or when additional displays are beneficial.
+The Parsec VDD enables virtual displays on Windows 10+ systems, a feature
+available to Parsec Teams and Warp customers. With VDD, users can add up to
+three virtual displays to a host machine they connect to, ideal for setups where
+physical monitors may be unavailable or when additional displays are beneficial.
 
-Built by Parsec, the VDD leverages the IddCx API (Indirect Display Driver) to generate virtual displays with support for high resolutions and refresh rates, including up to 4K and 240 Hz.
-This capability makes it a versatile tool for gaming, streaming, or remote work, allowing users to simulate multiple screens for an enhanced, flexible visual experience.
+Built by Parsec, the VDD leverages the IddCx API (Indirect Display Driver) to
+generate virtual displays with support for high resolutions and refresh rates,
+including up to 4K and 240 Hz. This capability makes it a versatile tool for
+gaming, streaming, or remote work, allowing users to simulate multiple screens
+for an enhanced, flexible visual experience.
 
 ## 📺 ParsecVDisplay App
 
-ParsecVDisplay is a comprehensive virtual display manager for Parsec VDD, built with C# and WPF.
-The app provides an intuitive interface to manage virtual displays, showing the number of active displays and allowing users to add or remove specific virtual displays.
-It also supports features like changing display resolution, capturing screenshots, and more, making it a versatile tool for flexible display management.
+ParsecVDisplay is a comprehensive virtual display manager for Parsec VDD, built
+with C# and WPF. The app provides an intuitive interface to manage virtual
+displays, showing the number of active displays and allowing users to add or
+remove specific virtual displays. It also supports features like changing
+display resolution, capturing screenshots, and more, making it a versatile tool
+for flexible display management.
 
 👉 Check out [Releases](https://github.com/nomi-san/parsec-vdd/releases) to
 download it.
@@ -43,14 +60,14 @@ download it.
 
 ### Design notes
 
-Parsec VDD is designed to work with Parsec client-connection sessions. When the user
-connects to the host, the app will start controlling the driver, it sends IO
-control codes and gets results. When adding a virtual display, you will get its
-index to be used for unplugging, the maximum number of displays could be added
-up to 16 per adapter. You have to ping the driver periodically to keep added
-displays alive, otherwise all of them will be unplugged after a second. There's
-no direct way to manipulate added displays, you should call Win32 Display API to
-change their display mode (see the ParsecVDisplay source).
+Parsec VDD is designed to work with Parsec client-connection sessions. When the
+user connects to the host, the app will start controlling the driver, it sends
+IO control codes and gets results. When adding a virtual display, you will get
+its index to be used for unplugging, the maximum number of displays could be
+added up to 16 per adapter. You have to ping the driver periodically to keep
+added displays alive, otherwise all of them will be unplugged after a second.
+There's no direct way to manipulate added displays, you should call Win32
+Display API to change their display mode (see the ParsecVDisplay source).
 
 ```mermaid
 flowchart LR
@@ -109,8 +126,7 @@ start /wait .\nefconw.exe --create-device-node --class-name Display --class-guid
 start /wait .\nefconw.exe --install-driver --inf-path ".\driver\mm.inf"
 ```
 
-In addition, you can run the driver setup in silent mode to install it
-quickly.
+In addition, you can run the driver setup in silent mode to install it quickly.
 
 ```
 .\parsec-vdd-0.45.0.0.exe /S
