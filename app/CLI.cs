@@ -215,7 +215,7 @@ namespace ParsecVDisplay
                 Console.WriteLine("No virtual displays present.");
             }
 
-            return 0;
+            return displays.Count;
         }
 
         static int SetDisplayMode(string[] args)
