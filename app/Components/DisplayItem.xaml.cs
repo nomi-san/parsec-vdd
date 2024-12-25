@@ -196,6 +196,13 @@ namespace ParsecVDisplay.Components
             });
         }
 
+        private void MirrorScreen(object sender, RoutedEventArgs e)
+        {
+            var mirrorWindow = new MirrorWindow();
+            mirrorWindow.MirrorScreen(Display.DeviceName);
+            mirrorWindow.Show();
+        }
+
         private void RemoveDisplay(object sender, RoutedEventArgs e)
         {
             Tray.Instance.Invoke(() => Tray.Instance.RemoveDisplay(Display.DisplayIndex));

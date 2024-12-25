@@ -48,7 +48,9 @@
                 <MenuItem Header="{DynamicResource t_landscape_flipped}" />
                 <MenuItem Header="{DynamicResource t_portrait_flipped}" />
             </MenuItem>
+            <Separator />
             <MenuItem Click="TakeScreenshot" Header="{DynamicResource t_take_screenshot}" IsEnabled="{Binding Active}" />
+            <MenuItem Click="MirrorScreen" Header="Mirror screen" IsEnabled="{Binding Active}" />
             <Separator />
             <MenuItem Click="RemoveDisplay" Header="{DynamicResource t_remove}" />
         </ContextMenu>
