@@ -19,126 +19,54 @@ namespace ParsecVDisplay
             NOT_INSTALLED
         }
 
-        public static Status QueryStatus(string guid, string devId, out Version driverVersion)
+        public static Status QueryStatus(string classGuid, string hardwareId, out Version driverVersion)
         {
             var status = Status.INACCESSIBLE;
             driverVersion = new Version(0, 0, 0, 0);
 
-            var devInfoData = new Native.SP_DEVINFO_DATA();
-            devInfoData.cbSize = sizeof(Native.SP_DEVINFO_DATA);
+            var guid = Guid.Parse(classGuid);
+            var devInfo = Native.SetupDiGetClassDevsA(ref guid, null, null, Native.DIGCF_PRESENT);
 
-            var classGuid = Guid.Parse(guid);
-            var devInfo = Native.SetupDiGetClassDevsA(ref classGuid, null, null, Native.DIGCF_PRESENT);
-
-            if (devInfo != Native.INVALID_HANDLE_VALUE)
+            if (devInfo.IsValidHandle())
             {
-                bool foundProp = false;
-                uint deviceIndex = 0;
+                status = Status.NOT_INSTALLED;
 
-                do
+                const int hwndBufSize = 512;
+                byte* hwidBuffer = stackalloc byte[hwndBufSize]; // ANSI
+
+                var devInfoData = new Native.SP_DEVINFO_DATA();
+                devInfoData.cbSize = sizeof(Native.SP_DEVINFO_DATA);
+
+                for (uint index = 0; Native.SetupDiEnumDeviceInfo(devInfo, index, &devInfoData); index++)
                 {
-                    if (!Native.SetupDiEnumDeviceInfo(devInfo, deviceIndex, &devInfoData))
-                        break;
+                    uint regDataType = 0;
 
-                    if (!Native.SetupDiBuildDriverInfoList(devInfo, &devInfoData, Native.SPDIT_COMPATDRIVER))
-                        break;
-
-                    var driverInfoData = new Native.SP_DRVINFO_DATA_V2_A();
-                    driverInfoData.cbSize = Marshal.SizeOf<Native.SP_DRVINFO_DATA_V2_A>();
-
-                    if (Native.SetupDiEnumDriverInfoA(devInfo, &devInfoData, Native.SPDIT_COMPATDRIVER, 0, &driverInfoData))
-                        driverVersion = Parse64BitVersion(driverInfoData.DriverVersion);
-
-                    int requiredSize = 0;
-                    Native.SetupDiGetDeviceRegistryPropertyA(devInfo, &devInfoData,
-                        Native.SPDRP_HARDWAREID, null, null, 0, &requiredSize);
-
-                    if (requiredSize > 0)
+                    if (Native.SetupDiGetDeviceRegistryPropertyA(devInfo, &devInfoData,
+                        Native.SPDRP_HARDWAREID, &regDataType, hwidBuffer, hwndBufSize, null))
                     {
-                        uint regDataType = 0;
-                        IntPtr propBuffer = Marshal.AllocHGlobal(requiredSize);
-
-                        if (Native.SetupDiGetDeviceRegistryPropertyA(
-                            devInfo,
-                            &devInfoData,
-                            Native.SPDRP_HARDWAREID,
-                            &regDataType,
-                            (void*)propBuffer,
-                            requiredSize,
-                            &requiredSize))
+                        if (regDataType == Native.REG_SZ || regDataType == Native.REG_MULTI_SZ)
                         {
-                            if (regDataType == Native.REG_SZ || regDataType == Native.REG_MULTI_SZ)
+                            var length = Native.lstrlenA(hwidBuffer);
+                            if (length == hardwareId.Length)
                             {
-                                for (IntPtr cp = propBuffer; ; cp += Native.lstrlenA(cp) + 1)
+                                var str = Marshal.PtrToStringAnsi((IntPtr)hwidBuffer, length);
+                                if (string.Compare(str, hardwareId) == 0)
                                 {
-                                    if (cp == (IntPtr)(0) || *(byte*)cp == 0 || (ulong)cp >= (ulong)(propBuffer + requiredSize))
-                                    {
-                                        status = Status.NOT_INSTALLED;
-                                        goto except;
-                                    }
-
-                                    if (devId.Equals(Marshal.PtrToStringAnsi(cp)))
-                                        break;
-                                }
-
-                                foundProp = true;
-                                uint devStatus, devProblemNum;
-
-                                if (Native.CM_Get_DevNode_Status(&devStatus, &devProblemNum, devInfoData.DevInst, 0) != Native.CR_SUCCESS)
-                                {
-                                    status = Status.NOT_INSTALLED;
-                                    goto except;
-                                }
-
-                                if ((devStatus & (Native.DN_DRIVER_LOADED | Native.DN_STARTED)) != 0)
-                                {
-                                    status = Status.OK;
-                                }
-                                else if ((devStatus & Native.DN_HAS_PROBLEM) != 0)
-                                {
-                                    switch (devProblemNum)
-                                    {
-                                        case Native.CM_PROB_NEED_RESTART:
-                                            status = Status.RESTART_REQUIRED;
-                                            break;
-                                        case Native.CM_PROB_DISABLED:
-                                        case Native.CM_PROB_HARDWARE_DISABLED:
-                                            status = Status.DISABLED;
-                                            break;
-                                        case Native.CM_PROB_DISABLED_SERVICE:
-                                            status = Status.DISABLED_SERVICE;
-                                            break;
-                                        default:
-                                            if (devProblemNum == Native.CM_PROB_FAILED_POST_START)
-                                                status = Status.DRIVER_ERROR;
-                                            else
-                                                status = Status.UNKNOWN_PROBLEM;
-                                            break;
-                                    }
-                                }
-                                else
-                                {
-                                    status = Status.UNKNOWN;
+                                    status = GetDeviceStatus(devInfoData.DevInst);
+                                    driverVersion = GetDeviceDriverVersion(devInfoData.DevInst);
+                                    break;
                                 }
                             }
                         }
-
-                    except:
-                        Marshal.FreeHGlobal(propBuffer);
                     }
-
-                    ++deviceIndex;
-                } while (!foundProp);
-
-                if (!foundProp && Marshal.GetLastWin32Error() != 0)
-                    status = Status.NOT_INSTALLED;
+                }
 
                 Native.SetupDiDestroyDeviceInfoList(devInfo);
             }
 
             return status;
         }
-
+     
         public static bool OpenHandle(string guid, out IntPtr handle)
         {
             handle = IntPtr.Zero;
@@ -194,6 +122,40 @@ namespace ParsecVDisplay
             }
         }
 
+        private static Status GetDeviceStatus(uint devInst)
+        {
+            uint devStatus;
+            uint devProblemNum;
+
+            if (Native.CM_Get_DevNode_Status(&devStatus, &devProblemNum, devInst, 0) != Native.CR_SUCCESS)
+                return Status.NOT_INSTALLED;
+
+            if ((devStatus & (Native.DN_DRIVER_LOADED | Native.DN_STARTED)) != 0)
+                return Status.OK;
+
+            if ((devStatus & Native.DN_HAS_PROBLEM) != 0)
+            {
+                switch (devProblemNum)
+                {
+                    case Native.CM_PROB_NEED_RESTART:
+                        return Status.RESTART_REQUIRED;
+
+                    case Native.CM_PROB_DISABLED:
+                    case Native.CM_PROB_HARDWARE_DISABLED:
+                        return Status.DISABLED;
+
+                    case Native.CM_PROB_DISABLED_SERVICE:
+                        return Status.DISABLED_SERVICE;
+
+                    default:
+                        return devProblemNum == Native.CM_PROB_FAILED_POST_START
+                            ? Status.DRIVER_ERROR : Status.UNKNOWN_PROBLEM;
+                }
+            }
+
+            return Status.UNKNOWN;
+        }
+
         public static string GetDeviceDescription(uint devInst)
         {
             uint propType;
@@ -234,19 +196,22 @@ namespace ParsecVDisplay
             return false;
         }
 
+        public static Version GetDeviceDriverVersion(uint devInst)
+        {
+            int length = 64;
+            var buffer = stackalloc byte[length];
+
+            uint propType;
+            Native.CM_Get_DevNode_PropertyW(devInst,
+                ref Native.DEVPROPKEY.Device_DriverVersion, &propType, buffer, &length, 0);
+
+            var vstr = Marshal.PtrToStringUni((IntPtr)buffer);
+            return new Version(vstr);
+        }
+
         public static bool GetDeviceInstance(string deviceId, out uint devInst)
         {
             return Native.CM_Locate_DevNodeA(out devInst, deviceId, 0) == 0;
-        }
-
-        private static Version Parse64BitVersion(ulong value)
-        {
-            var major = (ushort)((value >> 48) & 0xFFFF);
-            var minor = (ushort)((value >> 32) & 0xFFFF);
-            var build = (ushort)((value >> 16) & 0xFFFF);
-            var revision = (ushort)(value & 0xFFFF);
-
-            return new Version(major, minor, build, revision);
         }
 
         public static bool IsValidHandle(this IntPtr handle)
@@ -278,8 +243,6 @@ namespace ParsecVDisplay
 
             public const uint SPDRP_HARDWAREID = 0x1;
 
-            public const uint SPDIT_COMPATDRIVER = 2;
-
             public const uint REG_SZ = 1;
             public const uint REG_MULTI_SZ = 7;
 
@@ -295,15 +258,8 @@ namespace ParsecVDisplay
             public const uint DN_STARTED = 0x00000008; // Is currently configured
             public const uint DN_HAS_PROBLEM = 0x00000400; // Need device installer
 
-            public static bool IsValidHandle(IntPtr handle)
-            {
-                return handle != IntPtr.Zero
-                    && handle != (IntPtr)(-1);
-            }
-
             [DllImport("kernel32.dll", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int lstrlenA(
-                IntPtr lpString);
+            public static extern int lstrlenA(byte* lpString);
 
             [DllImport("kernel32.dll")]
             public static extern IntPtr CreateFileA(
@@ -319,25 +275,6 @@ namespace ParsecVDisplay
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool CloseHandle(IntPtr handle);
 
-            [DllImport("kernel32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool DeviceIoControl(
-                IntPtr device, uint code,
-                void* lpInBuffer, int nInBufferSize,
-                void* lpOutBuffer, int nOutBufferSize,
-                IntPtr lpBytesReturned,
-                ref OVERLAPPED lpOverlapped
-            );
-
-            [DllImport("kernel32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool GetOverlappedResult(
-                IntPtr handle,
-                ref OVERLAPPED lpOverlapped,
-                out uint lpNumberOfBytesTransferred,
-                [MarshalAs(UnmanagedType.Bool)] bool bWait
-            );
-
             [StructLayout(LayoutKind.Sequential)]
             public struct OVERLAPPED
             {
@@ -345,15 +282,6 @@ namespace ParsecVDisplay
                 public IntPtr InternalHigh;
                 public IntPtr Pointer;
                 public IntPtr hEvent;
-            }
-
-            [StructLayout(LayoutKind.Sequential)]
-            public struct RECT
-            {
-                public int left;
-                public int top;
-                public int right;
-                public int bottom;
             }
 
             [StructLayout(LayoutKind.Sequential)]
@@ -381,20 +309,7 @@ namespace ParsecVDisplay
                 public char DevicePath;
             }
 
-            [StructLayout(LayoutKind.Sequential)]
-            public struct SP_DRVINFO_DATA_V2_A
-            {
-                public int cbSize;
-                public uint DriverType;
-                private IntPtr Reserved;
-                public fixed byte Description[256];
-                public fixed byte MfgName[256];
-                public fixed byte ProviderName[256];
-                public ulong DriverDate;
-                public ulong DriverVersion;
-            }
-
-            [DllImport("setupapi.dll")]
+            [DllImport("setupapi.dll", SetLastError = true)]
             public static extern IntPtr SetupDiGetClassDevsA(
                 ref Guid ClassGuid,
                 void* Enumerator,
@@ -432,7 +347,7 @@ namespace ParsecVDisplay
                 uint MemberIndex,
                 SP_DEVINFO_DATA* DeviceInfoData);
 
-            [DllImport("setupapi.dll")]
+            [DllImport("setupapi.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool SetupDiGetDeviceRegistryPropertyA(
                 IntPtr DeviceInfoSet,
@@ -442,22 +357,6 @@ namespace ParsecVDisplay
                 void* PropertyBuffer,
                 int PropertyBufferSize,
                 int* RequiredSize);
-
-            [DllImport("setupapi.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool SetupDiBuildDriverInfoList(
-              IntPtr DeviceInfoSet,
-              SP_DEVINFO_DATA* DeviceInfoData,
-              uint DriverType);
-
-            [DllImport("setupapi.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool SetupDiEnumDriverInfoA(
-                IntPtr DeviceInfoSet,
-                SP_DEVINFO_DATA* DeviceInfoData,
-                uint DriverType,
-                uint MemberIndex,
-                SP_DRVINFO_DATA_V2_A* DriverInfoData);
 
             [DllImport("setupapi.dll")]
             public static extern uint CM_Get_DevNode_Status(
@@ -488,6 +387,12 @@ namespace ParsecVDisplay
                 {
                     fmtid = Guid.Parse("{A45C254E-DF1C-4EFD-8020-67D146A850E0}"),
                     pid = 2
+                };
+
+                public static DEVPROPKEY Device_DriverVersion = new DEVPROPKEY
+                {
+                    fmtid = Guid.Parse("{A8B865DD-2E3D-4094-AD97-E593A70C75D6}"),
+                    pid = 3
                 };
             }
 

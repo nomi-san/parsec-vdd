@@ -22,6 +22,8 @@ namespace ParsecVDisplay.Vdd
             UpdateThread.Priority = ThreadPriority.Highest;
 
             StatusThread = new Thread(() => StatusLoop(Cancellation.Token));
+            StatusThread.IsBackground = true;
+            StatusThread.Priority = ThreadPriority.BelowNormal;
 
             UpdateThread.Start();
             StatusThread.Start();
@@ -59,7 +61,7 @@ namespace ParsecVDisplay.Vdd
                 if (cancellation.IsCancellationRequested)
                     break;
 
-                if (sw.ElapsedMilliseconds >= 500)
+                if (sw.ElapsedMilliseconds >= 2000)
                 {
                     var status = QueryStatus(out var _);
                     unsafe
