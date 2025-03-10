@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -115,6 +116,24 @@ namespace ParsecVDisplay.Components
                     });
                 }
 
+                // Handle removed custom resolution
+                if (SelectedResolution == null)
+                {
+                    SelectedResolution = new Display.ModeSet
+                    {
+                        Width = Display.CurrentMode.Width,
+                        Height = Display.CurrentMode.Height,
+                        RefreshRates = new List<int> { Display.CurrentMode.Hz }
+                    };
+
+                    xResolution.Items.Add(new MenuItem
+                    {
+                        IsCheckable = false,
+                        IsChecked = true,
+                        Header = $"{SelectedResolution.Width} × {SelectedResolution.Height} [UnSupported]",
+                    });
+                }
+
                 UpdateRefreshRates();
 
                 int oridentationIndex = (int)Display.CurrentOrientation;
@@ -124,12 +143,18 @@ namespace ParsecVDisplay.Components
 
         private void ChangeResolution(object sender, RoutedEventArgs e)
         {
-            if (Active && e.OriginalSource != null)
+            if (Active && e.OriginalSource != null && e.OriginalSource is MenuItem)
             {
+                var srcItem = e.OriginalSource as MenuItem;
+                if (srcItem.Header.ToString().Contains("[UnSupported]"))
+                {
+                    return;
+                }
+
                 for (int i = 0; i < xResolution.Items.Count; i++)
                 {
                     var item = xResolution.Items[i] as MenuItem;
-                    if (item == e.OriginalSource)
+                    if (item == srcItem)
                     {
                         item.IsChecked = true;
                         SelectedResolution = Display.SupportedResolutions[i];
