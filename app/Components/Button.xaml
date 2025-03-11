@@ -6,38 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:local="clr-namespace:ParsecVDisplay.Components"
     mc:Ignorable="d" 
-    d:DesignHeight="120" d:DesignWidth="216"
-    d:Background="Black"
+    d:DesignHeight="40" d:DesignWidth="120"
 >
-    <Border BorderThickness="1" BorderBrush="#FFF">
-        <Button Foreground="White" Click="Button_Click">
-            <Button.Content>
-                <ContentPresenter Content="{Binding Children}" />
-            </Button.Content>
-            <Button.Style>
-                <Style TargetType="{x:Type Button}">
-                    <Setter Property="Background" Value="#1FFF"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type Button}">
-                                <Border Background="{TemplateBinding Background}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#4FFF"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#8FFF"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
-    </Border>
     <UserControl.Style>
         <Style TargetType="{x:Type UserControl}">
             <Style.Triggers>
@@ -50,4 +20,31 @@
             </Style.Triggers>
         </Style>
     </UserControl.Style>
+
+    <Button Foreground="White" Click="Button_Click">
+        <Button.Style>
+            <Style TargetType="{x:Type Button}">
+                <Setter Property="Background" Value="#1FFF" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border Background="{TemplateBinding Background}" BorderThickness="1" BorderBrush="#6FFF" CornerRadius="{DynamicResource ButtonCornerRadius}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#2FFF"/>
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter Property="Background" Value="#4FFF"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Button.Style>
+        <ContentPresenter Content="{Binding Content}" />
+    </Button>
+    
 </UserControl>

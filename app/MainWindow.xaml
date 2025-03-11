@@ -32,60 +32,29 @@
         </WrapPanel>
 
         <StackPanel x:Name="xButtons" Margin="0,0,25,25"  Orientation="Horizontal" Height="36" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-            <components:Button FontSize="14" Width="40" Click="OpenDisplaySettings">
-                <components:Button.Children>
-                    <Image Source="Resources/settings.png" Width="24" Height="24" />
-                </components:Button.Children>
+            <components:Button Width="42" Click="OpenDisplaySettings">
+                <Image Source="Resources/settings.png" Width="24" Height="24" />
             </components:Button>
-
-            <components:Button FontSize="14" Width="40" Margin="10,0,0,0" Click="SyncSettings">
-                <components:Button.Children>
-                    <Image Source="Resources/sync.png" Width="24" Height="24" />
-                </components:Button.Children>
+            <components:Button Width="42" Margin="10,0,0,0" Click="SyncSettings">
+                <Image Source="Resources/sync.png" Width="24" Height="24" />
             </components:Button>
 
             <components:Button Click="OpenCustom" FontSize="14" Margin="10,0,0,0" Width="100">
-                <components:Button.Children>
-                    <TextBlock Text="{DynamicResource t_custom}" />
-                </components:Button.Children>
+                <TextBlock Text="{DynamicResource t_custom}" />
             </components:Button>
             <components:Button x:Name="xAdd" Click="AddDisplay" FontSize="14" Margin="25,0,0,0" Width="120">
-                <components:Button.Children>
-                    <TextBlock Text="{DynamicResource t_add_display}" />
-                </components:Button.Children>
+                <TextBlock Text="{DynamicResource t_add_display}" />
             </components:Button>
         </StackPanel>
 
         <StackPanel Margin="25,0,0,20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="230">
             <StackPanel Orientation="Horizontal">
                 <Image Source="./Resources/icon.ico" Width="20" Height="18" Margin="0,0,5,0" />
-                <Label x:Name="xDriver" Content="Parsec Virtual Display" FontSize="14" Cursor="Hand" MouseDown="QueryStatus">
-                    <Label.Style>
-                        <Style TargetType="Label">
-                            <Setter Property="Foreground" Value="White" />
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="#66b3ff" />
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Label.Style>
-                </Label>
+                <Label x:Name="xDriver" Content="Parsec Virtual Display" Tag="link" FontSize="14" Cursor="Hand" MouseDown="QueryStatus" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Image Source="Resources/github.png" Width="20" Height="20" Margin="0,0,5,0" />
-                <Label Content="@github/parsec-vdd" FontSize="14" Cursor="Hand" MouseDown="OpenRepoLink">
-                    <Label.Style>
-                        <Style TargetType="Label">
-                            <Setter Property="Foreground" Value="White" />
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="#66b3ff" />
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Label.Style>
-                </Label>
+                <Label Content="@github/parsec-vdd" Tag="link" FontSize="14" Cursor="Hand" MouseDown="OpenRepoLink" />
             </StackPanel>
         </StackPanel>
 

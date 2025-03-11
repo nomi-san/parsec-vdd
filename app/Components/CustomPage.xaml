@@ -89,17 +89,15 @@
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0,0,25,25">
             <local:Button Click="ApplyChanges" Width="120" Height="36" Foreground="White">
-                <local:Button.Children>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="auto" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <Image Source="../Resources/admin.png" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{DynamicResource t_apply}" Margin="6,0,0,0" />
-                    </Grid>
-                </local:Button.Children>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="../Resources/admin.png" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{DynamicResource t_apply}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                </Grid>
             </local:Button>
         </StackPanel>
     </Grid>

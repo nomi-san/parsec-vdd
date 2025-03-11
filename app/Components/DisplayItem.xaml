@@ -6,24 +6,31 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:local="clr-namespace:ParsecVDisplay.Components"
     mc:Ignorable="d" 
-    Width="160" Height="100"
+    Width="180" Height="110"
     d:Background="Black"
 >
-    <Grid Margin="5" MouseDown="UserControl_MouseDown" MouseUp="UserControl_MouseUp">
-        <Rectangle StrokeThickness="2" Stroke="#FFF" />
-        <TextBlock x:Name="xDeg" d:Text="90°" Foreground="White" Margin="8,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
-        <TextBlock Text="{Binding DisplayNum}" d:Text="1" FontSize="24" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,5" />
-        <TextBlock Grid.Row="1" Text="{Binding DisplayMode}" d:Text="1920 x 1080 @ 60 Hz" FontSize="12" Foreground="White" TextAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8" />
-        <Grid.Style>
-            <Style TargetType="{x:Type Grid}">
+    <Border Margin="4"
+            MouseDown="UserControl_MouseDown" MouseUp="UserControl_MouseUp"
+            BorderThickness="2" CornerRadius="{DynamicResource DisplayCornerRadius}">
+        <Border.Style>
+            <Style TargetType="{x:Type Border}">
+                <Setter Property="Background" Value="#1FFF"/>
+                <Setter Property="BorderBrush" Value="#8FFF"/>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="#3FFF"/>
+                        <Setter Property="BorderBrush" Value="#AFFF"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
-        </Grid.Style>
-    </Grid>
+        </Border.Style>
+        <Grid>
+            <TextBlock x:Name="xDeg" d:Text="90°" Foreground="White" Margin="8,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <TextBlock Text="{Binding DisplayNum}" d:Text="1" FontSize="24" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,5" />
+            <TextBlock Grid.Row="1" Text="{Binding DisplayMode}" d:Text="1920 x 1080 @ 60 Hz" FontSize="12" Foreground="White" TextAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8" />
+        </Grid>
+    </Border>
+
     <UserControl.ContextMenu>
         <ContextMenu>
             <MenuItem Header="{Binding DisplayName}" />
@@ -53,4 +60,5 @@
             <MenuItem Click="RemoveDisplay" Header="{DynamicResource t_remove}" />
         </ContextMenu>
     </UserControl.ContextMenu>
+    
 </UserControl>

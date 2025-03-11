@@ -7,7 +7,10 @@ namespace ParsecVDisplay.Components
     public partial class Button : UserControl
     {
         public event EventHandler Click;
-        public object Children { get; set; }
+        public new object Content { get; set; }
+
+        public static readonly new DependencyProperty ContentProperty =
+            DependencyProperty.Register("Content", typeof(object), typeof(Button), new PropertyMetadata(null));
 
         public Button()
         {

@@ -9,6 +9,25 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Languages/en.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <CornerRadius x:Key="ButtonCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="DisplayCornerRadius">8</CornerRadius>
+
+            <Style TargetType="Label">
+                <Style.Triggers>
+                    <Trigger Property="Tag" Value="link">
+                        <Setter Property="Foreground" Value="White" />
+                    </Trigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="Tag" Value="link" />
+                            <Condition Property="IsMouseOver" Value="True" />
+                        </MultiTrigger.Conditions>
+                        <Setter Property="Foreground" Value="#66b3ff" />
+                    </MultiTrigger>
+                </Style.Triggers>
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

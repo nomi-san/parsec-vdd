@@ -257,9 +257,9 @@ namespace ParsecVDisplay
             var caption = $"{Program.AppName} v{Program.AppVersion}";
 
             MessageBox.Show(Owner,
-                $"{Vdd.Core.ADAPTER}\n" +
-                $"Version: {version}\n" +
-                $"{App.GetTranslation("t_msg_driver_status")}: {status}",
+                $"{Vdd.Core.ADAPTER}\n\n" +
+                $"- Version: {version}\n" +
+                $"- {App.GetTranslation("t_msg_driver_status")}: {status}",
                 caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
