@@ -18,7 +18,7 @@ namespace ParsecVDisplay.Vdd
             Cancellation = new CancellationTokenSource();
 
             UpdateThread = new Thread(() => UpdateLoop(Cancellation.Token));
-            UpdateThread.IsBackground = false;
+            UpdateThread.IsBackground = true;
             UpdateThread.Priority = ThreadPriority.Highest;
 
             StatusThread = new Thread(() => StatusLoop(Cancellation.Token));
@@ -54,6 +54,7 @@ namespace ParsecVDisplay.Vdd
 
         static void StatusLoop(CancellationToken cancellation)
         {
+            bool first = true;
             var sw = Stopwatch.StartNew();
 
             while (true)
@@ -61,8 +62,10 @@ namespace ParsecVDisplay.Vdd
                 if (cancellation.IsCancellationRequested)
                     break;
 
-                if (sw.ElapsedMilliseconds >= 2000)
+                if (first || sw.ElapsedMilliseconds >= 2000)
                 {
+                    first = false;
+
                     var status = QueryStatus(out var _);
                     unsafe
                     {

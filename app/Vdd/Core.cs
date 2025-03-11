@@ -151,13 +151,25 @@ namespace ParsecVDisplay.Vdd
                 int outputLength = result != null ? sizeof(int) : 0;
                 Overlapped.hEvent = Native.CreateEvent(null, false, false, null);
 
-                Native.DeviceIoControl(handle, (uint)code,
+                bool sent = Native.DeviceIoControl(handle, (uint)code,
                     buffer, InBuffer.Length,
                     result, outputLength,
                     null, ref Overlapped);
 
+#if DEBUG
+                if (code != IoCtlCode.IOCTL_UPDATE)
+                    Console.WriteLine("[D] IoControl: {0}\n    Sent: {1}, error: {2}", code, sent, DumpErrorCode(Marshal.GetLastWin32Error()));
+#endif
+                if (!sent && Marshal.GetLastWin32Error() == 0x6)
+                    return false;
+
                 bool success = Native.GetOverlappedResultEx(handle, ref Overlapped,
                     out var NumberOfBytesTransferred, timeout, false);
+
+#if DEBUG
+                if (code != IoCtlCode.IOCTL_UPDATE)
+                    Console.WriteLine("    OverlappedResult: {0}, error: {1}", success, DumpErrorCode(Marshal.GetLastWin32Error()));
+#endif
 
                 if (Overlapped.hEvent != IntPtr.Zero)
                     Native.CloseHandle(Overlapped.hEvent);
@@ -178,10 +190,24 @@ namespace ParsecVDisplay.Vdd
             result = output;
             return success;
         }
+
+        private static string DumpErrorCode(int code)
+        {
+            string ret = code.ToString("X");
+
+            if (code == 0)
+                ret += " (SUCCESS)";
+            else if (code == 0x6)
+                ret += " (ERROR_INVALID_HANDLE)";
+            else if (code == 0x3E5)
+                ret += " (ERROR_IO_PENDING)";
+
+            return ret;
+        }
         
         private static class Native
         {
-            [DllImport("kernel32.dll")]
+            [DllImport("kernel32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool DeviceIoControl(
                 IntPtr device, uint code,
@@ -191,7 +217,7 @@ namespace ParsecVDisplay.Vdd
                 ref OVERLAPPED lpOverlapped
             );
 
-            [DllImport("kernel32.dll")]
+            [DllImport("kernel32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool GetOverlappedResultEx(
                 IntPtr handle,
