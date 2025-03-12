@@ -48,6 +48,12 @@ namespace ParsecVDisplay
             set => SetInt(nameof(SkipDriverCheck), value ? 1 : 0);
         }
 
+        public static int MirroringFPS
+        {
+            get => GetInt(nameof(MirroringFPS), 30);
+            set => SetInt(nameof(MirroringFPS), value);
+        }
+
         #region Registry data store
 
         static string GetString(string key, string @default)

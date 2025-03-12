@@ -11,9 +11,6 @@ namespace ParsecVDisplay
 {
     public class MirrorWindow : Form
     {
-        const double FPS = 60.0;
-        const double FRAME_TIME = 1000.0 / FPS;
-
         private bool IsMirroring;
         private Thread MirrorThread;
         private TaskCompletionSource<IntPtr> WhenHwnd;
@@ -56,13 +53,15 @@ namespace ParsecVDisplay
                 IsMirroring = true;
                 Text = $"Mirror - {displayDevice}";
 
-                MirrorThread = new Thread(() => MirrorWorker(displayDevice));
+                int fps = Config.MirroringFPS;
+
+                MirrorThread = new Thread(() => MirrorWorker(displayDevice, fps));
                 MirrorThread.IsBackground = true;
                 MirrorThread.Start();
             }
         }
 
-        private void MirrorWorker(string displayDevice)
+        private void MirrorWorker(string displayDevice, int fps)
         {
             var hwnd = WhenHwnd.Task.Result;
 
@@ -77,12 +76,14 @@ namespace ParsecVDisplay
                 var stopwatch = Stopwatch.StartNew();
                 double previousTime = stopwatch.Elapsed.TotalMilliseconds;
 
+                double frameTime = 1000.0 / fps;
+
                 while (IsMirroring)
                 {
                     double currentTime = stopwatch.Elapsed.TotalMilliseconds;
                     double elapsedTime = currentTime - previousTime;
 
-                    if (elapsedTime >= FRAME_TIME)
+                    if (elapsedTime >= frameTime)
                     {
                         devmode.dmSize = devmodeSize;
 
@@ -105,7 +106,7 @@ namespace ParsecVDisplay
                     }
                     else
                     {
-                        int sleepTime = (int)(FRAME_TIME - elapsedTime);
+                        int sleepTime = (int)(frameTime - elapsedTime);
                         if (sleepTime > 0)
                             Thread.Sleep(sleepTime);
                     }
@@ -126,7 +127,7 @@ namespace ParsecVDisplay
             public int Height;
         }
 
-        private void DrawBackground(IntPtr dc, IntPtr brush, ref Size client, ref Viewport vp)
+        private static void DrawBackground(IntPtr dc, IntPtr brush, ref Size client, ref Viewport vp)
         {
             var rect = default(Rectangle);
 
@@ -178,7 +179,7 @@ namespace ParsecVDisplay
             }
         }
 
-        private void DrawScreen(IntPtr dc, IntPtr dcSrc, ref Viewport vp, ref Rectangle screen)
+        private static void DrawScreen(IntPtr dc, IntPtr dcSrc, ref Viewport vp, ref Rectangle screen)
         {
             // set scaling mode
             Native.SetStretchBltMode(dc, /*HALFTONE*/ 4);
@@ -193,7 +194,7 @@ namespace ParsecVDisplay
             );
         }
 
-        private void DrawCursor(IntPtr dc, ref Viewport vp, ref Rectangle screen)
+        private static void DrawCursor(IntPtr dc, ref Viewport vp, ref Rectangle screen)
         {
             var cursor = default(Native.CURSORINFO);
             cursor.cbSize = Marshal.SizeOf<Native.CURSORINFO>();
