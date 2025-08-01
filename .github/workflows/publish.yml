@@ -1,0 +1,80 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  publish:
+    needs: build
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Sign the build
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
+          project-slug: parsec-vdd
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: zipped-exe
+          github-artifact-id: "${{ needs.build.outputs.artifact-id }}"
+          wait-for-completion: true
+          output-artifact-directory: bin
+          parameters: |
+            Version: "${{ github.ref_name }}"
+
+      - name: Fetch distro branch
+        uses: actions/checkout@v4
+        with:
+          ref: distro
+          fetch-depth: 0
+          path: distro
+
+      - name: Make setup installer & portable app
+        run: |
+          mkdir distro\publish
+          Compress-Archive -Path bin\* -DestinationPath distro\publish\portable.zip -Force
+          cd distro
+          & "$env:ProgramFiles (x86)\Inno Setup 6\iscc.exe" setup.iss
+
+      - name: Upload installer output
+        uses: actions/upload-artifact@v4
+        id: artifact-upload-installer-step
+        with:
+          name: setup-installer
+          path: |
+            distro/out/*.exe
+
+      - name: Sign the installer
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
+          project-slug: parsec-vdd
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: zipped-exe
+          github-artifact-id: "${{steps.artifact-upload-installer-step.outputs.artifact-id}}"
+          wait-for-completion: true
+          output-artifact-directory: distro/publish
+          parameters: |
+            Version: "${{ github.ref_name }}"
+
+      - name: Delete unwanted artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: "*"
+
+      - name: Upload signed output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.artifact-name }}
+          path: distro/publish/
