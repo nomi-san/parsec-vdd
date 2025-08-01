@@ -1,21 +1,32 @@
 name: Build
 
 on:
-  # push:
   workflow_dispatch:
     inputs:
       net480:
         description: Target .NET 4.8
         type: boolean
         default: false
-      release:
-        description: Release a distro
+      debug:
+        description: Build in debug mode
         type: boolean
         default: false
+
+  workflow_call:
+    outputs:
+      artifact-id:
+        description: Uploaded artifact ID
+        value: ${{ jobs.build.outputs.artifact-id }}
+      artifact-name:
+        description: Uploaded artifact name
+        value: ${{ jobs.build.outputs.artifact-name }}
 
 jobs:
   build:
     runs-on: windows-2019
+    outputs:
+      artifact-id: ${{ steps.artifact-upload-step.outputs.artifact-id }}
+      artifact-name: ${{ steps.prepare-output-step.outputs.artifact-name }}
 
     steps:
       - name: Checkout repo
@@ -42,85 +53,21 @@ jobs:
         run: |
           cd app
           msbuild ParsecVDisplay.csproj /t:Restore
-          msbuild ParsecVDisplay.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU
-          echo "${{ env.APP_VERSION }}+${{ env.SHORT_SHA }}" >> bin\version
-          echo "ARTIFACT_NAME=ParsecVDisplay-v${{ env.APP_VERSION }}-${{ env.SHORT_SHA }}" >> $env:GITHUB_ENV
+          msbuild ParsecVDisplay.csproj /t:Build /p:Configuration=${{ inputs.debug && 'Debug' || 'Release' }} /p:Platform=AnyCPU
+
+      - name: Prepare build output
+        id: prepare-output-step
+        run: |
+          echo "${{ env.APP_VERSION }}+${{ env.SHORT_SHA }}" >> app\bin\version
+          echo "artifact-name=ParsecVDisplay-v${{ env.APP_VERSION }}-${{ env.SHORT_SHA }}" >> $env:GITHUB_OUTPUT
 
       - name: Upload build output
         uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:
-          name: ${{ env.ARTIFACT_NAME }}
+          name: ${{ steps.prepare-output-step.outputs.artifact-name }}
           path: |
             app/bin/version
             app/bin/vdd.cmd
             app/bin/ParsecVDisplay.exe
             app/bin/ParsecVDisplay.exe.config
-
-      - name: Sign the build
-        if: ${{ inputs.release }}
-        uses: signpath/github-action-submit-signing-request@v1
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
-          project-slug: parsec-vdd
-          signing-policy-slug: release-signing
-          artifact-configuration-slug: zipped-exe
-          github-artifact-id: "${{steps.artifact-upload-step.outputs.artifact-id}}"
-          wait-for-completion: true
-          output-artifact-directory: bin
-          parameters: |
-            Version: "${{ github.ref_name }}"
-
-      - name: Fetch distro branch
-        if: ${{ inputs.release }}
-        uses: actions/checkout@v4
-        with:
-          ref: distro
-          fetch-depth: 0
-          path: distro
-
-      - name: Make setup installer & portable app
-        if: ${{ inputs.release }}
-        run: |
-          mkdir distro\final
-          Compress-Archive -Path bin\* -DestinationPath distro\final\ParsecVDisplay-v${{ env.APP_VERSION }}-portable.zip -Force
-          cd distro
-          & "$env:ProgramFiles (x86)\Inno Setup 6\iscc.exe" setup.iss
-
-      - name: Upload installer output
-        if: ${{ inputs.release }}
-        uses: actions/upload-artifact@v4
-        id: artifact-upload-installer-step
-        with:
-          name: setup-installer
-          path: |
-            distro/out/*.exe
-
-      - name: Sign the installer
-        if: ${{ inputs.release }}
-        uses: signpath/github-action-submit-signing-request@v1
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
-          project-slug: parsec-vdd
-          signing-policy-slug: release-signing
-          artifact-configuration-slug: zipped-exe
-          github-artifact-id: "${{steps.artifact-upload-installer-step.outputs.artifact-id}}"
-          wait-for-completion: true
-          output-artifact-directory: distro/final
-          parameters: |
-            Version: "${{ github.ref_name }}"
-
-      - name: Delete unwanted artifacts
-        if: ${{ inputs.release }}
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: '*'
-
-      - name: Upload signed output
-        if: ${{ inputs.release }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: distro/final/
