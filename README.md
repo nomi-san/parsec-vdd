@@ -86,6 +86,8 @@ flowchart LR
 
 ### Using the code
 
+For detailed instructions and usage examples, refer to the [VDD_LIBRARY_USAGE](./docs/VDD_LIBRARY_USAGE.md).
+
 - The core API is designed as single C/C++ header that can be added to any
   project, 👉 [core/parsec-vdd.h](./core/parsec-vdd.h)
 - There is also a simple demo program, 👉 [core/vdd-demo.cc](./core/vdd-demo.cc)
