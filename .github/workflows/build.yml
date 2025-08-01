@@ -23,7 +23,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-2022
     outputs:
       artifact-id: ${{ steps.artifact-upload-step.outputs.artifact-id }}
       artifact-name: ${{ steps.prepare-output-step.outputs.artifact-name }}
