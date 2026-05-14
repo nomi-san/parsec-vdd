@@ -48,6 +48,10 @@ namespace ParsecVDisplay
 
         public void MirrorScreen(string displayDevice)
         {
+            // Phantom (PnP-only) displays have no GDI handle; nothing to mirror.
+            if (string.IsNullOrEmpty(displayDevice))
+                return;
+
             if (!IsMirroring)
             {
                 IsMirroring = true;

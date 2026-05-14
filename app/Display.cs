@@ -291,14 +291,20 @@ namespace ParsecVDisplay
 
         public void TakeScreenshot(string saveFile)
         {
+            if (string.IsNullOrEmpty(DeviceName))
+                return;
+
             var devMode = new Native.DEVMODE();
             devMode.dmSize = (short)Marshal.SizeOf(typeof(Native.DEVMODE));
-            Native.EnumDisplaySettings(DeviceName, -1, ref devMode);
+            if (!Native.EnumDisplaySettings(DeviceName, -1, ref devMode))
+                return;
 
             int x = devMode.dmPositionX;
             int y = devMode.dmPositionY;
             int width = devMode.dmPelsWidth;
             int height = devMode.dmPelsHeight;
+            if (width <= 0 || height <= 0)
+                return;
 
             using (var bmp = new Bitmap(width, height))
             using (var gfx = Graphics.FromImage(bmp))
@@ -386,6 +392,35 @@ namespace ParsecVDisplay
                 }
             }
 
+            // Supplement with PnP-tree enumeration for Parsec monitors the GDI
+            // pass didn't see. Under RDP, EnumDisplayDevices is bound to the
+            // RDP session's window station and is blind to the console session's
+            // virtual displays — but SetupDi walks the kernel device tree and
+            // works regardless. These are added with Active=false (no GDI
+            // handle → can't ChangeDisplaySettings), so the UI shows them as
+            // [offline] but the count is correct.
+            const string CLASS_MONITOR_GUID = "{4d36e96e-e325-11ce-bfc1-08002be10318}";
+            foreach (var dev in Device.EnumerateClass(CLASS_MONITOR_GUID))
+            {
+                if (dev.InstanceId.IndexOf("PSCCDD0", StringComparison.OrdinalIgnoreCase) < 0)
+                    continue;
+                if (displayMap.ContainsKey(dev.InstanceId))
+                    continue;
+
+                var phantom = new Display
+                {
+                    Active = false,
+                    Address = ParseDisplayAddress(dev.InstanceId),
+                    DeviceName = string.Empty,
+                    DisplayName = "PSCCDD0",
+                };
+
+                if (Device.GetParentDeviceInstance(dev.DevInst, out uint parentInst, out phantom.AdapterInstance))
+                    phantom.AdapterArrival = Device.GetDeviceLastArrival(parentInst);
+
+                displayMap.Add(dev.InstanceId, phantom);
+            }
+
             var displays = displayMap.Values.ToList();
 
             // Sort displays by adapter arrival (older adapter → lower number),
@@ -395,7 +430,7 @@ namespace ParsecVDisplay
             displays.Sort((a, b) =>
             {
                 if (a.AdapterInstance == b.AdapterInstance)
-                    return a.DeviceName.CompareTo(b.DeviceName);
+                    return a.Address.CompareTo(b.Address);
                 return a.AdapterArrival.CompareTo(b.AdapterArrival);
             });
 

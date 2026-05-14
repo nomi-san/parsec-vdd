@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -202,6 +203,58 @@ namespace ParsecVDisplay
             return Native.CM_Locate_DevNodeA(out devInst, deviceId, 0) == 0;
         }
 
+        public struct ClassDevice
+        {
+            public string InstanceId;
+            public uint DevInst;
+        }
+
+        /// <summary>
+        /// Enumerate present devices of a given setup class. Returns the device
+        /// instance ID (e.g. "DISPLAY\PSCCDD0\5&amp;abc&amp;UID256") and the
+        /// CM devnode handle for each. This goes through the PnP device tree
+        /// rather than GDI, so it is session-independent — useful when the app
+        /// runs inside an RDP session and EnumDisplayDevices is blind to the
+        /// console session's displays.
+        /// </summary>
+        public static List<ClassDevice> EnumerateClass(string classGuid)
+        {
+            var list = new List<ClassDevice>();
+
+            var guid = Guid.Parse(classGuid);
+            var devInfo = Native.SetupDiGetClassDevsA(ref guid, null, null, Native.DIGCF_PRESENT);
+            if (!devInfo.IsValidHandle())
+                return list;
+
+            try
+            {
+                var devInfoData = new Native.SP_DEVINFO_DATA();
+                devInfoData.cbSize = sizeof(Native.SP_DEVINFO_DATA);
+
+                const int bufSize = Native.MAX_DEVICE_ID_LEN;
+                byte* buf = stackalloc byte[bufSize];
+
+                for (uint i = 0; Native.SetupDiEnumDeviceInfo(devInfo, i, &devInfoData); i++)
+                {
+                    int required = 0;
+                    if (Native.SetupDiGetDeviceInstanceIdA(devInfo, &devInfoData, buf, bufSize, &required))
+                    {
+                        list.Add(new ClassDevice
+                        {
+                            InstanceId = Marshal.PtrToStringAnsi((IntPtr)buf),
+                            DevInst = devInfoData.DevInst,
+                        });
+                    }
+                }
+            }
+            finally
+            {
+                Native.SetupDiDestroyDeviceInfoList(devInfo);
+            }
+
+            return list;
+        }
+
         public static bool IsValidHandle(this IntPtr handle)
         {
             return handle != IntPtr.Zero
@@ -344,6 +397,15 @@ namespace ParsecVDisplay
                 uint* PropertyRegDataType,
                 void* PropertyBuffer,
                 int PropertyBufferSize,
+                int* RequiredSize);
+
+            [DllImport("setupapi.dll", SetLastError = true, EntryPoint = "SetupDiGetDeviceInstanceIdA", CharSet = CharSet.Ansi)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool SetupDiGetDeviceInstanceIdA(
+                IntPtr DeviceInfoSet,
+                SP_DEVINFO_DATA* DeviceInfoData,
+                byte* DeviceInstanceId,
+                int DeviceInstanceIdSize,
                 int* RequiredSize);
 
             [DllImport("setupapi.dll")]
