@@ -156,18 +156,6 @@ namespace ParsecVDisplay
             return Status.UNKNOWN;
         }
 
-        public static string GetDeviceDescription(uint devInst)
-        {
-            uint propType;
-            int length = 128 * sizeof(ushort);
-            var buffer = stackalloc byte[length];
-
-            Native.CM_Get_DevNode_PropertyW(devInst,
-                ref Native.DEVPROPKEY.Device_DeviceDesc, &propType, buffer, &length, 0);
-
-            return Marshal.PtrToStringUni((IntPtr)buffer);
-        }
-
         public static DateTime GetDeviceLastArrival(uint devInst)
         {
             uint propType;
@@ -381,12 +369,6 @@ namespace ParsecVDisplay
                 {
                     fmtid = Guid.Parse("{83DA6326-97A6-4088-9453-A1923F573B29}"),
                     pid = 102,
-                };
-
-                public static DEVPROPKEY Device_DeviceDesc = new DEVPROPKEY
-                {
-                    fmtid = Guid.Parse("{A45C254E-DF1C-4EFD-8020-67D146A850E0}"),
-                    pid = 2
                 };
 
                 public static DEVPROPKEY Device_DriverVersion = new DEVPROPKEY
