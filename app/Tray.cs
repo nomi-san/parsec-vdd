@@ -37,6 +37,16 @@ namespace ParsecVDisplay
         // re-trigger us while we're still showing the error MessageBox).
         int InAddDisplay;
 
+        // Driver index of the fallback display we auto-added because the host
+        // had no physical display. -1 = not active. Reset on suspend.
+        int FallbackDriverIndex = -1;
+
+        // 1-second debounce — Windows fires multiple DisplaySettingsChanged
+        // events in a storm during display changes; we only act on the trailing
+        // edge so we don't flap displays during transitions.
+        System.Threading.Timer FallbackTimer;
+        const int FallbackEvaluateDelayMs = 1000;
+
         //  ParsecVDisplay v{version}
         //  ______________
         //  Add display
@@ -119,9 +129,13 @@ namespace ParsecVDisplay
             TrayIcon.DoubleClick += delegate { ShowApp(); };
             TrayIcon.Visible = true;
 
+            FallbackTimer = new System.Threading.Timer(EvaluateFallback,
+                null, Timeout.Infinite, Timeout.Infinite);
+
             SystemEvents.SessionEnding += SaveDisplayState;
             SystemEvents.SessionSwitch += SaveDisplayState;
             SystemEvents.DisplaySettingsChanged += SaveDisplayState;
+            SystemEvents.DisplaySettingsChanged += ScheduleFallbackEvaluation;
             PowerEvents.PowerModeChanged += OnPowerModeChanged;
 
             // Restore previously-saved displays as soon as the driver handle is ready.
@@ -293,6 +307,46 @@ namespace ParsecVDisplay
                 Display.CommitChanges();
         }
 
+        void ScheduleFallbackEvaluation(object sender, EventArgs e)
+        {
+            FallbackTimer?.Change(FallbackEvaluateDelayMs, Timeout.Infinite);
+        }
+
+        void EvaluateFallback(object state)
+        {
+            if (!Config.FallbackDisplay) return;
+            if (Vdd.Controller.IsSuspended) return;
+
+            int physical = Vdd.Core.CountPhysicalDisplays();
+
+            // Drop a stale tracked index if the user removed the display manually
+            if (FallbackDriverIndex >= 0)
+            {
+                var parsecs = Vdd.Core.GetDisplays();
+                bool stillThere = false;
+                foreach (var d in parsecs)
+                    if (d.DisplayIndex == FallbackDriverIndex) { stillThere = true; break; }
+                if (!stillThere)
+                    FallbackDriverIndex = -1;
+            }
+
+            if (physical == 0 && FallbackDriverIndex < 0)
+            {
+                try
+                {
+                    Vdd.Controller.AddDisplay(out int idx);
+                    FallbackDriverIndex = idx;
+                }
+                catch { }
+            }
+            else if (physical > 0 && FallbackDriverIndex >= 0)
+            {
+                try { Vdd.Controller.RemoveDisplay(FallbackDriverIndex); }
+                catch { }
+                FallbackDriverIndex = -1;
+            }
+        }
+
         void OnPowerModeChanged(object sender, PowerEvents.PowerBroadcastType type)
         {
             switch (type)
@@ -300,6 +354,9 @@ namespace ParsecVDisplay
                 case PowerEvents.PowerBroadcastType.PBT_APMSUSPEND:
                 case PowerEvents.PowerBroadcastType.PBT_APMSTANDBY:
                     Interlocked.Exchange(ref ResumeHandled, 0);
+                    // The display we tracked is about to be unplugged; the
+                    // resume path will re-evaluate fallback from scratch.
+                    FallbackDriverIndex = -1;
                     try { SuspendSnapshot = Vdd.Controller.Suspend(); }
                     catch { }
                     break;
@@ -445,7 +502,21 @@ namespace ParsecVDisplay
                 }
             }
             else if (sender == MI_FallbackDisplay)
+            {
                 Config.FallbackDisplay = MI_FallbackDisplay.Checked;
+                if (MI_FallbackDisplay.Checked)
+                {
+                    // Evaluate now in case the host is currently headless
+                    FallbackTimer?.Change(0, Timeout.Infinite);
+                }
+                else if (FallbackDriverIndex >= 0)
+                {
+                    // Disabling — drop our auto-added display, leave user displays alone
+                    try { Vdd.Controller.RemoveDisplay(FallbackDriverIndex); }
+                    catch { }
+                    FallbackDriverIndex = -1;
+                }
+            }
             else if (sender == MI_KeepScreenOn)
                 Config.KeepScreenOn = MI_KeepScreenOn.Checked;
         }
@@ -525,7 +596,9 @@ namespace ParsecVDisplay
             SystemEvents.SessionEnding -= SaveDisplayState;
             SystemEvents.SessionSwitch -= SaveDisplayState;
             SystemEvents.DisplaySettingsChanged -= SaveDisplayState;
+            SystemEvents.DisplaySettingsChanged -= ScheduleFallbackEvaluation;
             PowerEvents.PowerModeChanged -= OnPowerModeChanged;
+            FallbackTimer?.Dispose();
 
             if (Config.DisplayCount >= 0)
                 Config.DisplayCount = displays.Count;

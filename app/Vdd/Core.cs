@@ -55,6 +55,21 @@ namespace ParsecVDisplay.Vdd
         }
 
         /// <summary>
+        /// Count active non-Parsec displays. Used by the fallback-display
+        /// feature to decide whether the host has any "real" output.
+        /// </summary>
+        public static int CountPhysicalDisplays()
+        {
+            int count = 0;
+            foreach (var d in Display.GetAllDisplays())
+            {
+                if (d.Active && !d.DisplayName.Equals(DISPLAY_ID, StringComparison.OrdinalIgnoreCase))
+                    count++;
+            }
+            return count;
+        }
+
+        /// <summary>
         /// Query the driver device status.
         /// </summary>
         public static Device.Status QueryStatus(out Version version)

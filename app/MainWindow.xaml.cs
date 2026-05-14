@@ -90,7 +90,7 @@ namespace ParsecVDisplay
         {
             Dispatcher.Invoke(() =>
             {
-                var displays = Vdd.Core.GetDisplays(out bool noMonitors);
+                var displays = Vdd.Core.GetDisplays();
 
                 xDisplays.Children.Clear();
                 xNoDisplay.Visibility = displays.Count > 0
@@ -103,11 +103,6 @@ namespace ParsecVDisplay
                 }
 
                 xAdd.IsEnabled = true;
-
-                if (noMonitors && Config.FallbackDisplay)
-                {
-                    AddDisplay(null, EventArgs.Empty);
-                }
             });
         }
 
