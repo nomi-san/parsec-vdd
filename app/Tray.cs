@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Threading;
@@ -21,6 +22,20 @@ namespace ParsecVDisplay
         ToolStripMenuItem MI_RestoreDisplays;
         ToolStripMenuItem MI_FallbackDisplay;
         ToolStripMenuItem MI_KeepScreenOn;
+
+        // Snapshot captured at PBT_APMSUSPEND so we can restore on wake.
+        // Lives only for the duration of one suspend/resume cycle.
+        List<Display.State> SuspendSnapshot;
+
+        // Windows fires multiple resume events (RESUMESUSPEND, RESUMEAUTOMATIC,
+        // possibly RESUMESTANDBY) within ~100ms. We only want to run the
+        // restore path once per cycle. Reset by the next suspend.
+        int ResumeHandled;
+
+        // Guards against re-entering AddDisplay before the previous attempt
+        // has fully unwound (the MainWindow.DisplayChanged fallback path can
+        // re-trigger us while we're still showing the error MessageBox).
+        int InAddDisplay;
 
         //  ParsecVDisplay v{version}
         //  ______________
@@ -104,15 +119,22 @@ namespace ParsecVDisplay
             TrayIcon.DoubleClick += delegate { ShowApp(); };
             TrayIcon.Visible = true;
 
-            SystemEvents.SessionEnding += SaveDisplayCount;
-            SystemEvents.SessionSwitch += SaveDisplayCount;
-            SystemEvents.DisplaySettingsChanged += SaveDisplayCount;
+            SystemEvents.SessionEnding += SaveDisplayState;
+            SystemEvents.SessionSwitch += SaveDisplayState;
+            SystemEvents.DisplaySettingsChanged += SaveDisplayState;
+            PowerEvents.PowerModeChanged += OnPowerModeChanged;
+
+            // Restore previously-saved displays as soon as the driver handle is ready.
+            // Runs on a background thread so the tray construction doesn't block.
+            Task.Run(() =>
+            {
+                if (Vdd.Controller.WaitForReady(10000))
+                    RestoreDisplays();
+            });
 
             Invoke(async () =>
             {
                 await Task.Delay(1000);
-
-                RestoreDisplays();
                 CheckUpdate(null, null);
             });
         }
@@ -197,22 +219,124 @@ namespace ParsecVDisplay
             }
         }
 
+        /// <summary>
+        /// Restore previously-saved displays from Config (called once at startup).
+        /// </summary>
         void RestoreDisplays()
         {
-            //var savedCount = Config.DisplayCount;
+            // Toggle off => skip
+            if (Config.DisplayCount < 0)
+                return;
 
-            //if (savedCount > 0)
-            //{
-            //    var displays = Vdd.Core.GetDisplays();
-            //    var amount = savedCount - displays.Count;
+            var states = Display.UnpackStates(Config.SavedDisplays);
+            if (states.Count == 0)
+                return;
 
-            //    for (int i = 0; i < amount; i++)
-            //        Controller.AddDisplay(out var _);
-            //}
+            RestoreFromStates(states);
+        }
+
+        /// <summary>
+        /// Add N virtual displays and apply the saved per-display modes
+        /// atomically (CDS_NORESET on each, single Commit at the end).
+        /// </summary>
+        void RestoreFromStates(List<Display.State> states)
+        {
+            int wanted = Math.Min(states.Count, Vdd.Core.MAX_DISPLAYS);
+
+            int existing = Vdd.Core.GetDisplays().Count;
+            int toAdd = Math.Max(0, wanted - existing);
+
+            for (int i = 0; i < toAdd; i++)
+            {
+                try
+                {
+                    Vdd.Controller.AddDisplay();
+
+                    // Settle: let DisplaySettingsChanged callbacks finish on
+                    // other threads before issuing the next IOCTL.
+                    if (i + 1 < toAdd)
+                        Thread.Sleep(500);
+                }
+                catch
+                {
+                    break;
+                }
+            }
+
+            List<Display> displays = null;
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                displays = Vdd.Core.GetDisplays();
+                if (displays.Count >= wanted)
+                    break;
+                Thread.Sleep(100);
+            }
+            if (displays == null || displays.Count == 0)
+                return;
+
+            int n = Math.Min(displays.Count, states.Count);
+            bool anyDeferred = false;
+            for (int i = 0; i < n; i++)
+            {
+                if (!displays[i].Active)
+                    continue;
+
+                var s = states[i];
+                if (s.Width <= 0 || s.Height <= 0 || s.Hz <= 0)
+                    continue;
+
+                if (displays[i].ChangeMode(s.Width, s.Height, s.Hz, s.Orientation, defer: true))
+                    anyDeferred = true;
+            }
+
+            if (anyDeferred)
+                Display.CommitChanges();
+        }
+
+        void OnPowerModeChanged(object sender, PowerEvents.PowerBroadcastType type)
+        {
+            switch (type)
+            {
+                case PowerEvents.PowerBroadcastType.PBT_APMSUSPEND:
+                case PowerEvents.PowerBroadcastType.PBT_APMSTANDBY:
+                    Interlocked.Exchange(ref ResumeHandled, 0);
+                    try { SuspendSnapshot = Vdd.Controller.Suspend(); }
+                    catch { }
+                    break;
+
+                case PowerEvents.PowerBroadcastType.PBT_APMRESUMEAUTOMATIC:
+                case PowerEvents.PowerBroadcastType.PBT_APMRESUMESUSPEND:
+                case PowerEvents.PowerBroadcastType.PBT_APMRESUMESTANDBY:
+                case PowerEvents.PowerBroadcastType.PBT_APMRESUMECRITICAL:
+                    // Coalesce: Windows fires several resume events back-to-back.
+                    if (Interlocked.Exchange(ref ResumeHandled, 1) == 0)
+                        Task.Run(OnResume);
+                    break;
+            }
+        }
+
+        void OnResume()
+        {
+            try
+            {
+                Vdd.Controller.Resume();
+                if (!Vdd.Controller.WaitForReady(10000))
+                    return;
+
+                var snap = Interlocked.Exchange(ref SuspendSnapshot, null);
+                if (snap == null || snap.Count == 0)
+                    return;
+
+                RestoreFromStates(snap);
+            }
+            catch { }
         }
 
         public void AddDisplay(object sender, EventArgs e)
         {
+            if (Interlocked.Exchange(ref InAddDisplay, 1) != 0)
+                return;
+
             try
             {
                 Vdd.Controller.AddDisplay();
@@ -220,6 +344,10 @@ namespace ParsecVDisplay
             catch (Exception ex)
             {
                 HandleVddError(ex);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref InAddDisplay, 0);
             }
         }
 
@@ -302,19 +430,44 @@ namespace ParsecVDisplay
             if (sender == MI_RunOnStartup)
                 Config.RunOnStartup = MI_RunOnStartup.Checked;
             else if (sender == MI_RestoreDisplays)
-                Config.DisplayCount = MI_RestoreDisplays.Checked ? Vdd.Core.GetDisplays().Count : -1;
+            {
+                if (MI_RestoreDisplays.Checked)
+                {
+                    // Enabling → snapshot the current state right away so a quick
+                    // restart restores what the user has on screen.
+                    Config.DisplayCount = Vdd.Core.GetDisplays().Count;
+                    SaveDisplayState(null, EventArgs.Empty);
+                }
+                else
+                {
+                    Config.DisplayCount = -1;
+                    Config.SavedDisplays = string.Empty;
+                }
+            }
             else if (sender == MI_FallbackDisplay)
                 Config.FallbackDisplay = MI_FallbackDisplay.Checked;
             else if (sender == MI_KeepScreenOn)
                 Config.KeepScreenOn = MI_KeepScreenOn.Checked;
         }
 
-        void SaveDisplayCount(object sender, EventArgs e)
+        void SaveDisplayState(object sender, EventArgs e)
         {
+            // Skip while suspended — displays are intentionally unplugged.
+            if (Vdd.Controller.IsSuspended)
+                return;
+
             if (Config.DisplayCount >= 0)
             {
                 var displays = Vdd.Core.GetDisplays();
                 Config.DisplayCount = displays.Count;
+
+                var states = new List<Display.State>(displays.Count);
+                foreach (var d in displays)
+                {
+                    if (d.Active && d.CurrentMode != null)
+                        states.Add(d.Snapshot());
+                }
+                Config.SavedDisplays = Display.PackStates(states);
             }
         }
 
@@ -369,20 +522,22 @@ namespace ParsecVDisplay
                     return;
             }
 
-            SystemEvents.SessionEnding -= SaveDisplayCount;
-            SystemEvents.SessionSwitch -= SaveDisplayCount;
-            SystemEvents.DisplaySettingsChanged -= SaveDisplayCount;
+            SystemEvents.SessionEnding -= SaveDisplayState;
+            SystemEvents.SessionSwitch -= SaveDisplayState;
+            SystemEvents.DisplaySettingsChanged -= SaveDisplayState;
+            PowerEvents.PowerModeChanged -= OnPowerModeChanged;
 
-            if (displays.Count > 0)
+            if (Config.DisplayCount >= 0)
+                Config.DisplayCount = displays.Count;
+
+            // Best-effort explicit removal in reverse order (preserves Windows 10
+            // Connectivity registry config). Per-display failures are swallowed —
+            // closing the device handle in Controller.Stop triggers the driver's
+            // keep-alive watchdog to auto-remove any stragglers within ~1 s.
+            for (int i = displays.Count - 1; i >= 0; i--)
             {
-                for (int i = displays.Count - 1; i >= 0; i--)
-                {
-                    var index = displays[i].DisplayIndex;
-                    Vdd.Controller.RemoveDisplay(index);
-                }
-
-                if (Config.DisplayCount >= 0)
-                    Config.DisplayCount = displays.Count;
+                try { Vdd.Controller.RemoveDisplay(displays[i].DisplayIndex); }
+                catch { }
             }
 
             App.Current?.Dispatcher.Invoke(App.Current.Shutdown);

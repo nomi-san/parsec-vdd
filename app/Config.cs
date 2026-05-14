@@ -21,6 +21,17 @@ namespace ParsecVDisplay
             set => SetInt(nameof(DisplayCount), value);
         }
 
+        /// <summary>
+        /// Packed snapshot of the last-known displays state. Format is a
+        /// comma-separated list of WxH@Hz/O entries (see Display.State.Pack).
+        /// Empty string means no saved state.
+        /// </summary>
+        public static string SavedDisplays
+        {
+            get => GetString(nameof(SavedDisplays), string.Empty);
+            set => SetString(nameof(SavedDisplays), value ?? string.Empty);
+        }
+
         public static bool FallbackDisplay
         {
             get => GetInt(nameof(FallbackDisplay)) != 0;
