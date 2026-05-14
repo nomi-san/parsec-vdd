@@ -132,7 +132,7 @@ namespace ParsecVDisplay
 
             if (Vdd.Core.AddDisplay(VddHandle, out int index))
             {
-                Console.WriteLine($"Added a virtual display with index {0}.", index);
+                Console.WriteLine($"Added a virtual display with index {index}.");
                 return index;
             }
             else
@@ -159,10 +159,26 @@ namespace ParsecVDisplay
                 else if (removeAll)
                 {
                     PrepareVdd();
-                    foreach (var di in displays)
+
+                    // Reverse order preserves the Windows 10 Connectivity
+                    // registry config (see docs/issues/windows-10-display-
+                    // configurations-bug.md). Best-effort per display so
+                    // one failure doesn't strand the rest.
+                    int failed = 0;
+                    for (int i = displays.Count - 1; i >= 0; i--)
                     {
+                        var di = displays[i];
                         if (!Vdd.Core.RemoveDisplay(VddHandle, di.DisplayIndex))
-                            throw new Exception(string.Format("Failed to remove the display at index {0}.", index));
+                        {
+                            failed++;
+                            Console.WriteLine("Warning: failed to remove display at index {0}.", di.DisplayIndex);
+                        }
+                    }
+
+                    if (failed > 0)
+                    {
+                        Console.WriteLine("Removed {0}/{1} displays.", displays.Count - failed, displays.Count);
+                        return 1;
                     }
 
                     Console.WriteLine("Removed all added displays.");
