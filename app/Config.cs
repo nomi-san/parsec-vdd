@@ -15,10 +15,15 @@ namespace ParsecVDisplay
             set => SetString(nameof(Language), value);
         }
 
-        public static int DisplayCount
+        /// <summary>
+        /// Whether to restore previously-added virtual displays at startup and
+        /// after sleep/resume. The actual saved state lives in
+        /// <see cref="SavedDisplays"/>; this is just the on/off switch.
+        /// </summary>
+        public static bool RestoreDisplays
         {
-            get => GetInt(nameof(DisplayCount), 0);
-            set => SetInt(nameof(DisplayCount), value);
+            get => GetInt(nameof(RestoreDisplays), 1) != 0;
+            set => SetInt(nameof(RestoreDisplays), value ? 1 : 0);
         }
 
         /// <summary>

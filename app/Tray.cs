@@ -99,7 +99,7 @@ namespace ParsecVDisplay
                                 (MI_RunOnStartup = new ToolStripMenuItem("t_run_on_startup",
                                     null, OptionsCheck) { CheckOnClick = true, Checked = Config.RunOnStartup }),
                                 (MI_RestoreDisplays = new ToolStripMenuItem("t_restore_displays",
-                                    null, OptionsCheck) { CheckOnClick = true, Checked = Config.DisplayCount >= 0 }),
+                                    null, OptionsCheck) { CheckOnClick = true, Checked = Config.RestoreDisplays }),
                                 new ToolStripSeparator(),
                                 (MI_FallbackDisplay = new ToolStripMenuItem("t_fallback_display",
                                     null, OptionsCheck) { CheckOnClick = true, Checked = Config.FallbackDisplay }),
@@ -238,8 +238,7 @@ namespace ParsecVDisplay
         /// </summary>
         void RestoreDisplays()
         {
-            // Toggle off => skip
-            if (Config.DisplayCount < 0)
+            if (!Config.RestoreDisplays)
                 return;
 
             var states = Display.UnpackStates(Config.SavedDisplays);
@@ -488,16 +487,15 @@ namespace ParsecVDisplay
                 Config.RunOnStartup = MI_RunOnStartup.Checked;
             else if (sender == MI_RestoreDisplays)
             {
+                Config.RestoreDisplays = MI_RestoreDisplays.Checked;
                 if (MI_RestoreDisplays.Checked)
                 {
                     // Enabling → snapshot the current state right away so a quick
                     // restart restores what the user has on screen.
-                    Config.DisplayCount = Vdd.Core.GetDisplays().Count;
                     SaveDisplayState(null, EventArgs.Empty);
                 }
                 else
                 {
-                    Config.DisplayCount = -1;
                     Config.SavedDisplays = string.Empty;
                 }
             }
@@ -527,19 +525,17 @@ namespace ParsecVDisplay
             if (Vdd.Controller.IsSuspended)
                 return;
 
-            if (Config.DisplayCount >= 0)
-            {
-                var displays = Vdd.Core.GetDisplays();
-                Config.DisplayCount = displays.Count;
+            if (!Config.RestoreDisplays)
+                return;
 
-                var states = new List<Display.State>(displays.Count);
-                foreach (var d in displays)
-                {
-                    if (d.Active && d.CurrentMode != null)
-                        states.Add(d.Snapshot());
-                }
-                Config.SavedDisplays = Display.PackStates(states);
+            var displays = Vdd.Core.GetDisplays();
+            var states = new List<Display.State>(displays.Count);
+            foreach (var d in displays)
+            {
+                if (d.Active && d.CurrentMode != null)
+                    states.Add(d.Snapshot());
             }
+            Config.SavedDisplays = Display.PackStates(states);
         }
 
         public void ShowApp()
@@ -586,7 +582,9 @@ namespace ParsecVDisplay
         void Exit(object sender, EventArgs e)
         {
             var displays = Vdd.Core.GetDisplays();
-            if (displays.Count > 0)
+            // Skip the "remove all displays?" prompt when restore is enabled —
+            // the next launch will bring them right back.
+            if (displays.Count > 0 && !Config.RestoreDisplays)
             {
                 if (MessageBox.Show(Owner, App.GetTranslation("t_msg_prompt_leave_all"),
                     Program.AppName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
@@ -600,8 +598,9 @@ namespace ParsecVDisplay
             PowerEvents.PowerModeChanged -= OnPowerModeChanged;
             FallbackTimer?.Dispose();
 
-            if (Config.DisplayCount >= 0)
-                Config.DisplayCount = displays.Count;
+            // Snapshot one last time so next launch's restore matches the
+            // displays the user is exiting with.
+            SaveDisplayState(null, EventArgs.Empty);
 
             // Best-effort explicit removal in reverse order (preserves Windows 10
             // Connectivity registry config). Per-display failures are swallowed —
