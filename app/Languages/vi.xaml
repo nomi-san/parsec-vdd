@@ -23,6 +23,7 @@
         <system:String x:Key="t_portrait_flipped">Dọc (lật ngược)</system:String>
     <system:String x:Key="t_take_screenshot">Chụp màn hình</system:String>
     <system:String x:Key="t_mirror_screen">Phản chiếu màn hình</system:String>
+    <system:String x:Key="t_set_primary">Đặt làm màn hình chính</system:String>
     <system:String x:Key="t_remove">Tháo bỏ</system:String>
     
     <!--Tray menu-->

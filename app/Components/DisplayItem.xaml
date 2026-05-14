@@ -26,6 +26,7 @@
         </Border.Style>
         <Grid>
             <TextBlock x:Name="xDeg" d:Text="90°" Foreground="White" Margin="8,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <TextBlock x:Name="xPri" d:Text="[P]" Foreground="White" Margin="0,4,8,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
             <TextBlock Text="{Binding DisplayNum}" d:Text="1" FontSize="24" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,5" />
             <TextBlock Grid.Row="1" Text="{Binding DisplayMode}" d:Text="1920 x 1080 @ 60 Hz" FontSize="12" Foreground="White" TextAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8" />
         </Grid>
@@ -52,6 +53,7 @@
             <Separator />
             <MenuItem Click="TakeScreenshot" Header="{DynamicResource t_take_screenshot}" IsEnabled="{Binding Active}" />
             <MenuItem Click="MirrorScreen" Header="{DynamicResource t_mirror_screen}" IsEnabled="{Binding Active}" />
+            <MenuItem Click="SetAsPrimary" Header="{DynamicResource t_set_primary}" IsEnabled="{Binding CanSetPrimary}" />
             <Separator />
             <MenuItem Click="RemoveDisplay" Header="{DynamicResource t_remove}" />
         </ContextMenu>

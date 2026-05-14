@@ -23,6 +23,7 @@
     <system:String x:Key="t_portrait_flipped">纵向 (翻转)</system:String>
     <system:String x:Key="t_take_screenshot">屏幕截图</system:String>
     <system:String x:Key="t_mirror_screen">镜像屏幕</system:String>
+    <system:String x:Key="t_set_primary">设为主显示器</system:String>
     <system:String x:Key="t_remove">移除</system:String>
 
     <!--Tray menu-->

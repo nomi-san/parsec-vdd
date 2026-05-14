@@ -123,6 +123,7 @@ namespace ParsecVDisplay
         }
 
         public bool Active;
+        public bool Primary;
         public int Identifier;
         public int CloneOf;
         public int Address;
@@ -289,6 +290,60 @@ namespace ParsecVDisplay
             return Native.ChangeDisplaySettingsEx(null, IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero) == 0;
         }
 
+        /// <summary>
+        /// Make this display the primary monitor. The desktop origin must land
+        /// on the new primary, so we shift every active display by this one's
+        /// current position before flagging it CDS_SET_PRIMARY, then commit
+        /// all changes atomically. Matches the vdd.c reference implementation.
+        /// </summary>
+        public bool SetPrimary()
+        {
+            if (string.IsNullOrEmpty(DeviceName))
+                return false;
+
+            // Capture our current position — every other display will be shifted
+            // by this offset so we end up at (0,0).
+            var target = new Native.DEVMODE();
+            target.dmSize = (short)Marshal.SizeOf(typeof(Native.DEVMODE));
+            if (!Native.EnumDisplaySettings(DeviceName, -1, ref target))
+                return false;
+
+            int offX = target.dmPositionX;
+            int offY = target.dmPositionY;
+
+            var dd = new Native.DISPLAY_DEVICE();
+            dd.cb = Marshal.SizeOf(typeof(Native.DISPLAY_DEVICE));
+
+            bool targetOk = false;
+            for (int i = 0; Native.EnumDisplayDevices(null, i, ref dd, 0); i++)
+            {
+                if ((dd.StateFlags & Native.DISPLAY_DEVICE_ACTIVE) == 0)
+                    continue;
+
+                var dm = new Native.DEVMODE();
+                dm.dmSize = (short)Marshal.SizeOf(typeof(Native.DEVMODE));
+                if (!Native.EnumDisplaySettings(dd.DeviceName, -1, ref dm))
+                    continue;
+
+                dm.dmPositionX -= offX;
+                dm.dmPositionY -= offY;
+                dm.dmFields = /*DM_POSITION*/ 0x20;
+
+                uint flags = /*CDS_UPDATEREGISTRY*/ 0x1 | /*CDS_NORESET*/ 0x10000000;
+                bool isTarget = string.Equals(dd.DeviceName, DeviceName, StringComparison.Ordinal);
+                if (isTarget)
+                    flags |= /*CDS_SET_PRIMARY*/ 0x10;
+
+                int rc = Native.ChangeDisplaySettingsEx(dd.DeviceName, ref dm, IntPtr.Zero, flags, IntPtr.Zero);
+                if (isTarget && rc == 0)
+                    targetOk = true;
+            }
+
+            // Commit pending positional changes + the primary flag together.
+            CommitChanges();
+            return targetOk;
+        }
+
         public void TakeScreenshot(string saveFile)
         {
             if (string.IsNullOrEmpty(DeviceName))
@@ -367,6 +422,8 @@ namespace ParsecVDisplay
                     var display = new Display
                     {
                         Active = (dd2.StateFlags & Native.DISPLAY_DEVICE_ACTIVE) != 0,
+                        // Primary is a per-adapter flag on the outer dd, not on the monitor
+                        Primary = (dd.StateFlags & Native.DISPLAY_DEVICE_PRIMARY_DEVICE) != 0,
                         Address = ParseDisplayAddress(dd2.DeviceID),
                         DeviceName = dd.DeviceName,
                         DisplayName = ParseDisplayCode(dd2.DeviceID),
@@ -507,6 +564,7 @@ namespace ParsecVDisplay
             public const uint EDD_GET_DEVICE_INTERFACE_NAME = 0x1;
             public const uint DISPLAY_DEVICE_ACTIVE = 0x1;
             public const uint DISPLAY_DEVICE_ATTACHED = 0x2;
+            public const uint DISPLAY_DEVICE_PRIMARY_DEVICE = 0x4;
 
             [DllImport("user32.dll")]
             [return: MarshalAs(UnmanagedType.Bool)]

@@ -11,6 +11,7 @@ namespace ParsecVDisplay.Components
     public partial class DisplayItem : UserControl
     {
         public bool Active { get; set; } = true;
+        public bool CanSetPrimary { get; set; } = true;
         public string DisplayNum { get; set; } = "1";
         public string DisplayName { get; set; } = "Display [1]";
         public string DisplayPath { get; set; } = "\\\\.\\DISPLAY1";
@@ -31,6 +32,7 @@ namespace ParsecVDisplay.Components
         {
             Display = display;
             Active = display.Active;
+            CanSetPrimary = display.Active && !display.Primary;
 
             DisplayNum = $"{display.Identifier}";
             DisplayName = $"Display [{display.Identifier}]";
@@ -39,6 +41,9 @@ namespace ParsecVDisplay.Components
             xDeg.Visibility = display.CurrentOrientation == Display.Orientation.Landscape
                 ? Visibility.Hidden : Visibility.Visible;
             xDeg.Text = string.Format("{0}°", ((int)display.CurrentOrientation * 90));
+
+            xPri.Visibility = display.Primary ? Visibility.Visible : Visibility.Hidden;
+            xPri.Text = "[P]";
 
             if (display.Active)
             {
@@ -235,6 +240,12 @@ namespace ParsecVDisplay.Components
         private void RemoveDisplay(object sender, RoutedEventArgs e)
         {
             Tray.Instance.Invoke(() => Tray.Instance.RemoveDisplay(Display.DisplayIndex));
+        }
+
+        private void SetAsPrimary(object sender, RoutedEventArgs e)
+        {
+            if (Active && !Display.Primary)
+                Display.SetPrimary();
         }
     }
 }
