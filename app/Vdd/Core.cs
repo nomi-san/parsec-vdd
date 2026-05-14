@@ -184,11 +184,9 @@ namespace ParsecVDisplay.Vdd
                     bool success = Native.GetOverlappedResultEx(handle, ref Overlapped,
                         out var _, timeout, false);
 
-#if DEBUG
                     if (code != IoCtlCode.IOCTL_UPDATE)
-                        Console.WriteLine("[D] IoControl: {0} -> {1}, err={2}",
+                        Log.Debug("IoControl {0} -> {1}, err={2}",
                             code, success, DumpErrorCode(Marshal.GetLastWin32Error()));
-#endif
 
                     // If the wait fails (timeout/error), the IO may still be
                     // pending in the kernel. Cancel and BLOCK until truly done

@@ -66,6 +66,7 @@ namespace ParsecVDisplay
 
         public Tray()
         {
+            Log.Info("Tray initializing");
             Instance = this;
             Vdd.Controller.Start();
 
@@ -266,6 +267,7 @@ namespace ParsecVDisplay
 
             int existing = Vdd.Core.GetDisplays().Count;
             int toAdd = Math.Max(0, wanted - existing);
+            Log.Info("Restore: wanted={0} existing={1} toAdd={2}", wanted, existing, toAdd);
 
             for (int i = 0; i < toAdd; i++)
             {
@@ -278,8 +280,9 @@ namespace ParsecVDisplay
                     if (i + 1 < toAdd)
                         Thread.Sleep(500);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Log.Warn("Restore: add {0}/{1} failed: {2}", i + 1, toAdd, ex.Message);
                     break;
                 }
             }
@@ -293,7 +296,10 @@ namespace ParsecVDisplay
                 Thread.Sleep(100);
             }
             if (displays == null || displays.Count == 0)
+            {
+                Log.Warn("Restore: no displays visible after add");
                 return;
+            }
 
             int n = Math.Min(displays.Count, states.Count);
             bool anyDeferred = false;
@@ -308,10 +314,16 @@ namespace ParsecVDisplay
 
                 if (displays[i].ChangeMode(s.Width, s.Height, s.Hz, s.Orientation, defer: true))
                     anyDeferred = true;
+                else
+                    Log.Warn("Restore: ChangeMode[{0}] {1}x{2}@{3}/{4} failed",
+                        i, s.Width, s.Height, s.Hz, (int)s.Orientation);
             }
 
             if (anyDeferred)
+            {
                 Display.CommitChanges();
+                Log.Info("Restore: committed {0} mode change(s)", n);
+            }
         }
 
         void ScheduleFallbackEvaluation(object sender, EventArgs e)
@@ -346,22 +358,28 @@ namespace ParsecVDisplay
                 {
                     Vdd.Controller.AddDisplay(out int idx);
                     FallbackDriverIndex = idx;
+                    Log.Info("Fallback: added (no display present), index={0}", idx);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Log.Warn("Fallback: add failed: {0}", ex.Message);
+                }
             }
             else if (physical > 0 && FallbackDriverIndex >= 0)
             {
                 // Physical returned; remove only our auto-added fallback. User-
                 // added / restored displays stay (FallbackDriverIndex == -1
                 // means we didn't add them).
+                Log.Info("Fallback: physical display present, removing fallback index={0}", FallbackDriverIndex);
                 try { Vdd.Controller.RemoveDisplay(FallbackDriverIndex); }
-                catch { }
+                catch (Exception ex) { Log.Warn("Fallback: remove failed: {0}", ex.Message); }
                 FallbackDriverIndex = -1;
             }
         }
 
         void OnPowerModeChanged(object sender, PowerEvents.PowerBroadcastType type)
         {
+            Log.Info("Power event: {0}", type);
             switch (type)
             {
                 case PowerEvents.PowerBroadcastType.PBT_APMSUSPEND:
@@ -371,7 +389,7 @@ namespace ParsecVDisplay
                     // resume path will re-evaluate fallback from scratch.
                     FallbackDriverIndex = -1;
                     try { SuspendSnapshot = Vdd.Controller.Suspend(); }
-                    catch { }
+                    catch (Exception ex) { Log.Warn("Suspend threw: {0}", ex.Message); }
                     break;
 
                 case PowerEvents.PowerBroadcastType.PBT_APMRESUMEAUTOMATIC:
@@ -381,6 +399,8 @@ namespace ParsecVDisplay
                     // Coalesce: Windows fires several resume events back-to-back.
                     if (Interlocked.Exchange(ref ResumeHandled, 1) == 0)
                         Task.Run(OnResume);
+                    else
+                        Log.Debug("Resume event coalesced (already handled)");
                     break;
             }
         }
@@ -389,17 +409,25 @@ namespace ParsecVDisplay
         {
             try
             {
+                Log.Info("Resume: begin");
                 Vdd.Controller.Resume();
                 if (!Vdd.Controller.WaitForReady(10000))
+                {
+                    Log.Warn("Resume: timed out waiting for driver handle");
                     return;
+                }
 
                 var snap = Interlocked.Exchange(ref SuspendSnapshot, null);
                 if (snap == null || snap.Count == 0)
+                {
+                    Log.Info("Resume: no snapshot to restore");
                     return;
+                }
 
                 RestoreFromStates(snap);
+                Log.Info("Resume: done");
             }
-            catch { }
+            catch (Exception ex) { Log.Error("Resume threw: {0}", ex); }
         }
 
         public void AddDisplay(object sender, EventArgs e)
@@ -596,13 +624,17 @@ namespace ParsecVDisplay
         void Exit(object sender, EventArgs e)
         {
             var displays = Vdd.Core.GetDisplays();
+            Log.Info("Exit requested ({0} displays, restore={1})", displays.Count, Config.RestoreDisplays);
             // Skip the "remove all displays?" prompt when restore is enabled —
             // the next launch will bring them right back.
             if (displays.Count > 0 && !Config.RestoreDisplays)
             {
                 if (MessageBox.Show(Owner, App.GetTranslation("t_msg_prompt_leave_all"),
                     Program.AppName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                {
+                    Log.Info("Exit cancelled by user");
                     return;
+                }
             }
 
             SystemEvents.SessionEnding -= SaveDisplayState;
@@ -623,7 +655,10 @@ namespace ParsecVDisplay
             for (int i = displays.Count - 1; i >= 0; i--)
             {
                 try { Vdd.Controller.RemoveDisplay(displays[i].DisplayIndex); }
-                catch { }
+                catch (Exception ex)
+                {
+                    Log.Warn("Exit: remove index {0} failed: {1}", displays[i].DisplayIndex, ex.Message);
+                }
             }
 
             App.Current?.Dispatcher.Invoke(App.Current.Shutdown);

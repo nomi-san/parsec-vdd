@@ -16,6 +16,12 @@ namespace ParsecVDisplay
         [STAThread]
         static int Main(string[] args)
         {
+            // CLI mode runs short-lived against the user's terminal; skip the
+            // log header entirely to avoid polluting debug.log with help text
+            // queries. GUI mode triggers Log's static ctor on first use below.
+            if (args.Length == 0 || (args[0] != "-cli" && args[0] != "-custom"))
+                Log.Info("Main start: args=[{0}]", string.Join(" ", args));
+
             if (args.Length >= 2 && args[0] == "-custom")
             {
                 var modes = Display.ParseModes(args[1]);
@@ -44,6 +50,11 @@ namespace ParsecVDisplay
                 Helper.StayAwake(false);
 
                 Application.Run(new Tray());
+                Log.Info("Main exit");
+            }
+            else
+            {
+                Log.Info("Another instance already running, signaling and exiting");
             }
 
             return 0;

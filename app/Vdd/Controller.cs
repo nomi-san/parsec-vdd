@@ -42,10 +42,12 @@ namespace ParsecVDisplay.Vdd
 
             UpdateThread.Start();
             StatusThread.Start();
+            Log.Info("Controller started");
         }
 
         public static void Stop()
         {
+            Log.Info("Controller stopping");
             Cancellation?.Cancel();
             StatusKick?.Set();
             UpdateThread?.Join();
@@ -56,6 +58,7 @@ namespace ParsecVDisplay.Vdd
 
             StatusKick?.Dispose();
             HandleReady?.Dispose();
+            Log.Info("Controller stopped");
         }
 
         /// <summary>
@@ -89,6 +92,7 @@ namespace ParsecVDisplay.Vdd
 
             var displays = Core.GetDisplays();
             var snapshot = displays.ConvertAll(d => d.Snapshot());
+            Log.Info("Suspend: snapshot {0} display(s)", snapshot.Count);
 
             Suspended = true;
 
@@ -99,7 +103,7 @@ namespace ParsecVDisplay.Vdd
                 for (int i = displays.Count - 1; i >= 0; i--)
                 {
                     try { Core.RemoveDisplay(VddHandle, displays[i].DisplayIndex); }
-                    catch { /* best effort */ }
+                    catch (Exception ex) { Log.Warn("Suspend: remove index {0} failed: {1}", displays[i].DisplayIndex, ex.Message); }
                 }
             }
 
@@ -117,6 +121,7 @@ namespace ParsecVDisplay.Vdd
         /// </summary>
         public static void Resume()
         {
+            Log.Info("Resume");
             Suspended = false;
             StatusKick?.Set();
         }
@@ -149,8 +154,11 @@ namespace ParsecVDisplay.Vdd
                     continue;
                 }
 
+                var prev = LastStatus;
                 var status = QueryStatus(out var _);
                 Volatile.Write(ref LastStatusValue, (int)status);
+                if (status != prev)
+                    Log.Info("Driver status: {0} -> {1}", prev, status);
 
                 if (status == Device.Status.OK)
                 {
@@ -159,7 +167,14 @@ namespace ParsecVDisplay.Vdd
                         Device.OpenHandle(Core.ADAPTER_GUID, out var handle);
                         Interlocked.Exchange(ref VddHandle, handle);
                         if (handle.IsValidHandle())
+                        {
                             HandleReady.Set();
+                            Log.Info("Handle opened");
+                        }
+                        else
+                        {
+                            Log.Warn("Failed to open device handle while status is OK");
+                        }
                     }
                 }
                 else
@@ -169,6 +184,7 @@ namespace ParsecVDisplay.Vdd
                     {
                         HandleReady.Reset();
                         Device.CloseHandle(handle);
+                        Log.Info("Handle closed (status={0})", status);
                     }
                 }
 
@@ -200,38 +216,63 @@ namespace ParsecVDisplay.Vdd
 
             var status = QueryStatus();
             if (status != Device.Status.OK)
+            {
+                Log.Warn("AddDisplay refused: driver status = {0}", status);
                 throw new ErrorDriverStatus(status);
+            }
 
             int limit = Core.MAX_DISPLAYS;
             var displays = Core.GetDisplays();
 
             if (displays.Count >= limit)
+            {
+                Log.Warn("AddDisplay refused: limit {0} reached", limit);
                 throw new ErrorExceededLimit(limit);
+            }
 
             // Snapshot the handle ONCE so StatusLoop closing it after this
             // check doesn't leave us calling DeviceIoControl on a stale value.
             var handle = VddHandle;
             if (!handle.IsValidHandle())
+            {
+                Log.Warn("AddDisplay refused: handle not open");
                 throw new ErrorDeviceHandle();
+            }
 
             if (!Core.AddDisplay(handle, out driverIndex))
+            {
+                Log.Error("AddDisplay: IOCTL failed");
                 throw new ErrorOperationFailed(ErrorOperationFailed.Operation.AddDisplay);
+            }
+
+            Log.Info("AddDisplay: index={0}", driverIndex);
         }
 
         public static void RemoveDisplay(int index)
         {
             var status = QueryStatus();
             if (status != Device.Status.OK)
+            {
+                Log.Warn("RemoveDisplay({0}) refused: driver status = {1}", index, status);
                 throw new ErrorDriverStatus(status);
+            }
 
             if (index < 0)
                 return;
 
             if (!VddHandle.IsValidHandle())
+            {
+                Log.Warn("RemoveDisplay({0}) refused: handle not open", index);
                 throw new ErrorDeviceHandle();
+            }
 
             if (!Core.RemoveDisplay(VddHandle, index))
+            {
+                Log.Error("RemoveDisplay({0}): IOCTL failed", index);
                 throw new ErrorOperationFailed(ErrorOperationFailed.Operation.RemoveDisplay);
+            }
+
+            Log.Info("RemoveDisplay: index={0}", index);
         }
 
         public static void RemoveLastDisplay()
