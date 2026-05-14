@@ -23,9 +23,6 @@ namespace ParsecVDisplay.Components
         {
             InitializeComponent();
 
-            xResolution.Items.Clear();
-            xRefreshRate.Items.Clear();
-
             DataContext = this;
             ContextMenu.Resources = App.Current.Resources;
         }
@@ -98,47 +95,54 @@ namespace ParsecVDisplay.Components
             ContextMenu.DataContext = this;
             ContextMenu.IsOpen = true;
 
-            if (Active && SelectedResolution == null)
+            if (!Active)
+                return;
+
+            // Rebuild on every open — if the user updated custom resolutions
+            // since the last open, the supported set may have changed.
+            xResolution.Items.Clear();
+            xRefreshRate.Items.Clear();
+            SelectedResolution = null;
+
+            foreach (var res in Display.SupportedResolutions)
             {
-                foreach (var res in Display.SupportedResolutions)
+                bool @checked = Display.CurrentMode.Width == res.Width
+                    && Display.CurrentMode.Height == res.Height;
+
+                if (@checked)
+                    SelectedResolution = res;
+
+                xResolution.Items.Add(new MenuItem
                 {
-                    bool @checked = Display.CurrentMode.Width == res.Width
-                        && Display.CurrentMode.Height == res.Height;
-
-                    if (@checked)
-                        SelectedResolution = res;
-
-                    xResolution.Items.Add(new MenuItem
-                    {
-                        IsCheckable = true,
-                        IsChecked = @checked,
-                        Header = $"{res.Width} × {res.Height}",
-                    });
-                }
-
-                // Handle removed custom resolution
-                if (SelectedResolution == null)
-                {
-                    SelectedResolution = new Display.ModeSet
-                    {
-                        Width = Display.CurrentMode.Width,
-                        Height = Display.CurrentMode.Height,
-                        RefreshRates = new List<int> { Display.CurrentMode.Hz }
-                    };
-
-                    xResolution.Items.Add(new MenuItem
-                    {
-                        IsCheckable = false,
-                        IsChecked = true,
-                        Header = $"{SelectedResolution.Width} × {SelectedResolution.Height} [UnSupported]",
-                    });
-                }
-
-                UpdateRefreshRates();
-
-                int oridentationIndex = (int)Display.CurrentOrientation;
-                (xOrientation.Items[oridentationIndex] as MenuItem).IsChecked = true;
+                    IsCheckable = true,
+                    IsChecked = @checked,
+                    Header = $"{res.Width} × {res.Height}",
+                });
             }
+
+            // Current mode isn't in the supported list (e.g. a custom mode was
+            // removed). Show it as a non-selectable [UnSupported] entry.
+            if (SelectedResolution == null)
+            {
+                SelectedResolution = new Display.ModeSet
+                {
+                    Width = Display.CurrentMode.Width,
+                    Height = Display.CurrentMode.Height,
+                    RefreshRates = new List<int> { Display.CurrentMode.Hz }
+                };
+
+                xResolution.Items.Add(new MenuItem
+                {
+                    IsCheckable = false,
+                    IsChecked = true,
+                    Header = $"{SelectedResolution.Width} × {SelectedResolution.Height} [UnSupported]",
+                });
+            }
+
+            UpdateRefreshRates();
+
+            int orientationIndex = (int)Display.CurrentOrientation;
+            (xOrientation.Items[orientationIndex] as MenuItem).IsChecked = true;
         }
 
         private void ChangeResolution(object sender, RoutedEventArgs e)
