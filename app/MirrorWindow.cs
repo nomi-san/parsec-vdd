@@ -24,12 +24,12 @@ namespace ParsecVDisplay
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
             IsMirroring = false;
             MirrorThread?.Join();
 
-            base.OnClosing(e);
+            base.OnFormClosing(e);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -185,16 +185,20 @@ namespace ParsecVDisplay
 
         private static void DrawScreen(IntPtr dc, IntPtr dcSrc, ref Viewport vp, ref Rectangle screen)
         {
-            // set scaling mode
+            // HALFTONE gives the cleanest scaled output; MSDN requires calling
+            // SetBrushOrgEx immediately after to avoid a faint color/dither
+            // shift in the result.
             Native.SetStretchBltMode(dc, /*HALFTONE*/ 4);
+            Native.SetBrushOrgEx(dc, 0, 0, IntPtr.Zero);
 
-            // draw the screen
+            // SRCCOPY | CAPTUREBLT — CAPTUREBLT pulls in layered / DWM-composited
+            // windows (Discord, Teams, some game overlays) that plain SRCCOPY skips.
             Native.StretchBlt(
                 dc,
                 vp.X, vp.Y, vp.Width, vp.Height,
                 dcSrc,
                 screen.X, screen.Y, screen.Width, screen.Height,
-                Native.SRCCOPY
+                Native.SRCCOPY | Native.CAPTUREBLT
             );
         }
 
@@ -203,17 +207,31 @@ namespace ParsecVDisplay
             var cursor = default(Native.CURSORINFO);
             cursor.cbSize = Marshal.SizeOf<Native.CURSORINFO>();
 
-            if (Native.GetCursorInfo(ref cursor)
-                // cursor must be inside the screen
-                && screen.Contains(cursor.screenPosX, cursor.screenPosY)
-                // and visible
-                && cursor.flags == /*CURSOR_SHOWING*/ 0x1)
-            {
-                var iconInfo = default(Native.ICONINFO);
-                Native.GetIconInfo(cursor.hCursor, ref iconInfo);
+            if (!Native.GetCursorInfo(ref cursor)
+                || !screen.Contains(cursor.screenPosX, cursor.screenPosY)
+                || cursor.flags != /*CURSOR_SHOWING*/ 0x1)
+                return;
 
+            var iconInfo = default(Native.ICONINFO);
+            if (!Native.GetIconInfo(cursor.hCursor, ref iconInfo))
+                return;
+
+            try
+            {
                 var bmpCursor = default(Native.BITMAP);
-                Native.GetObject(iconInfo.hbmColor, Marshal.SizeOf<Native.BITMAP>(), ref bmpCursor);
+
+                // Monochrome (mask-only) cursors — e.g. the text I-beam — have a
+                // NULL hbmColor. Their geometry lives in hbmMask, whose height is
+                // 2× the displayed height (top half = AND mask, bottom = XOR mask).
+                if (iconInfo.hbmColor != IntPtr.Zero)
+                {
+                    Native.GetObject(iconInfo.hbmColor, Marshal.SizeOf<Native.BITMAP>(), ref bmpCursor);
+                }
+                else
+                {
+                    Native.GetObject(iconInfo.hbmMask, Marshal.SizeOf<Native.BITMAP>(), ref bmpCursor);
+                    bmpCursor.bmHeight /= 2;
+                }
 
                 int x = cursor.screenPosX - iconInfo.xHotspot - screen.X;
                 int y = cursor.screenPosY - iconInfo.yHotspot - screen.Y;
@@ -222,6 +240,14 @@ namespace ParsecVDisplay
                 ScaleCursor(ref vp, screen.Size, ref x, ref y, ref width, ref height);
 
                 Native.DrawIconEx(dc, x, y, cursor.hCursor, width, height, 0, IntPtr.Zero, /*DI_NORMAL*/ 0x3);
+            }
+            finally
+            {
+                // GetIconInfo creates these bitmaps and the caller MUST delete
+                // them — leaking them here (60×/sec at 30 fps) eventually
+                // exhausts the process's GDI handle quota.
+                if (iconInfo.hbmMask != IntPtr.Zero) Native.DeleteObject(iconInfo.hbmMask);
+                if (iconInfo.hbmColor != IntPtr.Zero) Native.DeleteObject(iconInfo.hbmColor);
             }
         }
 
@@ -282,7 +308,8 @@ namespace ParsecVDisplay
         private static class Native
         {
             public const int ENUM_CURRENT_SETTINGS = -1;
-            public const int SRCCOPY = 0x00CC0020;
+            public const uint SRCCOPY    = 0x00CC0020;
+            public const uint CAPTUREBLT = 0x40000000;
 
             [StructLayout(LayoutKind.Sequential)]
             public struct DEVMODE
@@ -346,6 +373,10 @@ namespace ParsecVDisplay
 
             [DllImport("gdi32.dll")]
             public static extern int SetStretchBltMode(IntPtr hdc, int mode);
+
+            [DllImport("gdi32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool SetBrushOrgEx(IntPtr hdc, int x, int y, IntPtr lppt);
 
             [DllImport("gdi32.dll")]
             public static extern bool StretchBlt(IntPtr hdcDest, int nXOriginDest, int nYOriginDest, int nWidthDest, int nHeightDest,
