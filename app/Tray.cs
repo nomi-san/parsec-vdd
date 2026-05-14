@@ -142,8 +142,16 @@ namespace ParsecVDisplay
             // Runs on a background thread so the tray construction doesn't block.
             Task.Run(() =>
             {
-                if (Vdd.Controller.WaitForReady(10000))
-                    RestoreDisplays();
+                if (!Vdd.Controller.WaitForReady(10000))
+                    return;
+
+                RestoreDisplays();
+
+                // Headless boot has no displays, so DisplaySettingsChanged never
+                // fires — meaning the fallback evaluator would never run. Kick
+                // it once explicitly so a fallback display gets added when the
+                // host comes up with zero physical monitors. (#95)
+                FallbackTimer?.Change(0, Timeout.Infinite);
             });
 
             Invoke(async () =>
@@ -316,12 +324,12 @@ namespace ParsecVDisplay
             if (!Config.FallbackDisplay) return;
             if (Vdd.Controller.IsSuspended) return;
 
+            var parsecs = Vdd.Core.GetDisplays();
             int physical = Vdd.Core.CountPhysicalDisplays();
 
             // Drop a stale tracked index if the user removed the display manually
             if (FallbackDriverIndex >= 0)
             {
-                var parsecs = Vdd.Core.GetDisplays();
                 bool stillThere = false;
                 foreach (var d in parsecs)
                     if (d.DisplayIndex == FallbackDriverIndex) { stillThere = true; break; }
@@ -329,7 +337,10 @@ namespace ParsecVDisplay
                     FallbackDriverIndex = -1;
             }
 
-            if (physical == 0 && FallbackDriverIndex < 0)
+            // Only add a fallback when there is NO display of any kind — physical
+            // or virtual. Otherwise we'd double up when Restore or the user has
+            // already brought a Parsec display online.
+            if (physical == 0 && parsecs.Count == 0)
             {
                 try
                 {
@@ -340,6 +351,9 @@ namespace ParsecVDisplay
             }
             else if (physical > 0 && FallbackDriverIndex >= 0)
             {
+                // Physical returned; remove only our auto-added fallback. User-
+                // added / restored displays stay (FallbackDriverIndex == -1
+                // means we didn't add them).
                 try { Vdd.Controller.RemoveDisplay(FallbackDriverIndex); }
                 catch { }
                 FallbackDriverIndex = -1;
