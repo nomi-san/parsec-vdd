@@ -138,43 +138,59 @@ namespace ParsecVDisplay.Vdd
         /// </summary>
         private static bool IoControl(IntPtr handle, IoCtlCode code, byte[] input, int* result, int timeout)
         {
+            if (handle == IntPtr.Zero || handle == (IntPtr)(-1))
+                return false;
+
             var InBuffer = new byte[32];
             var Overlapped = new Native.OVERLAPPED();
 
             if (input != null && input.Length > 0)
-            {
                 Array.Copy(input, InBuffer, Math.Min(input.Length, InBuffer.Length));
-            }
 
             fixed (byte* buffer = InBuffer)
             {
                 int outputLength = result != null ? sizeof(int) : 0;
                 Overlapped.hEvent = Native.CreateEvent(null, false, false, null);
-
-                bool sent = Native.DeviceIoControl(handle, (uint)code,
-                    buffer, InBuffer.Length,
-                    result, outputLength,
-                    null, ref Overlapped);
-
-#if DEBUG
-                if (code != IoCtlCode.IOCTL_UPDATE)
-                    Console.WriteLine("[D] IoControl: {0}\n    Sent: {1}, error: {2}", code, sent, DumpErrorCode(Marshal.GetLastWin32Error()));
-#endif
-                if (!sent && Marshal.GetLastWin32Error() == 0x6)
+                if (Overlapped.hEvent == IntPtr.Zero)
                     return false;
 
-                bool success = Native.GetOverlappedResultEx(handle, ref Overlapped,
-                    out var NumberOfBytesTransferred, timeout, false);
+                try
+                {
+                    // Match vdd.c semantics: issue the IOCTL and ALWAYS poll
+                    // the overlapped result, regardless of DeviceIoControl's
+                    // return value. Drivers can return FALSE with non-
+                    // ERROR_IO_PENDING codes while still queuing the IO; the
+                    // OVERLAPPED tracks the real outcome.
+                    Native.DeviceIoControl(handle, (uint)code,
+                        buffer, InBuffer.Length,
+                        result, outputLength,
+                        null, ref Overlapped);
+
+                    bool success = Native.GetOverlappedResultEx(handle, ref Overlapped,
+                        out var _, timeout, false);
 
 #if DEBUG
-                if (code != IoCtlCode.IOCTL_UPDATE)
-                    Console.WriteLine("    OverlappedResult: {0}, error: {1}", success, DumpErrorCode(Marshal.GetLastWin32Error()));
+                    if (code != IoCtlCode.IOCTL_UPDATE)
+                        Console.WriteLine("[D] IoControl: {0} -> {1}, err={2}",
+                            code, success, DumpErrorCode(Marshal.GetLastWin32Error()));
 #endif
 
-                if (Overlapped.hEvent != IntPtr.Zero)
-                    Native.CloseHandle(Overlapped.hEvent);
+                    // If the wait fails (timeout/error), the IO may still be
+                    // pending in the kernel. Cancel and BLOCK until truly done
+                    // — otherwise the kernel could write into our stack frame
+                    // after we return, AV-ing the next call on this thread.
+                    if (!success)
+                    {
+                        Native.CancelIoEx(handle, ref Overlapped);
+                        Native.GetOverlappedResult(handle, ref Overlapped, out uint _, true);
+                    }
 
-                return success;
+                    return success;
+                }
+                finally
+                {
+                    Native.CloseHandle(Overlapped.hEvent);
+                }
             }
         }
 
@@ -225,6 +241,19 @@ namespace ParsecVDisplay.Vdd
                 out uint lpNumberOfBytesTransferred,
                 int dwMilliseconds,
                 [MarshalAs(UnmanagedType.Bool)] bool bAlertable
+            );
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool CancelIoEx(IntPtr handle, ref OVERLAPPED lpOverlapped);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool GetOverlappedResult(
+                IntPtr handle,
+                ref OVERLAPPED lpOverlapped,
+                out uint lpNumberOfBytesTransferred,
+                [MarshalAs(UnmanagedType.Bool)] bool bWait
             );
 
             [StructLayout(LayoutKind.Sequential)]
