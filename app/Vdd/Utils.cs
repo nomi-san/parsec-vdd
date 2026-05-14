@@ -77,14 +77,22 @@ namespace ParsecVDisplay.Vdd
         }
 
         /// <summary>
+        /// DXGI adapter vendor ids for VDD parent GPU selection.
         /// Ref: https://support.parsec.app/hc/en-us/articles/4423615425293-VDD-Advanced-Configuration#parent_gpu
         /// </summary>
         public enum ParentGPU
         {
-            Auto = 0,
+            Auto   = 0,
             NVIDIA = 0x10DE,
-            AMD = 0x1002,
+            AMD    = 0x1002,
+            Intel  = 0x8086,
         }
+
+        const string PARAMETERS_KEY =
+            "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WUDF\\Services\\ParsecVDA\\Parameters";
+
+        const string VALUE_VENDOR_ID = "PreferredRenderAdapterVendorId";
+        const string VALUE_DISABLE_CHANGE = "DisablePreferredRenderAdapterChange";
 
         /// <summary>
         /// Get parent GPU of VDD.
@@ -92,12 +100,11 @@ namespace ParsecVDisplay.Vdd
         public static ParentGPU GetParentGPU()
         {
             using (var parameters = Registry.LocalMachine.OpenSubKey(
-                "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WUDF\\Services\\ParsecVDA\\Parameters",
-                RegistryKeyPermissionCheck.ReadSubTree))
+                PARAMETERS_KEY, RegistryKeyPermissionCheck.ReadSubTree))
             {
                 if (parameters != null)
                 {
-                    object value = parameters.GetValue("PreferredRenderAdapterVendorId");
+                    object value = parameters.GetValue(VALUE_VENDOR_ID);
                     if (value != null)
                     {
                         return (ParentGPU)Convert.ToInt32(value);
@@ -109,26 +116,28 @@ namespace ParsecVDisplay.Vdd
         }
 
         /// <summary>
-        /// Set parent GPU for VDD.
-        /// This function requires admin rights.
+        /// Set parent GPU for VDD. Requires admin rights.
+        /// The driver ships with <c>DisablePreferredRenderAdapterChange = 1</c> which
+        /// blocks any vendor preference, so we toggle that to 0 before writing the
+        /// vendor id, and restore it to 1 when switching back to Auto.
         /// </summary>
         public static void SetParentGPU(ParentGPU kind)
         {
             using (var parameters = Registry.LocalMachine.OpenSubKey(
-                "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WUDF\\Services\\ParsecVDA\\Parameters",
-                RegistryKeyPermissionCheck.ReadWriteSubTree))
+                PARAMETERS_KEY, RegistryKeyPermissionCheck.ReadWriteSubTree))
             {
-                if (parameters != null)
+                if (parameters == null)
+                    return;
+
+                if (kind == ParentGPU.Auto)
                 {
-                    if (kind == ParentGPU.Auto)
-                    {
-                        parameters.DeleteValue("PreferredRenderAdapterVendorId", false);
-                    }
-                    else
-                    {
-                        parameters.SetValue("PreferredRenderAdapterVendorId",
-                            (uint)kind, RegistryValueKind.DWord);
-                    }
+                    parameters.DeleteValue(VALUE_VENDOR_ID, false);
+                    parameters.SetValue(VALUE_DISABLE_CHANGE, 1, RegistryValueKind.DWord);
+                }
+                else
+                {
+                    parameters.SetValue(VALUE_DISABLE_CHANGE, 0, RegistryValueKind.DWord);
+                    parameters.SetValue(VALUE_VENDOR_ID, (uint)kind, RegistryValueKind.DWord);
                 }
             }
         }
