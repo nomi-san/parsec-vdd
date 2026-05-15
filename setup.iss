@@ -1,15 +1,15 @@
 
-#define MyAppName "ParsecVDisplay"
+#define MyAppName "ParsecDisplay"
 #define MyAppPublisher "Nguyen Duy"
 #define MyAppURL "https://github.com/nomi-san/parsec-vdd"
-#define MyAppExeName "ParsecVDisplay.exe"
+#define MyAppExeName "ParsecDisplay.exe"
 #define MyAppCopyright "(c) 2024 Nguyen Duy."
 
 #define _Major
 #define _Minor
 #define _Rev
 #define _Build
-#define MyAppVersion GetVersionComponents("..\bin\ParsecVDisplay.exe", _Major, _Minor, _Rev, _Build), Str(_Major) + "." + Str(_Minor) + "." + Str(_Rev)
+#define MyAppVersion GetVersionComponents("..\bin\ParsecDisplay.exe", _Major, _Minor, _Rev, _Build), Str(_Major) + "." + Str(_Minor) + "." + Str(_Rev)
 
 [Setup]
 AppId={{D2005B5A-A8C4-4B77-807F-155132973D5D}
@@ -34,7 +34,7 @@ SetupIconFile=.\icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-UninstallDisplayName={#MyAppName}   
+UninstallDisplayName={#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ChangesEnvironment=true
 
