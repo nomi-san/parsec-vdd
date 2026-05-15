@@ -6,7 +6,7 @@ using System.Windows.Interop;
 using System.Windows.Navigation;
 using Microsoft.Win32;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     public partial class MainWindow : Window
     {

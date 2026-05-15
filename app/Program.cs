@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     public static class Program
     {
         public const string AppId = "QpHOX8IBUHBznGtqk9xm1";
-        public const string AppName = "ParsecVDisplay";
+        public const string AppName = nameof(ParsecDisplay);
         public const string AppVersion = "1.0.2";
         public const string GitHubRepo = "nomi-san/parsec-vdd";
 

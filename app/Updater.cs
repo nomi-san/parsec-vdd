@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     internal static class Updater
     {

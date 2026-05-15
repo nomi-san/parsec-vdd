@@ -40,9 +40,9 @@ including up to 4K and 240 Hz. This capability makes it a versatile tool for
 gaming, streaming, or remote work, allowing users to simulate multiple screens
 for an enhanced, flexible visual experience.
 
-## 📺 ParsecVDisplay App
+## 📺 ParsecDisplay App
 
-ParsecVDisplay is a comprehensive virtual display manager for Parsec VDD, built
+ParsecDisplay is a comprehensive virtual display manager for Parsec VDD, built
 with C# and WPF. The app provides an intuitive interface to manage virtual
 displays, showing the number of active displays and allowing users to add or
 remove specific virtual displays. It also supports features like changing
@@ -67,7 +67,7 @@ its index to be used for unplugging, the maximum number of displays could be
 added up to 16 per adapter. You have to ping the driver periodically to keep
 added displays alive, otherwise all of them will be unplugged after a second.
 There's no direct way to manipulate added displays, you should call Win32
-Display API to change their display mode (see the ParsecVDisplay source).
+Display API to change their display mode (see the ParsecDisplay source).
 
 ```mermaid
 flowchart LR

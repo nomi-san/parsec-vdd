@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace ParsecVDisplay.Vdd
+namespace ParsecDisplay.Vdd
 {
     internal static unsafe class Core
     {

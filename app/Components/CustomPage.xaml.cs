@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace ParsecVDisplay.Components
+namespace ParsecDisplay.Components
 {
     public partial class CustomPage : Page
     {

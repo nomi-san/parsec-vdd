@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Win32;
 
-namespace ParsecVDisplay.Vdd
+namespace ParsecDisplay.Vdd
 {
     internal static class Utils
     {

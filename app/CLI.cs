@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     internal static class CLI
     {

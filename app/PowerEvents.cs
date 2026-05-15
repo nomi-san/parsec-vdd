@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     internal static class PowerEvents
     {

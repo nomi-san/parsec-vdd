@@ -2,7 +2,7 @@
 using System.Reflection;
 using Microsoft.Win32;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     internal static class Config
     {

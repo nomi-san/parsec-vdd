@@ -1,10 +1,10 @@
 ﻿<UserControl
-    x:Class="ParsecVDisplay.Components.DisplayItem"
+    x:Class="ParsecDisplay.Components.DisplayItem"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-    xmlns:local="clr-namespace:ParsecVDisplay.Components"
+    xmlns:local="clr-namespace:ParsecDisplay.Components"
     mc:Ignorable="d" 
     Width="180" Height="110"
     d:Background="Black"

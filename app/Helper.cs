@@ -8,7 +8,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     internal static class Helper
     {

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     /// <summary>
     /// Lightweight diagnostic logger. Appends to &lt;exe-dir&gt;\debug.log on each

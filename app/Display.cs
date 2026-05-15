@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     internal class Display
     {

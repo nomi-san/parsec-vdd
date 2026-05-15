@@ -11,7 +11,7 @@ using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     public partial class App : Application
     {

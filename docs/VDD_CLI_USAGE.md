@@ -1,6 +1,6 @@
 # Command Line Interface
 
-This is detailed help for CLI mode of the ParsecVDisplay app. The CLI executable
+This is detailed help for CLI mode of the ParsecDisplay app. The CLI executable
 (`vdd`) can be installed via setup installer and can be invoked via command line
 environment.
 

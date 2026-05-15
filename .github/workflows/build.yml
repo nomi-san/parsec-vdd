@@ -43,7 +43,7 @@ jobs:
       - name: Target .NET 4.8
         if: ${{ inputs.net480 }}
         run: |
-          (Get-Content app\ParsecVDisplay.csproj) -replace "TargetFramework>net472", "TargetFramework>net480" | Out-File app\ParsecVDisplay.csproj
+          (Get-Content app\ParsecDisplay.csproj) -replace "TargetFramework>net472", "TargetFramework>net480" | Out-File app\ParsecDisplay.csproj
           (Get-Content app\App.config) -replace "Version=v4.7.2", "Version=v4.8" | Out-File app\App.config
 
       - name: Setup msbuild
@@ -52,14 +52,14 @@ jobs:
       - name: Build app
         run: |
           cd app
-          msbuild ParsecVDisplay.csproj /t:Restore
-          msbuild ParsecVDisplay.csproj /t:Build /p:Configuration=${{ inputs.debug && 'Debug' || 'Release' }} /p:Platform=AnyCPU
+          msbuild ParsecDisplay.csproj /t:Restore
+          msbuild ParsecDisplay.csproj /t:Build /p:Configuration=${{ inputs.debug && 'Debug' || 'Release' }} /p:Platform=AnyCPU
 
       - name: Prepare build output
         id: prepare-output-step
         run: |
           echo "${{ env.APP_VERSION }}+${{ env.SHORT_SHA }}" >> app\bin\version
-          echo "artifact-name=ParsecVDisplay-v${{ env.APP_VERSION }}-${{ env.SHORT_SHA }}" >> $env:GITHUB_OUTPUT
+          echo "artifact-name=ParsecDisplay-v${{ env.APP_VERSION }}-${{ env.SHORT_SHA }}" >> $env:GITHUB_OUTPUT
 
       - name: Upload build output
         uses: actions/upload-artifact@v4
@@ -69,5 +69,5 @@ jobs:
           path: |
             app/bin/version
             app/bin/vdd.cmd
-            app/bin/ParsecVDisplay.exe
-            app/bin/ParsecVDisplay.exe.config
+            app/bin/ParsecDisplay.exe
+            app/bin/ParsecDisplay.exe.config

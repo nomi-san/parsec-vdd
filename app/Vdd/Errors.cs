@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ParsecVDisplay.Vdd
+namespace ParsecDisplay.Vdd
 {
     internal class ErrorDriverStatus : Exception
     {

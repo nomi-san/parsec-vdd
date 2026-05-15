@@ -15,9 +15,9 @@
 
   <PropertyGroup>
     <OutputPath>bin\</OutputPath>
-    <AssemblyName>ParsecVDisplay</AssemblyName>
-    <RootNamespace>ParsecVDisplay</RootNamespace>
-    <StartupObject>ParsecVDisplay.Program</StartupObject>
+    <AssemblyName>ParsecDisplay</AssemblyName>
+    <RootNamespace>ParsecDisplay</RootNamespace>
+    <StartupObject>ParsecDisplay.Program</StartupObject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -64,15 +64,15 @@
 @echo off
 setlocal
 
-set app_exe=%~dp0ParsecVDisplay.exe
-set parent_exe=%~dp0..\ParsecVDisplay.exe
+set app_exe=%~dp0ParsecDisplay.exe
+set parent_exe=%~dp0..\ParsecDisplay.exe
 
 if exist "%app_exe%" (
     start /b /wait "" "%app_exe%" -cli %*
 ) else if exist "%parent_exe%" (
     start /b /wait "" "%parent_exe%" -cli %*
 ) else (
-    echo ParsecVDisplay.exe does not exist.
+    echo ParsecDisplay.exe does not exist.
 )
 
 endlocal

@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace ParsecVDisplay.Components
+namespace ParsecDisplay.Components
 {
     public partial class DisplayItem : UserControl
     {

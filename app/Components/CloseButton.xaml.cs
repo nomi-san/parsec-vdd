@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace ParsecVDisplay.Components
+namespace ParsecDisplay.Components
 {
     public partial class CloseButton : UserControl
     {

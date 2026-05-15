@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 
-namespace ParsecVDisplay
+namespace ParsecDisplay
 {
     internal class Tray : ApplicationContext
     {
@@ -47,7 +47,7 @@ namespace ParsecVDisplay
         System.Threading.Timer FallbackTimer;
         const int FallbackEvaluateDelayMs = 1000;
 
-        //  ParsecVDisplay v{version}
+        //  ParsecDisplay v{version}
         //  ______________
         //  Add display
         //  Remove last display
