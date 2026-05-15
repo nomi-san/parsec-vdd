@@ -211,14 +211,14 @@ nothing runs until the user signs in. Workarounds:
 The table below shows a comparison with other popular Indirect Display Driver
 projects.
 
-| Project                        | Iddcx version | Signed | Gaming | HDR |                               H-Cursor                               | Tweakable | Controller |
-| :----------------------------- | :-----------: | :----: | :----: | :-: | :------------------------------------------------------------------: | :-------: | :--------: |
-| [usbmmidd_v2]                  |               |   ✅   |   ❌   | ❌  |                                  ❌                                  |           |            |
-| [IddSampleDriver]              |      1.2      |   ❌   |   ❌   | ❌  |                                  ❌                                  |           |            |
-| [RustDeskIddDriver]            |      1.2      |   ❌   |   ❌   | ❌  |                                  ❌                                  |           |            |
-| [Virtual-Display-Driver (HDR)] |     1.10      |   ❌   |        | ✅  |                                  ❌                                  |           |            |
-| [virtual-display-rs]           |      1.5      |   ❌   |        | ❌  | [#81](https://github.com/MolotovCherry/virtual-display-rs/issues/81) |    ✅     |     ✅     |
-| parsec-vdd                     |      1.5      |   ✅   |   ✅   | ❌  |                                  ✅                                  |    🆗     |     ✅     |
+| Project                        | Iddcx version | Signed | Gaming | HDR  | H-Cursor | Tweakable | Controller |
+| :----------------------------- | :-----------: | :----: | :----: | :--: | :------: | :-------: | :--------: |
+| [usbmmidd_v2]                  |      N/A      |   ✅   |   ❌   | ❌  |   ❌    |    🆗     |    ❌     |
+| [IddSampleDriver]              |      1.2      |   ❌   |   🆗   | ❌  |   ❌    |    🆗     |    ❌     |
+| [RustDeskIddDriver]            |      1.2      |   ❌   |   ❌   | ❌  |   ❌    |    🆗     |    ❌     |
+| [Virtual-Display-Driver (HDR)] |      1.10     |   ✅   |   ✅   | ✅  |   ✅    |    ✅     |    ❌     |
+| [virtual-display-rs]           |      1.5      |   ❌   |   ✅   | ❌  |   ✅    |    ✅     |    ✅     |
+| parsec-vdd                     |      1.5      |   ✅   |   ✅   | ❌  |   ✅    |    🆗     |    ✅     |
 
 ✅ - full support, 🆗 - limited support
 
