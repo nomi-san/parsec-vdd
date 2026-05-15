@@ -40,6 +40,31 @@ including up to 4K and 240 Hz. This capability makes it a versatile tool for
 gaming, streaming, or remote work, allowing users to simulate multiple screens
 for an enhanced, flexible visual experience.
 
+## 💡 Use cases
+
+- **Game streaming** with [Parsec](https://parsec.app),
+  [Sunshine](https://github.com/LizardByte/Sunshine) /
+  [Moonlight](https://moonlight-stream.org), or Steam Remote Play — host at
+  the exact streaming resolution and refresh rate without depending on a
+  physical monitor's spec.
+- **Headless hosts and cloud VMs** — Windows machines with no monitor attached
+  (build servers, gaming VMs, cloud GPU instances). VDD gives them a real
+  desktop session so capture tools, launchers, and benchmarks that refuse to
+  run without an active display keep working.
+- **AR / XR workspaces** — feed several virtual monitors into AR glasses or
+  headset-based desktop projects (see [Verto_XR](https://github.com/rohitsangwan01/Verto_XR) below).
+- **Multi-monitor productivity** — extend a laptop without docking; preview /
+  test multi-display layouts without buying physical screens.
+- **Hyper-V / GPU-PV guests** — the hypervisor's built-in Hyper-V monitor
+  can't be disconnected, which prevents Parsec / Sunshine from falling back
+  to their own virtual display. Adding VDD inside the guest gives the streaming
+  host a controllable target.
+- **High-refresh capture & recording** — record at the exact resolution and
+  refresh rate the encoder wants (e.g. 1080p@240Hz, 4K@120Hz) without
+  cropping or rescaling from a physical monitor's native mode.
+- **Privacy mode** — pair a virtual display for the remote session with the
+  physical monitor for local use, keeping the two desktops independent.
+
 ## 📺 ParsecDisplay App
 
 ParsecDisplay is a virtual display manager for Parsec VDD, built with C# and
@@ -234,6 +259,21 @@ cursor on some remote desktop apps. **Tweakable** is the ability to customize
 display modes. Visit
 [MSDN IddCx versions](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/iddcx-versions)
 to check the minimum supported Windows version.
+
+## 🔗 Projects using Parsec VDD
+
+Third-party libraries and apps built on top of the Parsec VDD driver:
+
+- [parsec-vdd-rust](https://github.com/rohitsangwan01/parsec-vdd-rust) —
+  Rust port of the core VDD API. Drop-in for Rust projects that need to
+  add/remove virtual displays and keep them alive.
+- [Verto_XR](https://github.com/rohitsangwan01/Verto_XR) — XR / AR-glasses
+  desktop workspace that uses VDD as the source for its virtual monitors.
+- [ParsecVDA-Always-Connected](https://github.com/timminator/ParsecVDA-Always-Connected) —
+  service-based fork that keeps a single virtual display alive across reboots
+  and power events, aimed at headless hosts.
+
+Open a PR if you'd like to add your project here.
 
 ## 📘 Parsec VDD Specs
 
