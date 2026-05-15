@@ -42,32 +42,30 @@ for an enhanced, flexible visual experience.
 
 ## 📺 ParsecDisplay App
 
-ParsecDisplay is a comprehensive virtual display manager for Parsec VDD, built
-with C# and WPF. The app provides an intuitive interface to manage virtual
-displays, showing the number of active displays and allowing users to add or
-remove specific virtual displays. It also supports features like changing
-display resolution, capturing screenshots, and more, making it a versatile tool
-for flexible display management.
+ParsecDisplay is a virtual display manager for Parsec VDD, built with C# and
+WPF. It provides a tray-based interface to add and remove virtual displays,
+change their resolution, refresh rate, and orientation, capture screenshots,
+and more.
 
 👉 Check out [Releases](https://github.com/nomi-san/parsec-vdd/releases) to
 download it.
 
 <p align="center">
-  <img src="https://github.com/nomi-san/parsec-vdd/assets/38210249/71b25bc6-eee1-4d80-94e0-e39eab7f8fb9" />
+  <img src="https://github.com/user-attachments/assets/2c014dbb-2358-4906-90fb-f94a62087065" />
 </p>
 
 ## 🚀 Using Core API
 
 ### Design notes
 
-Parsec VDD is designed to work with Parsec client-connection sessions. When the
-user connects to the host, the app will start controlling the driver, it sends
-IO control codes and gets results. When adding a virtual display, you will get
-its index to be used for unplugging, the maximum number of displays could be
-added up to 16 per adapter. You have to ping the driver periodically to keep
-added displays alive, otherwise all of them will be unplugged after a second.
-There's no direct way to manipulate added displays, you should call Win32
-Display API to change their display mode (see the ParsecDisplay source).
+Parsec VDD is designed to work with Parsec client-connection sessions. When
+the user connects to the host, the app starts controlling the driver —
+sending IO control codes and receiving results. Adding a virtual display
+returns an index, used later to unplug it; up to 16 displays can be added
+per adapter. The driver must be pinged periodically to keep added displays
+alive, otherwise all of them will be unplugged after about a second. There
+is no direct way to manipulate added displays — call the Win32 Display API
+to change their display mode (see the ParsecDisplay source).
 
 ```mermaid
 flowchart LR
@@ -88,13 +86,13 @@ flowchart LR
 
 For detailed instructions and usage examples, refer to the [VDD_LIBRARY_USAGE](./docs/VDD_LIBRARY_USAGE.md).
 
-- The core API is designed as single C/C++ header that can be added to any
+- The core API is designed as a single C/C++ header that can be added to any
   project, 👉 [core/parsec-vdd.h](./core/parsec-vdd.h)
 - There is also a simple demo program, 👉 [core/vdd-demo.cc](./core/vdd-demo.cc)
 
 ### Picking a driver
 
-You have to install the driver to make them work.
+You have to install the driver before any virtual displays can be created.
 
 | Version           | Minimum OS      | IddCx | Notes                                                     |
 | :---------------- | :-------------- | :---: | :-------------------------------------------------------- |
@@ -141,9 +139,10 @@ In addition, you can run the driver setup in silent mode to install it quickly.
 ### 1. HDR support
 
 Parsec VDD does not support HDR on its displays (see the EDID below).
-Theoretically, you can unlock support by editing the EDID, then adding HDR
-metadata and setting 10-bit+ color depth. Unfortunately, you cannot flash its
-firmware like a physical device, or modify the registry value.
+Theoretically, you can unlock support by editing the EDID to include HDR
+metadata and a 10-bit+ color depth. Unfortunately, you cannot flash its
+firmware the way you would a physical monitor — there is no registry
+setting to toggle either.
 
 All IDDs have their own fixed EDID block inside the driver binary to initialize
 the monitor specs. So the solution is to modify this block in the driver DLL
@@ -152,8 +151,8 @@ the monitor specs. So the solution is to modify this block in the driver DLL
 ### 2. Custom resolutions
 
 Before connecting, the virtual display looks in the `HKLM\SOFTWARE\Parsec\vdd`
-registry for additional preset resolutions. Currently this supports a maximum of
-5 values.
+registry for additional preset resolutions. Currently this supports a maximum
+of 5 entries.
 
 ```yaml
 HKLM\SOFTWARE\Parsec\vdd:
@@ -180,10 +179,32 @@ HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Connectivity
 ```
 
 This option causes your main display to turn off when virtual displays are
-added, making it difficult to turn the display on and disrupting the remote
-desktop session.
+added, making it difficult to turn the main display back on and disrupting
+the remote desktop session.
 
-### 2. // todo
+### 2. Windows 10 Connectivity registry quirk
+
+Windows 10 caches display arrangements keyed by the _combination_ of attached
+display IDs. When a middle display is unplugged, the remaining subset
+(e.g. `DISP001_DISP003`) is a new combo Windows hasn't seen — those displays
+fall back to default mode and arrangement.
+
+The app works around this by always unplugging **right-to-left** (latest
+driver index first) during sleep, exit, and `vdd remove all`. See
+[issue #23](https://github.com/nomi-san/parsec-vdd/issues/23)
+for the full write-up.
+
+### 3. Headless before user login
+
+The app is a GUI process and requires an interactive user session (Vista+
+session 0 isolation). On a freshly-booted headless host with no auto-login,
+nothing runs until the user signs in. Workarounds:
+
+- Enable auto-login on the host.
+- Or use a Task Scheduler entry that runs at logon with desktop interaction.
+- Or use the service-based fork
+  [ParsecVDA-Always-Connected](https://github.com/timminator/ParsecVDA-Always-Connected)
+  for fully headless single-display deployments.
 
 ## 🤔 Comparison with other IDDs
 
@@ -207,8 +228,8 @@ projects.
 [virtual-display-rs]: https://github.com/MolotovCherry/virtual-display-rs
 [Virtual-Display-Driver (HDR)]: https://github.com/itsmikethetech/Virtual-Display-Driver
 
-**Signed** means that the driver files have a valid digital signature.
-**H-Cursor** means hardware cursor support, without it, you will get a double
+**Signed** means the driver files have a valid digital signature.
+**H-Cursor** means hardware-cursor support — without it, you get a double
 cursor on some remote desktop apps. **Tweakable** is the ability to customize
 display modes. Visit
 [MSDN IddCx versions](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/iddcx-versions)
@@ -228,19 +249,17 @@ Common preset display modes:
 | 1600 x 900  | HD+         | 16:9         | 60/144/240         |
 | 1280 x 720  | HD          | 16:9         | 60/144/240         |
 
-Check out [docs/PARSEC_VDD_SPECS](./docs/PARSEC_VDD_SPECS.md) to see full of
-preset display modes the driver specs.
-
-## 🤝 Sponsors
-
-<table>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/58e9a6f4-6630-437d-a758-b284c0ed41e7" /></td>
-    <td>Free code signing on Windows provided by <a href="https://signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a></td>
-  </tr>
-</table>
+Check out [docs/PARSEC_VDD_SPECS](./docs/PARSEC_VDD_SPECS.md) for the full
+list of preset display modes and driver specs.
 
 ## 🍻 Credits
 
 - Thanks to Parsec for the driver
 - The app's background was from old parsecgaming.com
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/58e9a6f4-6630-437d-a758-b284c0ed41e7" /></td>
+    <td>Trusted code signing on Windows provided by <a href="https://signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a></td>
+  </tr>
+</table>

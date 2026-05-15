@@ -42,12 +42,18 @@ Use command `-a` or `add` to add a virtual display.
 vdd -a
 ```
 
-The exit code is the index of added display, you can reuse this index to remove
-the display. Less than 0 means error occurred.
+Output looks like:
+
+```
+Added a virtual display with index 0.
+```
+
+The exit code is the driver index of the added display (0–15); you can reuse
+it to remove the display later. A negative exit code means an error occurred.
 
 ### Removing virtual display
 
-Use command `-r` or `remove` to remove the last added.
+Use command `-r` or `remove` to remove the last-added display.
 
 ```sh
 vdd -r
@@ -59,11 +65,17 @@ Remove the added virtual display at index `0`.
 vdd -r 0
 ```
 
-To remove all the added, replace the index with `all` or `*`.
+To remove all added displays, replace the index with `all` or `*`.
 
 ```
 vdd -r all
 ```
+
+`remove all` iterates in **reverse driver-index order** so the Windows 10
+Connectivity registry doesn't invent a new (default-mode) configuration for
+the surviving subset. Per-display failures are reported as warnings and the
+loop continues; the exit code is `0` on full success and `1` if any
+individual removal failed.
 
 ### Listing added displays
 
